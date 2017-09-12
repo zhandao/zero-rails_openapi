@@ -10,13 +10,15 @@ module ZeroRails
       module ClassMethods
         def controller_description desc = '', external_doc_url = ''
           @api_infos ||= { }
-          @ctrl_infos = { name: controller_name.capitalize }
+          # current `tag`, this means that tags is currently divided by controllers.
+          @ctrl_infos = { name: controller_path.camelize }
           @ctrl_infos[:description] = desc if desc.present?
           @ctrl_infos[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
         end
         alias_method :c_desc, :controller_description
 
         def open_api method, summary = '', &block
+          # select the routing info corresponding to the current method from the routing list.
           routes_info = ctrl_routes_list.select { |api| api[:ctrl_action].split('#').last.match? /^#{method}$/ }.first
           puts "[zero-rails_openapi] Routing mapping failed: #{controller_path}##{method}" or return if routes_info.nil?
 
@@ -39,9 +41,12 @@ module ZeroRails
 
 
       class ApiInfoObj < ActiveSupport::OrderedOptions
-        def this_api_is_expired!
+        def this_api_is_invalid! explain = ''
           self[:deprecated] = true
         end
+        alias_method :this_api_is_expired!,           :this_api_is_invalid!
+        alias_method :this_api_is_unused!,            :this_api_is_invalid!
+        alias_method :this_api_is_under_maintenance!, :this_api_is_invalid!
 
         def desc desc
           self[:description] = desc
@@ -121,13 +126,10 @@ module ZeroRails
 
         end
 
-        def tag
-
-        end
-
         # [{ :url, :description }]
-        def servers
-
+        def server url, desc
+          self[:servers] ||= []
+          self[:servers] << { url: url, description: desc }
         end
 
         def response

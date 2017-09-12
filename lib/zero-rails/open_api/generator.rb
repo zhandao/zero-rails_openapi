@@ -21,11 +21,13 @@ module ZeroRails
           doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge({
                   security: settings[:global_security],
                   tags: [ ],
-                  paths: { }
+                  paths: { },
+                  components: { }
                 })
           settings[:root_controller].descendants.each do |ctrl|
             doc[:paths].merge! ctrl.instance_variable_get '@api_infos'
             doc[:tags] << ctrl.instance_variable_get('@ctrl_infos')
+            doc[:components]
           end
           doc
         end
@@ -46,9 +48,11 @@ module ZeroRails
         inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil).split("\n")[1..-1].map do |line|
           infos = line.match(/[A-Z].*/).to_s.split(' ')
           {
-              http_verb: infos[0],                  # => "GET"
-              path: infos[1].sub('(.:format)', ''), # => "/api/v1/examples"
-              ctrl_action: infos[2]                 # => "api/v1/examples#index"
+              http_verb: infos[0],        # => "GET"
+              path: infos[1].sub('(.:format)', '').split('/').map do |item|
+                      item.match?(/:/) ? "{#{item[1..-1]}}" : item
+                    end.join('/'),        # => "/api/v1/examples/{id}"
+              ctrl_action: infos[2]       # => "api/v1/examples#index"
           }
         end.group_by {|api| api[:ctrl_action].split('#').first } # => { "api/v1/examples" => [..] }
       end
