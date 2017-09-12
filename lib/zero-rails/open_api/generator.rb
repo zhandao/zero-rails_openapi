@@ -20,16 +20,19 @@ module ZeroRails
           settings = ZeroRails::OpenApi.apis[api_name]
           doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge({
                   security: settings[:global_security],
+                  tags: [ ],
                   paths: { }
                 })
           settings[:root_controller].descendants.each do |ctrl|
             doc[:paths].merge! ctrl.instance_variable_get '@api_infos'
+            doc[:tags] << ctrl.instance_variable_get('@ctrl_infos')
           end
           doc
         end
 
         def write_docs
           docs = generate_docs
+          puts docs
         end
       end
 

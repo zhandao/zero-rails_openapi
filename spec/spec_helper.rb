@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "zero/openapi_rails"
+require "zero-rails/open_api"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

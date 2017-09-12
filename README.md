@@ -1,4 +1,4 @@
-# Zero::OpenapiRails
+# Zero OpenApi for Rails
 
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/zero/openapi_rails`. To experiment with that code, run `bin/console` for an interactive prompt.
 
@@ -9,7 +9,7 @@ TODO: Delete this and the text above, and describe your gem
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'zero-openapi_rails'
+gem 'zero-rails_openapi'
 ```
 
 And then execute:
@@ -18,7 +18,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install zero-openapi_rails
+    $ gem install zero-rails_openapi
 
 ## Usage
 

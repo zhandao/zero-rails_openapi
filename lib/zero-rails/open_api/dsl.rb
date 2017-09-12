@@ -8,8 +8,11 @@ module ZeroRails
       end
 
       module ClassMethods
-        def controller_description desc = ''
+        def controller_description desc = '', external_doc_url = ''
           @api_infos ||= { }
+          @ctrl_infos = { name: controller_name.capitalize }
+          @ctrl_infos[:description] = desc if desc.present?
+          @ctrl_infos[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
         end
         alias_method :c_desc, :controller_description
 
@@ -21,7 +24,9 @@ module ZeroRails
           # it will be merged into :paths
           @api_infos[routes_info[:path]] ||= { }
           crt_api_info = @api_infos[routes_info[:path]][routes_info[:http_verb].downcase] = ApiInfoObj.new
-          crt_api_info.summary = summary
+          crt_api_info.summary = summary if summary.present?
+          crt_api_info.operationId = method
+          crt_api_info.tags = [controller_name.capitalize]
 
           crt_api_info.instance_eval &block
         end
@@ -34,12 +39,12 @@ module ZeroRails
 
 
       class ApiInfoObj < ActiveSupport::OrderedOptions
-        def initialize
-          self[:parameters] = [ ]
+        def this_api_is_expired!
+          self[:deprecated] = true
         end
 
-        def notes notes
-          self[:notes] = notes
+        def desc desc
+          self[:description] = desc
         end
 
         HASH_MAPPING = {
@@ -95,6 +100,7 @@ module ZeroRails
           processed_hash[:regexp] = hash.send(:_regexp) unless hash.send(:_regexp).nil?
           processed_hash[:defaultValue] = hash.send(:_swg_default) unless hash.send(:_swg_default).nil?
 
+          self[:parameters] ||= [ ]
           self[:parameters] << {
               param_type: param_type,
               name: name,
@@ -109,6 +115,23 @@ module ZeroRails
           define_method param_type do |name, type, hash = { }|
             param param_type, name, type, (param_type.to_s.match?(/!/) ? :req : :opt), hash
           end
+        end
+
+        def security
+
+        end
+
+        def tag
+
+        end
+
+        # [{ :url, :description }]
+        def servers
+
+        end
+
+        def response
+
         end
       end
     end
