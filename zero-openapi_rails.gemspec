@@ -1,18 +1,18 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "zero/openapi_rails/version"
+require "zero-rails/open_api/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "zero-openapi_rails"
-  spec.version       = Zero::OpenapiRails::VERSION
+  spec.name          = "zero-rails_openapi"
+  spec.version       = ZeroRails::OpenApi::VERSION
   spec.authors       = ["zhandao"]
   spec.email         = ["x@skippingcat.com"]
 
   spec.summary       = %q{Generate the OpenAPI Specification JSON file for (Zero) Rails application.}
   spec.description   = %q{Provide a very concise DSL for you to generate the OpenAPI Specification(Swagger 3)
                          JSON file for (Zero) Rails application, then you can use Swagger-UI 3.2.0+ to show the documentation.}
-  spec.homepage      = "skippingcat.com"
+  spec.homepage      = "https://github.com/zhandao/zero-rails_openapi"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
