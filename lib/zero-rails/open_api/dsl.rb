@@ -53,40 +53,23 @@ module ZeroRails
         def this_api_is_invalid! explain = ''
           self[:deprecated] = true
         end
-        alias_method :this_api_is_expired!,           :this_api_is_invalid!
-        alias_method :this_api_is_unused!,            :this_api_is_invalid!
-        alias_method :this_api_is_under_maintenance!, :this_api_is_invalid!
+        alias_method :this_api_is_expired!,      :this_api_is_invalid!
+        alias_method :this_api_is_unused!,       :this_api_is_invalid!
+        alias_method :this_api_is_under_repair!, :this_api_is_invalid!
 
         def desc desc
           self[:description] = desc
         end
 
-        # TODO: Refactoring
         def param param_type, name, type, required, info_hash = { }
           param = ParamInfoObj.new(name, param_type, "#{type}".downcase, "#{required}".match?(/req/)).merge info_hash
-          param.process
-
-          # process values to generate enums
-          values = param.send(:_values) || param.send(:_value)
-          unless values.nil?
-            param.merge!({ allowable_values: {
-                values: values.is_a?(Array) ? values : [values],
-                value_type: type
-            } })
-          end
-
-          param[:length] = param.send(:_length) unless param.send(:_length).nil?
-          param[:value] = param.send(:_default) unless param.send(:_default).nil?
-          param[:regexp] = param.send(:_regexp) unless param.send(:_regexp).nil?
-          param[:defaultValue] = param.send(:_doc_default) unless param.send(:_doc_default).nil?
-
-          (self[:parameters] ||= [ ]) << param.processed
+          param.process and (self[:parameters] ||= [ ]) << param.processed
         end
 
         [:header,  :path,  :query,  :cookie,
          :header!, :path!, :query!, :cookie!].each do |param_type|
           define_method param_type do |name, type, hash = { }|
-            param param_type, name, type, (param_type.to_s.match?(/!/) ? :req : :opt), hash
+            param "#{param_type}".sub('!', ''), name, type, (param_type.to_s.match?(/!/) ? :req : :opt), hash
           end
         end
 
