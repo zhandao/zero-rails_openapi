@@ -19,16 +19,20 @@ module ZeroRails
           settings = ZeroRails::OpenApi.apis[api_name]
           doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge({
                   security: settings[:global_security],
-                  tags: [ ], paths: { }, components: { }
+                  tags: [ ], paths: { },
+                  components: {
+                      securitySchemes: settings[:global_security_schemes],
+                      schemas: { }
+                  }
                 })
-          if gsc = settings[:global_security_schemes]; doc[:components][:securitySchemes] = gsc; end
 
           settings[:root_controller].descendants.each do |ctrl|
             doc[:paths].merge! ctrl.instance_variable_get('@api_infos')
-            doc[:tags] << ctrl.instance_variable_get('@ctrl_infos')
-            doc[:components] # TODO
+            doc[:tags] << ctrl.instance_variable_get('@ctrl_infos')[:tags]
+            doc[:components][:schemas].merge! ctrl.instance_variable_get('@ctrl_infos')[:components_schemas]
           end
-          doc.reject { |_,v| v.blank? }
+          doc[:components].delete_if { |_,v| v.blank? }
+          doc.delete_if { |_,v| v.blank? }
         end
 
         def write_docs
@@ -48,7 +52,7 @@ module ZeroRails
           infos = line.match(/[A-Z].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
           {
               http_verb: infos[0].downcase, # => "get"
-              path: infos[1].sub('(.:format)', '').split('/').map do |item|
+              path: infos[1].delete('(.:format)').split('/').map do |item|
                       item.match?(/:/) ? "{#{item[1..-1]}}" : item
                     end.join('/'),          # => "/api/v1/examples/{id}"
               ctrl_action: infos[2]         # => "api/v1/examples#index"

@@ -9,10 +9,10 @@ module ZeroRails
 
       module ClassMethods
         def controller_description desc = '', external_doc_url = '', &block
-          @api_infos ||= { }
+          @api_infos  ||= { }
           @ctrl_infos ||= { }
           # current `tag`, this means that tags is currently divided by controllers.
-          tag = @ctrl_infos[:tag] = { name: controller_path.camelize }
+          tag = @ctrl_infos[:tags] = { name: controller_path.camelize }
           tag[:description] = desc if desc.present?
           tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
 
@@ -28,11 +28,11 @@ module ZeroRails
 
           # structural { path: { http_method:{ } } }, for Paths Object.
           # it will be merged into :paths
-          @api_infos[routes_info[:path]] ||= { }
-          current_api = @api_infos[routes_info[:path]][routes_info[:http_verb]] = ApiInfoObj.new
+          path = @api_infos[routes_info[:path]] ||= { }
+          current_api = path[routes_info[:http_verb]] = ApiInfoObj.new
           current_api.summary = summary if summary.present?
           current_api.operationId = method
-          current_api.tags = [controller_name.capitalize]
+          current_api.tags = [controller_path.capitalize]
           current_api.instance_eval &block
         end
 
@@ -62,14 +62,14 @@ module ZeroRails
         end
 
         def param param_type, name, type, required, info_hash = { }
-          param = ParamInfoObj.new(name, param_type, "#{type}".downcase, "#{required}".match?(/req/)).merge info_hash
+          param = ParamInfoObj.new(name, param_type, type, required).merge info_hash
           param.process and (self[:parameters] ||= [ ]) << param.processed
         end
 
         [:header,  :path,  :query,  :cookie,
          :header!, :path!, :query!, :cookie!].each do |param_type|
-          define_method param_type do |name, type, hash = { }|
-            param "#{param_type}".sub('!', ''), name, type, (param_type.to_s.match?(/!/) ? :req : :opt), hash
+          define_method param_type do |name, type, info_hash = { }|
+            param "#{param_type}".delete('!'), name, type, (param_type.to_s.match?(/!/) ? :req : :opt), info_hash
           end
         end
 
