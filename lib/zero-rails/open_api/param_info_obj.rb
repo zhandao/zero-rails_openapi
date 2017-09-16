@@ -19,12 +19,13 @@ module ZeroRails
           self.schema = processed[:schema]
         end
 
-        IS_PATTERNS = %w[email phone password uuid uri url time date]
+        IS_PATTERNS = ZeroRails::OpenApi.patterns || %w[email phone password uuid uri url time date]
+        # All assignments to self.processed are in this method.
         def process
           assign(_desc).to 'description'
           process_type
-          lth = process_enum_and_length;   assign(lth).to_schema
-          range = process_range;           assign(range).to_schema
+          lth = process_enum_and_length; assign(lth).to_schema
+          range = process_range;         assign(range).to_schema
           recognize_pattern_in_name
 
           %i[enum is pattern default].each do |field|
@@ -86,7 +87,9 @@ module ZeroRails
         end
 
 
-        # Get the original values that was passed to param()
+        # Getters and Setters of the original values that was passed to param()
+        # This mapping allows user to select the aliases in DSL writing,
+        #   without increasing the complexity of the implementation.
         { # SELF_MAPPING
             _enum:    %i[enum     values  allowable_values],
             _value:   %i[must_be  value   allowable_value ],
@@ -107,8 +110,12 @@ module ZeroRails
         end
 
 
-        # Interfaces for directly taking value of processed parameter obj,
-        #   through the key you focus on.
+        # Interfaces for directly taking the info what you focus on,
+        #   The next step you may want to verify the parameters based on these infos.
+        #   The implementation of the parameters validator, see:
+        #     TODO
+        alias_method :range, :_range
+        alias_method :length, :_length
         { # INTERFACE_MAPPING
             name:     [:name],
             required: [:required],
@@ -123,8 +130,11 @@ module ZeroRails
             (path[1].nil? ? processed : processed[path[0]])[path.last] = value
           end
         end
-        alias_method :range, :_range
-        alias_method :length, :_length
+        alias_method :required?, :required
+        # is_email? ..
+        IS_PATTERNS.each do |pattern|
+          define_method "is_#{pattern}?" do self.is.eql? pattern end
+        end
 
 
         # TODO: comment-block doc

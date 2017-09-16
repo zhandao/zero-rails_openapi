@@ -1,4 +1,5 @@
 require 'active_support/ordered_options'
+require 'zero-rails/open_api/param_info_obj' # TODO: Why???
 
 module ZeroRails
   module OpenApi
@@ -9,16 +10,17 @@ module ZeroRails
 
       module ClassMethods
         def controller_description desc = '', external_doc_url = '', &block
-          @api_infos  ||= { }
-          @ctrl_infos ||= { }
+          @_api_infos  ||= { }
+          @_ctrl_infos ||= { }
           # current `tag`, this means that tags is currently divided by controllers.
-          tag = @ctrl_infos[:tags] = { name: controller_path.camelize }
+          tag = @_ctrl_infos[:tag] = {name: controller_path.camelize }
           tag[:description] = desc if desc.present?
           tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
 
-          schemas = @ctrl_infos[:components_schemas] = CtrlInfoObj.new
-          schemas.instance_eval &block
+          schemas = @_ctrl_infos[:components_schemas] = CtrlInfoObj.new
+          schemas.instance_eval &block  if block_given?
         end
+        alias_method :ctrl_desc, :controller_description
         alias_method :apis_desc, :controller_description
 
         def open_api method, summary = '', &block
@@ -28,12 +30,10 @@ module ZeroRails
 
           # structural { path: { http_method:{ } } }, for Paths Object.
           # it will be merged into :paths
-          path = @api_infos[routes_info[:path]] ||= { }
-          current_api = path[routes_info[:http_verb]] = ApiInfoObj.new
-          current_api.summary = summary if summary.present?
-          current_api.operationId = method
-          current_api.tags = [controller_path.capitalize]
-          current_api.instance_eval &block
+          path = @_api_infos[routes_info[:path]] ||= { }
+          current_api = path[routes_info[:http_verb]] =
+              ApiInfoObj.new.merge!({ summary: summary, operationId: method, tags: [controller_path.camelize] })
+          current_api.instance_eval &block  if block_given?
         end
 
         def ctrl_routes_list
@@ -47,7 +47,6 @@ module ZeroRails
 
       end
 
-      require 'zero-rails/open_api/param_info_obj' # TODO: Why???
       class ApiInfoObj < ActiveSupport::OrderedOptions
 
         def this_api_is_invalid! explain = ''

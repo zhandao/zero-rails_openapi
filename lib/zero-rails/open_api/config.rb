@@ -24,6 +24,7 @@ module ZeroRails
         #         :file_output_path, :root_controller
         #         info: {}
         #     }}
+        # patterns = %w[]
 
         def apis
           @apis ||= @config.register_apis
