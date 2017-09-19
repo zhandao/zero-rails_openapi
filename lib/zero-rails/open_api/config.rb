@@ -6,7 +6,7 @@ module ZeroRails
       end
 
       DEFAULT_CONFIG = {
-
+          is_options: %w[email phone password uuid uri url time date]
       }
 
       module ClassMethods
@@ -24,7 +24,7 @@ module ZeroRails
         #         :file_output_path, :root_controller
         #         info: {}
         #     }}
-        # patterns = %w[]
+        # is_options = %w[]
 
         def apis
           @apis ||= @config.register_apis

@@ -1,5 +1,5 @@
 require 'active_support/ordered_options'
-require 'zero-rails/open_api/param_info_obj' # TODO: Why???
+require 'zero-rails/info_objs/param_obj'
 
 module ZeroRails
   module OpenApi
@@ -8,13 +8,13 @@ module ZeroRails
         base.extend ClassMethods
       end
 
+      # TODO: Doc-Block Comments
       module ClassMethods
         def controller_description desc = '', external_doc_url = '', &block
-          @_api_infos  ||= { }
-          @_ctrl_infos ||= { }
+          @_api_infos, @_ctrl_infos = [{ }] * 2
           # current `tag`, this means that tags is currently divided by controllers.
-          tag = @_ctrl_infos[:tag] = {name: controller_path.camelize }
-          tag[:description] = desc if desc.present?
+          tag = @_ctrl_infos[:tag] = { name: controller_path.camelize }
+          tag[:description]  = desc if desc.present?
           tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
 
           schemas = @_ctrl_infos[:components_schemas] = CtrlInfoObj.new
@@ -56,13 +56,15 @@ module ZeroRails
         alias_method :this_api_is_unused!,       :this_api_is_invalid!
         alias_method :this_api_is_under_repair!, :this_api_is_invalid!
 
-        def desc desc
+        def desc desc, inputs_descs = { }
+          @inputs_descs = inputs_descs
           self[:description] = desc
         end
 
         def param param_type, name, type, required, info_hash = { }
-          param = ParamInfoObj.new(name, param_type, type, required).merge info_hash
-          param.process and (self[:parameters] ||= [ ]) << param.processed
+          info_hash[:desc] = @inputs_descs[name] if @inputs_descs[name].present?
+          param = ParamObj.new(name, param_type, type, required).merge info_hash
+          (self[:parameters] ||= [ ]) << param.process
         end
 
         [:header,  :path,  :query,  :cookie,
