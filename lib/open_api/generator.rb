@@ -59,7 +59,7 @@ module OpenApi
     end
 
     def self.get_actions_by_ctrl_path(path)
-      @routes_list ||= Generator.generate_routes_list
+      @routes_list ||= generate_routes_list
       @routes_list[path].map do |action_info|
         action_info[:action_path].split('#').last
       end

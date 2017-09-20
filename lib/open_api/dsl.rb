@@ -1,6 +1,6 @@
-require 'active_support/ordered_options'
 require 'oas_objs/param_obj'
 require 'oas_objs/response_obj'
+require 'oas_objs/request_body_obj'
 
 module OpenApi
   module DSL
@@ -33,14 +33,24 @@ module OpenApi
         # it will be merged into :paths
         path = @_api_infos[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path).merge!({ summary: summary, operationId: method, tags: [controller_path.camelize] })
-        current_api.instance_eval &block if block_given?
-        current_api.instance_eval &@apis_blocks[method] if @apis_blocks&.[](method).is_a?(Proc)
+            ApiInfoObj.new(action_path).merge!( summary: summary, operationId: method, tags: [controller_path.camelize] )
+
+        current_api.tap do |it|
+          it.instance_eval &block if block_given?
+          [method, :all].each do |key| # blocks_store_key
+            @apis_blocks[key]&.each { |blk| it.instance_eval &blk }
+          end
+        end
       end
 
-      # For DRY
-      def open_api_block method, &block
-        (@apis_blocks ||= { }).merge! method.to_sym => block
+      # For DRY; method could be symbol array
+      def open_api_block method = :all, &block
+        @apis_blocks ||= { }
+        if method.is_a? Array
+          method.each { |m| (@apis_blocks[m.to_sym] ||= [ ]) << block }
+        else
+          (@apis_blocks[method.to_sym] ||= [ ]) << block
+        end
       end
 
       def ctrl_routes_list
@@ -50,11 +60,11 @@ module OpenApi
     end
 
 
-    class CtrlInfoObj < ActiveSupport::OrderedOptions
+    class CtrlInfoObj < Hash
 
     end
 
-    class ApiInfoObj < ActiveSupport::OrderedOptions
+    class ApiInfoObj < Hash
       attr_accessor :action_path
       def initialize(action_path)
         self.action_path = action_path
@@ -73,16 +83,35 @@ module OpenApi
         schema_hash[:desc] = @inputs_descs[name] if @inputs_descs[name].present?
         (self[:parameters] ||= [ ]) << ParamObj.new(name, param_type, type, required).merge!(schema_hash).process
       end
-
-      [:header,  :path,  :query,  :cookie,
-       :header!, :path!, :query!, :cookie!].each do |param_type|
+      %i[header  path  query  cookie,
+         header! path! query! cookie!].each do |param_type|
         define_method param_type do |name, type, schema_hash = { }|
-          param "#{param_type}".delete('!'), name, type, (param_type.to_s.match?(/!/) ? :req : :opt), schema_hash
+          param "#{param_type}".delete('!'), name, type, ("#{param_type}".match?(/!/) ? :req : :opt), schema_hash
         end
       end
 
-      def security
+      def _request_body required, media_type, desc = '', schema_hash = { }
+        self[:requestBody] = RequestBodyObj.new(required, media_type, desc, schema_hash).process
+      end
+      %i[request_body request_body! body body!].each do |method|
+        define_method method do |media_type, desc = '', schema_hash = { }|
+          _request_body ("#{method}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
+        end
+      end
 
+      def form desc = '', schema_hash = { }
+        request_body :form, desc, schema_hash
+      end
+      def form! desc = '', schema_hash = { }
+        request_body! :form, desc, schema_hash
+      end
+
+      def file
+
+      end
+
+      def security scheme_name, requirements = [ ]
+        (self[:security] ||= [ ]) << { scheme_name => requirements }
       end
 
       def server url, desc
