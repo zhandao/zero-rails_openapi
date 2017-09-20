@@ -1,11 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "zero-rails/open_api/version"
+require "open_api/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "zero-rails_openapi"
-  spec.version       = ZeroRails::OpenApi::VERSION
+  spec.version       = OpenApi::VERSION
   spec.authors       = ["zhandao"]
   spec.email         = ["x@skippingcat.com"]
 
