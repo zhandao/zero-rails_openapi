@@ -8,7 +8,7 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :type
-      def initialize(type)
+      def initialize(type, schema_hash)
         self.processed = { }
         # [Note] Here is no limit to type, even if the input isn't up to OAS,
         #          like: double, float, hash.
@@ -17,6 +17,7 @@ module OpenApi
         #        However, user can decide how to write --
         #          `type: number, format: double`, or `type: double`
         self.type = type
+        self.merge! schema_hash
       end
 
 
@@ -38,8 +39,12 @@ module OpenApi
           recursive_array_type t
         elsif t.is_a? Symbol
           { '$ref': "#/components/schemas/#{t}" }
-        elsif t.in? %w[float double int32 int64]
+        elsif t.in? %w[float double int32 int64] #  TTTTTIP: 这些值应该传 string 进来, symbol 只允许 $ref
           { type: t.match?('int') ? 'integer' : 'number', format: t}
+        elsif t.in? %w[binary base64]
+          { type: 'string', format: t}
+        elsif t.eql? 'file'
+          { type: 'string', format: 'binary' }
         elsif t.eql? 'object'
           { type: 'object', additionalProperties: { } } # TODO
         else # other string
@@ -146,3 +151,37 @@ module OpenApi
     end
   end
 end
+
+
+__END__
+
+Schema Object Examples
+
+Primitive Sample
+
+{
+  "type": "string",
+  "format": "email"
+}
+
+Simple Model
+
+{
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "#/components/schemas/Address"
+    },
+    "age": {
+      "type": "integer",
+      "format": "int32",
+      "minimum": 0
+    }
+  }
+}

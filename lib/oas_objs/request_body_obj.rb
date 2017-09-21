@@ -21,3 +21,34 @@ module OpenApi
     end
   end
 end
+
+
+__END__
+
+Request Body Examples
+A request body with a referenced model definition.
+
+{
+  "description": "user to add to the system",
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "#/components/schemas/User"
+      },
+      "examples": {
+          "user" : {
+            "summary": "User Example",
+            "externalValue": "http://foo.bar/examples/user-example.json"
+          }
+        }
+    },
+    "*/*": {
+      "examples": {
+        "user" : {
+            "summary": "User example in other format",
+            "externalValue": "http://foo.bar/examples/user-example.whatever"
+        }
+      }
+    }
+  }
+}

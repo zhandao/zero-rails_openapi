@@ -7,18 +7,19 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :schema
-      def initialize(name, param_type, type, required)
+      def initialize(name, param_type, type, required, schema_hash)
         self.processed = {
             name: name,
             in: param_type,
             required: "#{required}".match?(/req/),
         }
-        self.schema = SchemaObj.new(type)
+        self.schema = SchemaObj.new(type, schema_hash)
+        self.merge! schema_hash
       end
 
       def process
         assign(_desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.merge!(self).process_for name }
+        processed.tap { |it| it[:schema] = schema.process_for name }
       end
 
 
@@ -63,3 +64,24 @@ module OpenApi
     end
   end
 end
+
+
+__END__
+
+Parameter Object Examples
+A header parameter with an array of 64 bit integer numbers:
+
+{
+  "name": "token",
+  "in": "header",
+  "description": "token to be passed as a header",
+  "required": true,
+  "schema": {
+    "type": "array",
+    "items": {
+      "type": "integer",
+      "format": "int64"
+    }
+  },
+  "style": "simple"
+}

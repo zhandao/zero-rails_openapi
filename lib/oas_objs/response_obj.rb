@@ -21,3 +21,24 @@ module OpenApi
     end
   end
 end
+
+
+__END__
+
+Response Object Examples
+
+Response of an array of a complex type:
+
+{
+  "description": "A complex object array response",
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/VeryComplexType"
+        }
+      }
+    }
+  }
+}
