@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zero-rails_openapi (0.1.0)
+    zero-rails_openapi (1.0.0)
 
 GEM
   remote: https://rubygems.org/
