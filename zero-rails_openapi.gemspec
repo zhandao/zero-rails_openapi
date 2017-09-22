@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["x@skippingcat.com"]
 
   spec.summary       = %q{Generate the OpenAPI Specification JSON file for Rails application.}
-  spec.description   = %q{Provide a concise DSL for you to generate the OpenAPI Specification 3 (Swagger 3)
+  spec.description   = %q{Provide concise DSL for you to generate the OpenAPI Specification 3 (Swagger 3)
                          JSON file for Rails application, then you can use Swagger-UI 3.2.0+ to show the documentation.}
   spec.homepage      = "https://github.com/zhandao/zero-rails_openapi"
   spec.license       = "MIT"

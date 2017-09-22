@@ -10,9 +10,9 @@ module OpenApi
       def generate_docs(api_name = nil)
         Rails.application.eager_load!
         if api_name.present?
-          generate_doc api_name
+          { api_name => generate_doc(api_name) }
         else
-          OpenApi.apis.keys.map { |api| generate_doc api }
+          OpenApi.apis.keys.map { |api_key| { api_key => generate_doc(api_key)} }.reduce({ }, :merge)
         end
       end
 
@@ -37,7 +37,12 @@ module OpenApi
 
       def write_docs
         docs = generate_docs
-        puts docs
+        # puts docs
+        output_path = OpenApi.config.file_output_path
+        FileUtils.mkdir_p output_path
+        docs.each do |api_name, doc|
+          File.open("#{output_path}/#{api_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
+        end
       end
     end
 

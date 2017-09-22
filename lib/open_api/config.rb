@@ -5,7 +5,8 @@ module OpenApi
     end
 
     DEFAULT_CONFIG = {
-        is_options: %w[email phone password uuid uri url time date]
+        is_options: %w[email phone password uuid uri url time date],
+        dft_file_format: 'binary'
     }
 
     module ClassMethods

@@ -6,21 +6,21 @@ module OpenApi
     class MediaTypeObj < Hash
       attr_accessor :media_type, :schema
       def initialize(media_type, schema_hash)
-        self.media_type = media_type
+        self.media_type = media_type_mapping media_type
         self.schema     = SchemaObj.new(schema_hash[:type], schema_hash)
       end
 
       def process
         schema_processed = self.schema.process
         schema = schema_processed.values.join.blank? ? { } : { schema: schema_processed }
-        media_type_mapping.nil? ? { } : { media_type_mapping =>  schema }
+        media_type.nil? ? { } : { media_type =>  schema }
       end
 
       # https://swagger.io/docs/specification/media-types/
       # https://en.wikipedia.org/wiki/Media_type
       # https://zh.wikipedia.org/wiki/%E4%BA%92%E8%81%94%E7%BD%91%E5%AA%92%E4%BD%93%E7%B1%BB%E5%9E%8B
       # https://www.iana.org/assignments/media-types/media-types.xhtml
-      def media_type_mapping
+      def media_type_mapping(media_type)
         return media_type if media_type.is_a? String
         case media_type
           when :app;   'application/*'
@@ -48,7 +48,7 @@ module OpenApi
           when :gif;   'image/gif'
           when :audio; 'audio/*'
           when :video; 'video/*'
-          else; nil
+          else;        nil
         end
       end
     end

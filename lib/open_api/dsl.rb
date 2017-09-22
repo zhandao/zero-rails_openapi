@@ -11,7 +11,7 @@ module OpenApi
       def apis_set desc = '', external_doc_url = '', &block
         @_api_infos, @_ctrl_infos = { }, { }
         # current `tag`, this means that tags is currently divided by controllers.
-        tag = @_ctrl_infos[:tag] = { name: controller_path.camelize }
+        tag = @_ctrl_infos[:tag] = { name: controller_name.camelize }
         tag[:description]  = desc if desc.present?
         tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
 
@@ -29,7 +29,7 @@ module OpenApi
         # it will be merged into :paths
         path = @_api_infos[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path).merge!( summary: summary, operationId: method, tags: [controller_path.camelize] )
+            ApiInfoObj.new(action_path).merge!( summary: summary, operationId: method, tags: [controller_name.camelize] )
 
         current_api.tap do |it|
           it.instance_eval &block if block_given?

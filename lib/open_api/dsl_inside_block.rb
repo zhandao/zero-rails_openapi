@@ -2,11 +2,12 @@ require 'oas_objs/schema_obj'
 require 'oas_objs/param_obj'
 require 'oas_objs/response_obj'
 require 'oas_objs/request_body_obj'
+require 'oas_objs/ref_obj'
 
 module OpenApi
   module DSL
     module CommonDSL
-      def arrow_support
+      def arrow_writing_support
         Proc.new do |args, executor|
           if args.count == 1 && args[0].is_a?(Hash)
             send(executor, args[0].keys.first, *args[0].values.first)
@@ -36,7 +37,7 @@ module OpenApi
       end
 
       def response *args
-        arrow_support.call(args, :_response)
+        arrow_writing_support.call(args, :_response)
       end
 
       def default_response desc, media_type = nil, schema_hash = { }
@@ -61,11 +62,11 @@ module OpenApi
     class CtrlInfoObj < Hash
       include DSL::CommonDSL
 
-      def _schema name, type, schema_hash
-        (self[:schemas] ||= { }).merge! name => SchemaObj.new(type, schema_hash).process
+      def _schema component_key, type, schema_hash
+        (self[:schemas] ||= { }).merge! component_key => SchemaObj.new(type, schema_hash).process
       end
       def schema *args
-        arrow_support.call(args, :_schema)
+        arrow_writing_support.call(args, :_schema)
       end
 
       def param component_key, param_type, name, type, required, schema_hash = { }
@@ -74,7 +75,7 @@ module OpenApi
       end
 
       def _param_agent *args
-        arrow_support.call(args, :_param_arg_agent)
+        arrow_writing_support.call(args, :_param_arg_agent)
       end
 
       def _param_arg_agent component_key, name, type, schema_hash = { }
@@ -87,7 +88,7 @@ module OpenApi
       end
 
       def _request_body_agent *args
-        arrow_support.call(args, :_request_body_arg_agent)
+        arrow_writing_support.call(args, :_request_body_arg_agent)
       end
 
       def _request_body_arg_agent component_key, media_type, desc = '', schema_hash = { }
@@ -127,12 +128,27 @@ module OpenApi
         param "#{@param_type}".delete('!'), name, type, ("#{@param_type}".match?(/!/) ? :req : :opt), schema_hash
       end
 
+      def param_ref component_key, *keys
+        (self[:parameters] ||= [ ]).concat [component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process }
+      end
+
+
       def request_body required, media_type, desc = '', schema_hash = { }
         self[:requestBody] = RequestBodyObj.new(required, media_type, desc, schema_hash).process
       end
 
       def _request_body_agent media_type, desc = '', schema_hash = { }
         request_body ("#{@_method_name}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
+      end
+
+      def body_ref component_key
+        self[:requestBody] = RefObj.new(:parameter, component_key).process
+      end
+
+      def response_ref code_compkey_hash
+        code_compkey_hash.each do |code, component_key|
+          (self[:responses] ||= { }).merge! code => RefObj.new(:response, component_key).process
+        end
       end
 
       # 注意同时只能写一句 request body，包括 form 和 file

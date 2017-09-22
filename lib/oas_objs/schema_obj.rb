@@ -1,5 +1,6 @@
 require 'oas_objs/helpers'
 require 'open_api/config'
+require 'oas_objs/ref_obj'
 
 module OpenApi
   module DSL
@@ -26,7 +27,8 @@ module OpenApi
         all(processed_enum_and_length,
             processed_range,
             processed_is_and_format(param_name),
-            { pattern: _pattern, default: _default }
+            { pattern: _pattern&.inspect&.delete('/'),
+              default: _default }
         ).for_merge
       end
       alias_method :process, :process_for
@@ -38,15 +40,13 @@ module OpenApi
         elsif t.is_a? Array
           recursive_array_type t
         elsif t.is_a? Symbol
-          { '$ref': "#/components/schemas/#{t}" }
+          RefObj.new(:schema, t).process
         elsif t.in? %w[float double int32 int64] #  TTTTTIP: 这些值应该传 string 进来, symbol 只允许 $ref
           { type: t.match?('int') ? 'integer' : 'number', format: t}
         elsif t.in? %w[binary base64]
           { type: 'string', format: t}
         elsif t.eql? 'file'
-          { type: 'string', format: 'binary' }
-        elsif t.eql? 'object'
-          { type: 'object', additionalProperties: { } } # TODO
+          { type: 'string', format: OpenApi.config.dft_file_format }
         else # other string
           { type: t }
         end

@@ -57,10 +57,6 @@ module OpenApi
         define_method method do path.inject(processed, &:[]) end # Get value from hash by key path
       end
       alias_method :required?, :required
-      # is_email? ..
-      # Config.DEFAULT_CONFIG[:patterns].each do |pattern|
-      #   define_method "is_#{pattern}?" do self.is.eql? pattern end
-      # end
     end
   end
 end
