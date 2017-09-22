@@ -7,9 +7,11 @@ then you can use Swagger-UI 3.2.0+ to show the documentation.
 
 Everything about OAS3 is on [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md)
 
-You can getting started from [Swagger.io](https://swagger.io/docs/specification/basic-structure/)
+You can getting started from [swagger.io](https://swagger.io/docs/specification/basic-structure/)
 
-**I suggest you should understand OAS3's basic structure at least.**
+**I suggest you should understand OAS3's basic structure at least.** 
+such as component (can help you reuse DSL code, when your apis are used with the 
+same data structure).
 
 ## Installation
 
@@ -43,9 +45,7 @@ OpenApi.configure do |c|
 
   c.register_apis = {
       homepage_api: {
-          # [REQUIRED]
-          # ZRO will scan all the descendants of the root_controller, and then generate their docs.
-          # Such as Api::V1::BaseController.
+          # [REQUIRED] ZRO will scan all the descendants of the root_controller, then generate their docs.
           root_controller: Api::V1::BaseController,
 
           # [REQUIRED] OAS Info Object: The section contains API information.
@@ -57,17 +57,17 @@ OpenApi.configure do |c|
                            'Optional multiline or single-line Markdown-formatted description ' \
                            'in [CommonMark](http://spec.commonmark.org/) or `HTML`.',
               # [REQUIRED] The version of the OpenAPI document
-              # (which is distinct from the OpenAPI Specification version or the API implementation version).
+              # (which is distinct from the OAS version or the API implementation version).
               version: '1.0.0'
           }
       }
   }
 end
 ```
-You can also set the global configuration(/component) of OAS: 
+You can also set the *global configuration(/component)* of OAS: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: TODO
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/examples/open_api.rb)
 
 ## Usage
 
@@ -88,8 +88,7 @@ class ApplicationController < ActionController::API
 
 ```ruby
 class Api::V1::ExamplesController < Api::V1::BaseController
-
-  apis_set 'ExamplesController\'s Apis' do
+  apis_set 'ExamplesController\'s APIs' do
     schema :Dog           => [ { id!: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
     path!  :PathCompId    => [ :id, Integer, desc: 'user id' ]
     query! :QueryCompUuid => [ :product_uuid, { uuid: String, time: 'int32' }, desc: 'product uuid' ]
@@ -97,41 +96,39 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     resp   :RespComp      => [ 'bad request', :json ]
   end
 
-
   open_api_set %i[index show], 'common response' do
     response '567', 'query result export', :pdf, type: File
   end
-  
 
   open_api :index, '(SUMMARY) this api blah blah ...' do
     this_api_is_invalid! 'this api is expired!'
-    desc 'Optional multiline or single-line Markdown-formatted description <br/>',
+    desc 'Optional multiline or single-line Markdown-formatted description',
          id:         'user id',
          email_addr: 'email_addr\'s desc'
-    email = 'zero@zero-rails.org'
+    email = 'git@github.com'
 
     query! :id,         Integer, enum: 0..5,     length: [1, 2], pattern: /^[0-9]$/, range: {gt:0, le:5}
     query! :done,       Boolean, must_be: false, default: true,  desc: 'must be false'
-    query  :email_addr, String,  lth: :ge_3,     dft: email # is_a: :email
-
+    query  :email_addr, String,  lth: :ge_3,     default: email  # is_a: :email
     # form! 'form', type: { id!: Integer, name: String }
     file :pdf, 'desc: the media type is application/pdf'
+    
     response :success, 'success response', :json, type: :Dog
+    
     security :ApiKeyAuth
   end
 
   open_api :show do
-    param_ref :PathCompId, :QueryCompUuid
-    response_ref '123': :RespComp, '223' => :RespComp
+    param_ref    :PathCompId, :QueryCompUuid
+    response_ref '123' => :RespComp, '223' => :RespComp
   end
-
 end
 
 ```
 
 #### \> Explanation
 
-##### \>\> controller class methods
+##### \>\> controller class methods ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
 
 - `apis_set` [Optional]
 
@@ -142,22 +139,81 @@ end
 
 - `open_api`
 
-##### \>\> DSL methods inside open_api's block 
+##### \>\> DSL methods inside *open_api* and *open_api_set*'s block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb)# ApiInfoObj )
 
-- `this_api_is_invalid!`
+These methods in the block describe the specified API(s): description, valid?,
+parameters, request body, responses, securities, servers.
 
-- `desc`
+- `this_api_is_invalid!`, its aliases are:
+  - `this_api_is_expired!`
+  - `this_api_is_unused!`
+  - `this_api_is_under_repair!`
+
+```ruby
+    # method signature
+    this_api_is_invalid! explain = ''
+    # usage
+    this_api_is_invalid! 'this api is expired!'
+```
+
+- `desc`: description for current API and its inputs (parameters and request body)
+
+```ruby
+    # method signature
+    desc desc, inputs_descs = { }
+    # usage
+    desc 'current API\'s description',
+         id:         'user id',
+         email_addr: 'email_addr\'s desc'
+```
+
+You can of course describe the input in it's DSL method (like `query! :done` this line), 
+but that will make it long and ugly. We recommend that unite descriptions in this place.
 
 - param family methods
   - `param`
   - `param_ref`
   - `header`, `path`, `query`, `cookie`
   - bang methods: `header!`, `path!`, `query!`, `cookie!`
-
+  
+  
 - request_body family methods
   - `request_body`
-  - `request_body_ref`
+  - `body_ref`
   - `body` and bang `body!`
+  
+  
+- response family methods
+  - `response` (`resp`)
+  - `response_ref`
+  - `default_response` (`dft_resp`)
+  - `error_response` (`other_response`, `oth_resp`, `error`, `err_resp`)
+  
+##### \>\> DSL methods inside apis_set'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb)# CtrlInfoObj )
+
+These methods in the block describe the current controller, 
+or we say, these methods eventually produce reusable components.
+
+So, the following methods are used as above, except that you need to 
+name the key of the component, and pass it as the first of argument list, like:
+
+```ruby
+query! :QueryCompUuid, :product_uuid, Integer, ...
+```
+This writing is feasible but not recommended, 
+because component's key and parameter's name looks like the same level.
+The recommended writing is:
+
+```ruby
+query! :QueryCompUuid => [:product_uuid, Integer, ...]
+```
+The DSL methods used to generate the components in this block are: 
+(explained above)
+
+- param family methods (except `param_ref`)
+- request_body family methods (except `body_ref`)
+
+
 
 ### Generate JSON Documentation File
 

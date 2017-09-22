@@ -44,7 +44,6 @@ module OpenApi
         response :default, desc, media_type, schema_hash
       end
 
-
       { # alias_methods mapping
         response:         %i[resp            error_response                 ],
         default_response: %i[dft_resp                                       ],
@@ -110,7 +109,7 @@ module OpenApi
       def this_api_is_invalid! explain = ''
         self[:deprecated] = true
       end
-      alias_method :this_api_is_invalid!,     :this_api_is_invalid!
+      alias_method :this_api_is_expired!,     :this_api_is_invalid!
       alias_method :this_api_is_unused!,      :this_api_is_invalid!
       alias_method :this_api_is_under_repair, :this_api_is_invalid!
 
@@ -131,7 +130,6 @@ module OpenApi
       def param_ref component_key, *keys
         (self[:parameters] ||= [ ]).concat [component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process }
       end
-
 
       def request_body required, media_type, desc = '', schema_hash = { }
         self[:requestBody] = RequestBodyObj.new(required, media_type, desc, schema_hash).process
