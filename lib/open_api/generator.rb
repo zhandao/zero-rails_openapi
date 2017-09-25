@@ -10,7 +10,7 @@ module OpenApi
       def generate_docs(api_name = nil)
         Rails.application.eager_load!
         if api_name.present?
-          { api_name => generate_doc(api_name) }
+          [{ api_name => generate_doc(api_name) }]
         else
           OpenApi.apis.keys.map { |api_key| { api_key => generate_doc(api_key)} }.reduce({ }, :merge)
         end

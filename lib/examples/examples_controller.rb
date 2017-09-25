@@ -1,10 +1,10 @@
 class Api::V1::ExamplesController < Api::V1::BaseController
   apis_set 'ExamplesController\'s APIs' do
     schema :Dog           => [ { id!: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
+    query! :QueryCompUuid => [ :product_uuid, String, desc: 'product uuid' ]
     path!  :PathCompId    => [ :id, Integer, desc: 'user id' ]
-    query! :QueryCompUuid => [ :product_uuid, { uuid: String, time: 'int32' }, desc: 'product uuid' ]
-    body!  :RqBodyComp    => [ :form ]
     resp   :RespComp      => [ 'bad request', :json ]
+    body!  :RqBodyComp    => [ :form ]
   end
 
   open_api_set %i[index show], 'common response' do

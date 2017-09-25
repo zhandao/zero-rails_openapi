@@ -134,7 +134,7 @@ module OpenApi
         _value:   %i[must_be  value   allowable_value ],
         _range:   %i[range    number_range            ],
         _length:  %i[length   lth                     ],
-        _is:      %i[is_a     is                      ], # NOT OAS Spec, just a addition
+        _is:      %i[is_a     is                      ], # NOT OAS Spec, just an addition
         _format:  %i[format   fmt                     ],
         _pattern: %i[pattern  regexp  pr   reg        ],
         _default: %i[default  dft     default_value   ],

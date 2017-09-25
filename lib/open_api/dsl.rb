@@ -34,18 +34,18 @@ module OpenApi
         current_api.tap do |it|
           it.instance_eval &block if block_given?
           [method, :all].each do |key| # blocks_store_key
-            @apis_blocks[key]&.each { |blk| it.instance_eval &blk }
+            @_apis_blocks[key]&.each { |blk| it.instance_eval &blk }
           end
         end
       end
 
       # For DRY; method could be symbol array
       def open_api_set method = :all, desc = '', &block
-        @apis_blocks ||= { }
+        @_apis_blocks ||= { }
         if method.is_a? Array
-          method.each { |m| (@apis_blocks[m.to_sym] ||= [ ]) << block }
+          method.each { |m| (@_apis_blocks[m.to_sym] ||= [ ]) << block }
         else
-          (@apis_blocks[method.to_sym] ||= [ ]) << block
+          (@_apis_blocks[method.to_sym] ||= [ ]) << block
         end
       end
 
