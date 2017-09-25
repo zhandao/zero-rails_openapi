@@ -27,9 +27,11 @@ module OpenApi
               })
 
         settings[:root_controller].descendants.each do |ctrl|
+          ctrl_infos = ctrl.instance_variable_get('@_ctrl_infos')
+          next if ctrl_infos.nil?
           doc[:paths].merge! ctrl.instance_variable_get('@_api_infos')
-          doc[:tags] << ctrl.instance_variable_get('@_ctrl_infos')[:tag]
-          doc[:components].merge! ctrl.instance_variable_get('@_ctrl_infos')[:components]
+          doc[:tags] << ctrl_infos[:tag]
+          doc[:components].merge! ctrl_infos[:components]
         end
         doc[:components].delete_if { |_,v| v.blank? }
         ($open_apis ||= { })[api_name] ||= HashWithIndifferentAccess.new doc.delete_if { |_,v| v.blank? }

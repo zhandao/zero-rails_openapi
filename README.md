@@ -12,6 +12,17 @@ I'm looking forward to your issues and PRs, thanks!**
 Currently, I think the most important TODO is the Unit Test (RSpec, I want is), 
 but I dont have enough time now = ▽ =
 
+## Table of Contents
+
+- [About OAS](https://github.com/zhandao/zero-rails_openapi#about-oas) (OpenAPI Specification)
+- [Installation](https://github.com/zhandao/zero-rails_openapi#installation)
+- [Configure](https://github.com/zhandao/zero-rails_openapi#configure)
+- [Usage](https://github.com/zhandao/zero-rails_openapi#usage)
+  - [DSL for documenting your controller](https://github.com/zhandao/zero-rails_openapi#dsl-for-documenting-your-controller)
+  - [Generate JSON Documentation File](https://github.com/zhandao/zero-rails_openapi#generate-json-documentation-file)
+  - [Use Swagger UI(very beautiful web page) to show your Documentation](https://github.com/zhandao/zero-rails_openapi#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+- [Troubleshooting](https://github.com/zhandao/zero-rails_openapi#troubleshooting)
+
 ## About OAS
 
 Everything about OAS3 is on [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md)
@@ -137,9 +148,9 @@ end
 
 #### \> Explanation
 
-##### \>\> controller class methods ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
+#### \>\> controller class methods ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
 
-- `apis_set` [Optional]
+- `apis_set` [Required]
 
   ```ruby
   # method signature
@@ -167,7 +178,7 @@ end
   
   As you think, the DSL methods in the block will be executed to each API that you set by method.
   
-- `open_api`
+- `open_api` [Required]
 
   Define the specified API (in the following example is index).
   
@@ -179,7 +190,7 @@ end
   ```
 
 
-##### \>\> DSL methods inside *open_api* and *open_api_set*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
+#### \>\> DSL methods inside *open_api* and *open_api_set*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
 
 These methods in the block describe the specified API(s): description, valid?,
 parameters, request body, responses, securities, servers.
@@ -250,6 +261,7 @@ parameters, request body, responses, securities, servers.
   - `body` and bang `body!`
   - `form`, `form!`; `file`, `file!`
   
+  OpenAPI 3.0 uses the requestBody keyword to distinguish the payload from parameters.  
   Define the request body for the API(operation).
   You can use the Reference Object to link to request body that is defined at the components/requestBodies by method body_ref().
   
@@ -313,7 +325,7 @@ parameters, request body, responses, securities, servers.
 
 - server: TODO
   
-##### \>\> DSL methods inside apis_set'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
+#### \>\> DSL methods inside apis_set'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
 
 (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
 

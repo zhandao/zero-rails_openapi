@@ -9,7 +9,7 @@ module OpenApi
     # TODO: Doc-Block Comments
     module ClassMethods
       def apis_set desc = '', external_doc_url = '', &block
-        @_api_infos, @_ctrl_infos = { }, { }
+        @_ctrl_infos = { }
         # current `tag`, this means that tags is currently divided by controllers.
         tag = @_ctrl_infos[:tag] = { name: controller_name.camelize }
         tag[:description]  = desc if desc.present?
@@ -27,7 +27,7 @@ module OpenApi
 
         # structural { path: { http_method:{ } } }, for Paths Object.
         # it will be merged into :paths
-        path = @_api_infos[routes_info[:path]] ||= { }
+        path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
             ApiInfoObj.new(action_path).merge!( summary: summary, operationId: method, tags: [controller_name.camelize] )
 
