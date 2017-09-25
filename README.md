@@ -5,7 +5,7 @@ then you can use Swagger UI 3.2.0+ to show the documentation.
 
 ## Contributing
 
-**Hi, here is ZhanDao, This gem was completed when I learned Ruby less than three months, 
+**Hi, here is ZhanDao. This gem was completed when I learned Ruby less than three months, 
 I'm not sure if it has problem, but it may have a lot to improve.  
 I'm looking forward to your issues and PRs, thanks!**
 
@@ -76,7 +76,7 @@ end
 You can also set the *global configuration(/component)* of OAS: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/examples/open_api.rb)
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/open_api.rb)
 
 ## Usage
 
@@ -93,7 +93,7 @@ class ApplicationController < ActionController::API
  end
 ```
 
-#### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/examples/examples_controller.rb)
+#### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/examples_controller.rb)
 
 ```ruby
 class Api::V1::ExamplesController < Api::V1::BaseController
@@ -146,10 +146,10 @@ end
   apis_set desc = '', external_doc_url = '', &block
   # usage
   apis_set 'ExamplesController\'s APIs' do
-    # DSL for define components
+    # DSL for defining components
   end
   ```
-  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name ), but are optional, 
+  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name ), but are optional. 
   the focus is on the block, the DSL methods in the block will generate components.
 
 - `open_api_set` [Optional]
@@ -157,10 +157,27 @@ end
   this method is for DRYing.
   
   ```ruby
+  # method signature
+  open_api_set method = :all, desc = '', &block
+  # usage
+  open_api_set :all, 'common response' do; end
+  open_api_set :index do; end
+  open_api_set [:index, :show] do; end
+  ```
+  
+  As you think, the DSL methods in the block will be executed to each API that you set by method.
+  
+- `open_api`
 
+  Define the specified API (in the following example is index).
+  
+  ```ruby
+  # method signature
+  open_api method, summary = '', &block
+  # usage
+  open_api :index, '(SUMMARY) this api blah blah ...' do; end
   ```
 
-- `open_api`
 
 ##### \>\> DSL methods inside *open_api* and *open_api_set*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
 
@@ -174,23 +191,23 @@ parameters, request body, responses, securities, servers.
   - `this_api_is_unused!`
   - `this_api_is_under_repair!`
 
-```ruby
-    # method signature
-    this_api_is_invalid! explain = ''
-    # usage
-    this_api_is_invalid! 'this api is expired!'
-```
+  ```ruby
+  # method signature
+  this_api_is_invalid! explain = ''
+  # usage
+  this_api_is_invalid! 'this api is expired!'
+  ```
 
 - `desc`: description for current API and its inputs (parameters and request body)
 
-```ruby
-    # method signature
-    desc desc, inputs_descs = { }
-    # usage
-    desc 'current API\'s description',
-         id:         'user id',
-         email_addr: 'email_addr\'s desc'
-```
+  ```ruby
+  # method signature
+  desc desc, inputs_descs = { }
+  # usage
+  desc 'current API\'s description',
+       id:         'user id',
+       email_addr: 'email_addr\'s desc'
+  ```
 
   You can of course describe the input in it's DSL method (like `query! :done` [this line](https://github.com/zhandao/zero-rails_openapi#-dsl-usage-example)), 
   but that will make it long and ugly. We recommend that unite descriptions in this place.
@@ -198,51 +215,103 @@ parameters, request body, responses, securities, servers.
 - param family methods (OAS - [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#parameterObject))
   - `param`
   - `param_ref`
-  - `header`, `path`, `query`, `cookie` and bang methods: `header!`, `path!`, `query!`, `cookie!`
+  - `header`, `path`, `query`, `cookie` and bang methods: `header!`, `path!`, `query!`, `cookie!`  
+  **The bang method(`!`) means it is required, so it is optional without `!`, the same below.**
 
   Define the parameters for the API(operation).
-  You can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters by method param_ref().
+  You can use the Reference Object to link to parameters that are defined at the components/parameters by method param_ref().
 
-```ruby
-    # method signature
-    param param_type, name, type, required, schema_hash = { }
-    # usage
-    param :query,    :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
-    
-    # method signature
-    param_ref component_key, *component_keys
-    # usage
-    param_ref :PathCompId
-    param_ref :PathCompId, :QueryCompUuid, ...
-    
-    # method signature
-    header  name, type, schema_hash = { }
-    header! name, type, schema_hash = { }
-    query!  name, type, schema_hash = { }
-    # usage
-    header! :'X-Token', String
-    query!  :done,      Boolean, must_be: false, default: true
-```
+  ```ruby
+  # method signature
+  param param_type, name, type, required, schema_hash = { }
+  # usage
+  param :query,    :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
+  
+  # method signature
+  param_ref component_key, *component_keys
+  # usage
+  param_ref :PathCompId
+  param_ref :PathCompId, :QueryCompUuid, ...
+  
+  # method signature
+  header  name, type, schema_hash = { }
+  header! name, type, schema_hash = { }
+  query!  name, type, schema_hash = { }
+  # usage
+  header! :'X-Token', String
+  query!  :done,      Boolean, must_be: false, default: true
+  ```
 
-  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/paramerer.md)
+  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
 
-
-- request_body family methods
+- request_body family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
   - `request_body`
   - `body_ref`
   - `body` and bang `body!`
   - `form`, `form!`; `file`, `file!`
   
+  Define the request body for the API(operation).
+  You can use the Reference Object to link to request body that is defined at the components/requestBodies by method body_ref().
   
-- response family methods
+  ```ruby
+  # method signature
+  request_body required, media_type, desc = '', schema_hash = { }
+  # usage
+  request_body :opt, :form, type: { id!: Integer, name: String }
+
+  # method signature
+  body_ref component_key
+  # usage
+  body_ref :Body
+
+  # method signature
+  body(!) media_type, desc = '', schema_hash = { }
+  # usage
+  body :json
+  
+  # method implement
+  def form desc = '', schema_hash = { }
+    body :form, desc, schema_hash
+  end
+
+  def file! media_type, desc = '', schema_hash = { type: File }
+    body! media_type, desc, schema_hash
+  end
+  ```
+  
+  **Notice:** Each API can only declare a request body. 
+  That is, all of the above methods you can only choose one of them.
+  
+  Media Type: We provide some [mapping](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
+  
+  schema_hash: As above (see param), but more than a `type` (schema type).
+  
+- response family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
   - `response` (`resp`)
   - `response_ref`
   - `default_response` (`dft_resp`)
-  - `error_response` (`other_response`, `oth_resp`, `error`, `err_resp`)
+  - `error_response` (`other_response`, `oth_resp`, `error`, `err_resp`): Are `response`'s aliases, should be used in the error response context.
   
-- security
+  Define the responses for the API(operation).
+  You can use the Response Object to link to request body that is defined at the components/responses by method response_ref().
+  
+  ```ruby
+  # method signature
+  response code, desc, media_type = nil, schema_hash = { }
+  # usage
+  response '200', 'query result export', :pdf, type: File
 
-- server
+  # method signature
+  response_ref code_compkey_hash
+  # usage
+  response_ref '700' => :RespComp, '800' => :RespComp
+  ```
+  
+  **practice:** Combined with wrong class, automatically generate error responses. TODO
+  
+- security: TODO
+
+- server: TODO
   
 ##### \>\> DSL methods inside apis_set'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
 
@@ -265,16 +334,23 @@ The recommended writing is:
 query! :QueryCompUuid => [:product_uuid, Integer, ...]
 ```
 The DSL methods used to generate the components in this block are: 
-(explained above)
 
-- param family methods (except `param_ref`)
-- request_body family methods (except `body_ref`)
-
-
+- param family methods (except `param_ref`) (explained above)
+- request_body family methods (except `body_ref`) (explained above)
+- schema: define Schema Object component.
+  
+  ```ruby
+  # method signature
+  schema component_key, type, schema_hash
+  # usage
+  schema :Dog  => [ { id!: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
+  # or (unrecommended)
+  schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }
+  ```
 
 ### Generate JSON Documentation File
 
-Initializer or console, run:
+Initializer or Console, run:
 
 ```ruby
 OpenApi.write_docs

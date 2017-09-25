@@ -31,7 +31,7 @@ module OpenApi
         end
       end
 
-      # code represents `component_key` when u declare response component
+      # code represents `component_key` when declare response component
       def _response code, desc, media_type = nil, schema_hash = { }
         (self[:responses] ||= { }).merge! ResponseObj.new(code, desc, media_type, schema_hash).process
       end
