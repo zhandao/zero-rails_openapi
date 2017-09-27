@@ -51,7 +51,7 @@ module OpenApi
           { type: t }
         end
       end
-      def recursive_obj_type(t) # DSL use { k:v } to represent object structure
+      def recursive_obj_type(t) # DSL use { prop_name: prop_type } to represent object structure
         return processed_type(t) unless t.is_a? Hash
 
         _schema = {
@@ -59,9 +59,9 @@ module OpenApi
             properties: { },
             required: [ ]
         }
-        t.each do |k, v|
-          _schema[:required] << "#{k}".delete('!') if "#{k}".match? '!'
-          _schema[:properties]["#{k}".delete('!').to_sym] = recursive_obj_type v
+        t.each do |prop_name, prop_type|
+          _schema[:required] << "#{prop_name}".delete('!') if "#{prop_name}".match? '!'
+          _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
         end
         _schema.keep_if &value_present
       end
@@ -69,7 +69,8 @@ module OpenApi
         if t.is_a? Array
           {
               type: 'array',
-              items: recursive_array_type(t[0])
+              # TODO: [[String], [Integer]] <= One Of? Object?(0=>[S], 1=>[I])
+              items: recursive_array_type(t.first)
           }
         else
           processed_type t
@@ -140,11 +141,12 @@ module OpenApi
         _default: %i[default  dft     default_value   ],
       }.each do |key, aliases|
         define_method key do
-          aliases.each do |alias_name|
-            break if self[key] == false
-            self[key] ||= self[alias_name]
-          end if self[key].nil?
-          self[key]
+          self[key].tap do |it|
+            aliases.each do |alias_name|
+              break if it == false
+              it ||= self[alias_name]
+            end if it.nil?
+          end
         end
         define_method "#{key}=" do |value| self[key] = value end
       end

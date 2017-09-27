@@ -8,10 +8,15 @@ module OpenApi
 
     # TODO: Doc-Block Comments
     module ClassMethods
+      def ctrl_path path
+        @_ctrl_path = path
+        @_apis_tag  = path.split('/').last.camelize
+      end
+
       def apis_set desc = '', external_doc_url = '', &block
         @_ctrl_infos = { }
         # current `tag`, this means that tags is currently divided by controllers.
-        tag = @_ctrl_infos[:tag] = { name: controller_name.camelize }
+        tag = @_ctrl_infos[:tag] = { name: @_apis_tag ||= controller_name.camelize }
         tag[:description]  = desc if desc.present?
         tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url.present?
 
@@ -20,21 +25,22 @@ module OpenApi
       end
 
       def open_api method, summary = '', &block
-        # select the routing info corresponding to the current method from the routing list.
-        action_path = "#{controller_path}##{method}"
+        apis_set if @_ctrl_infos.nil?
+
+        # select the routing info (corresponding to the current method) from the routing list.
+        action_path = "#{@_ctrl_path ||= controller_path}##{method}"
         routes_info = ctrl_routes_list.select { |api| api[:action_path].match? /^#{action_path}$/ }.first
-        puts "[zero-rails_openapi] Routing mapping failed: #{controller_path}##{method}" or return if routes_info.nil?
+        puts "[zero-rails_openapi] Routing mapping failed: #{@_ctrl_path}##{method}" or return if routes_info.nil?
 
         # structural { path: { http_method:{ } } }, for Paths Object.
-        # it will be merged into :paths
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path).merge!( summary: summary, operationId: method, tags: [controller_name.camelize] )
+            ApiInfoObj.new(action_path).merge! summary: summary, operationId: method, tags: [@_apis_tag]
 
         current_api.tap do |it|
           it.instance_eval &block if block_given?
           [method, :all].each do |key| # blocks_store_key
-            @_apis_blocks[key]&.each { |blk| it.instance_eval &blk }
+            @_apis_blocks&.[](key)&.each { |blk| it.instance_eval &blk }
           end
         end
       end
@@ -51,7 +57,7 @@ module OpenApi
 
       def ctrl_routes_list
         @routes_list ||= Generator.generate_routes_list
-        @routes_list[controller_path]
+        @routes_list[@_ctrl_path]
       end
     end
   end

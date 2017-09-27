@@ -8,7 +8,8 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(api_name = nil)
-        Rails.application.eager_load!
+        Dir['./app/controllers/**/*.rb'].each { |file| require file }
+        Dir['./app/**/*_doc.rb'].each { |file| require file }
         if api_name.present?
           [{ api_name => generate_doc(api_name) }]
         else
@@ -34,12 +35,11 @@ module OpenApi
           doc[:components].merge! ctrl_infos[:components]
         end
         doc[:components].delete_if { |_,v| v.blank? }
-        ($open_apis ||= { })[api_name] ||= HashWithIndifferentAccess.new doc.delete_if { |_,v| v.blank? }
+        ($open_apis ||= { })[api_name] ||= HashWithIndifferentAccess.new(doc.delete_if { |_,v| v.blank? })
       end
 
       def write_docs
         docs = generate_docs
-        # puts docs
         output_path = OpenApi.config.file_output_path
         FileUtils.mkdir_p output_path
         docs.each do |api_name, doc|

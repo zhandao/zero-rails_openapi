@@ -9,7 +9,7 @@ module OpenApi
     module CommonDSL
       def arrow_writing_support
         Proc.new do |args, executor|
-          if args.count == 1 && args[0].is_a?(Hash)
+          if args.count == 1 && args.first.is_a?(Hash)
             send(executor, args[0].keys.first, *args[0].values.first)
           else
             send(executor, *args)
@@ -26,7 +26,7 @@ module OpenApi
 
       %i[body body!].each do |method|
         define_method method do |*args|
-          @_method_name = method
+          @method_name = method
           _request_body_agent *args
         end
       end
@@ -45,9 +45,9 @@ module OpenApi
       end
 
       { # alias_methods mapping
-        response:         %i[resp            error_response                 ],
-        default_response: %i[dft_resp                                       ],
-        error_response:   %i[other_response  oth_resp        error  err_resp],
+        response:         %i[error_response  resp                     ],
+        default_response: %i[dft_resp        dft_response             ],
+        error_response:   %i[other_response  oth_resp  error  err_resp],
       }.each do |original_name, aliases|
         aliases.each do |alias_name|
           alias_method alias_name, original_name
@@ -91,7 +91,7 @@ module OpenApi
       end
 
       def _request_body_arg_agent component_key, media_type, desc = '', schema_hash = { }
-        request_body component_key, ("#{@_method_name}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
+        request_body component_key, ("#{@method_name}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
       end
     end # ----------------------------------------- end of CtrlInfoObj
 
@@ -136,7 +136,7 @@ module OpenApi
       end
 
       def _request_body_agent media_type, desc = '', schema_hash = { }
-        request_body ("#{@_method_name}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
+        request_body ("#{@method_name}".match?(/!/) ? :req : :opt), media_type, desc, schema_hash
       end
 
       def body_ref component_key

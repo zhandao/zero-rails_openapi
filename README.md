@@ -21,6 +21,8 @@ but I dont have enough time now = ▽ =
   - [DSL for documenting your controller](https://github.com/zhandao/zero-rails_openapi#dsl-for-documenting-your-controller)
   - [Generate JSON Documentation File](https://github.com/zhandao/zero-rails_openapi#generate-json-documentation-file)
   - [Use Swagger UI(very beautiful web page) to show your Documentation](https://github.com/zhandao/zero-rails_openapi#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+  - [Tricks](#tricks)
+    - [Write the DSL Somewhere Else]
 - [Troubleshooting](https://github.com/zhandao/zero-rails_openapi#troubleshooting)
 
 ## About OAS
@@ -150,7 +152,20 @@ end
 
 #### \>\> controller class methods ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
 
-- `apis_set` [Required]
+- `ctrl_path` (controller path) [Optional]
+
+  ```ruby
+  # method signature
+  ctrl_path path
+  # usage
+  ctrl_path 'api/v1/examples'
+  ```
+  This option allows you to set the Tag* (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
+  [Here's a trick](): Using `ctrl_path`, you can write the DSL somewhere else 
+  to simplify the current controller.  
+  \* Take the tag from `path.split('/').last`
+
+- `apis_set` [Optional]
 
   ```ruby
   # method signature
@@ -378,9 +393,42 @@ modify the default JSON file path(url) in the index.html
 (window.onload >> SwaggerUIBundle >> url).  
 In order to use it, you may have to enable CORS, [see](https://github.com/swagger-api/swagger-ui#cors-support)
 
+### Tricks
+
+#### Write the DSL Somewhere Else (Recommend)
+
+Does your documentation take too mant lines?  
+Do you want to separate documentation from business controller to simplify both?  
+Very easy! Just use `ctrl_path`.
+
+```ruby
+# config/initializers/open_api.rb
+# in your configure
+root_controller: BaseDoc
+
+# app/api_doc/base_doc.rb
+require 'open_api/dsl'
+
+class BaseDoc < Object
+  include OpenApi::DSL
+end
+
+# app/api_doc/v1/examples_doc.rb
+class V1::ExamplesDoc < BaseDoc
+  ctrl_path 'api/v1/examples'
+  
+  open_api :index do
+    # ...
+  end
+end
+```
+
+Notes: convention is the file name ends with `_doc.rb`
+
 ## Troubleshooting
 
-No trouble yet.
+- **You wrote document of the current API, but not find in the generated json file?**  
+  Check your routing settings.
 
 ## Development
 
