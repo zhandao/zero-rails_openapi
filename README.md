@@ -14,16 +14,16 @@ but I dont have enough time now = ▽ =
 
 ## Table of Contents
 
-- [About OAS](https://github.com/zhandao/zero-rails_openapi#about-oas) (OpenAPI Specification)
-- [Installation](https://github.com/zhandao/zero-rails_openapi#installation)
-- [Configure](https://github.com/zhandao/zero-rails_openapi#configure)
-- [Usage](https://github.com/zhandao/zero-rails_openapi#usage)
-  - [DSL for documenting your controller](https://github.com/zhandao/zero-rails_openapi#dsl-for-documenting-your-controller)
-  - [Generate JSON Documentation File](https://github.com/zhandao/zero-rails_openapi#generate-json-documentation-file)
-  - [Use Swagger UI(very beautiful web page) to show your Documentation](https://github.com/zhandao/zero-rails_openapi#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+- [About OAS](#about-oas) (OpenAPI Specification)
+- [Installation](#installation)
+- [Configure](#configure)
+- [Usage](#usage)
+  - [DSL for documenting your controller](#dsl-for-documenting-your-controller)
+  - [Generate JSON Documentation File](#generate-json-documentation-file)
+  - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
   - [Tricks](#tricks)
-    - [Write the DSL Somewhere Else]
-- [Troubleshooting](https://github.com/zhandao/zero-rails_openapi#troubleshooting)
+    - [Write the DSL Somewhere Else](#write-the-dsl-somewhere-else)
+- [Troubleshooting](#troubleshooting)
 
 ## About OAS
 
@@ -161,9 +161,9 @@ end
   ctrl_path 'api/v1/examples'
   ```
   This option allows you to set the Tag* (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
-  [Here's a trick](): Using `ctrl_path`, you can write the DSL somewhere else 
+  [Here's a trick](#write-the-dsl-somewhere-else-recommend): Using `ctrl_path`, you can write the DSL somewhere else 
   to simplify the current controller.  
-  \* Take the tag from `path.split('/').last`
+  \* take the tag from `path.split('/').last`
 
 - `apis_set` [Optional]
 
@@ -395,7 +395,7 @@ In order to use it, you may have to enable CORS, [see](https://github.com/swagge
 
 ### Tricks
 
-#### Write the DSL Somewhere Else (Recommend)
+#### Write the DSL Somewhere Else
 
 Does your documentation take too mant lines?  
 Do you want to separate documentation from business controller to simplify both?  

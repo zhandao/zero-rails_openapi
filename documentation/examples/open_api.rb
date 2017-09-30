@@ -48,18 +48,20 @@ OpenApi.configure do |c|
           # https://swagger.io/docs/specification/api-host-and-base-path/
           #   The servers section specifies the API server and base URL.
           #   You can define one or several servers, such as production and sandbox.
-          servers: [{
-                        # [REQUIRED] A URL to the target host.
-                        # This URL supports Server Variables and MAY be relative,
-                        #   to indicate that the host location is relative to the location where
-                        #   the OpenAPI document is being served.
-                        url: 'http://localhost:2333',
-                        # An optional string describing the host designated by the URL.
-                        description: 'Optional server description, e.g. Main (production) server'
-                    },{
-                        url: 'http://localhost:3332',
-                        description: 'Optional server description, e.g. Internal staging server for testing'
-                    }],
+          servers: [
+              {
+                  # [REQUIRED] A URL to the target host.
+                  # This URL supports Server Variables and MAY be relative,
+                  #   to indicate that the host location is relative to the location where
+                  #   the OpenAPI document is being served.
+                  url: 'http://localhost:2333',
+                  # An optional string describing the host designated by the URL.
+                  description: 'Optional server description, e.g. Main (production) server'
+              },{
+                  url: 'http://localhost:3332',
+                  description: 'Optional server description, e.g. Internal staging server for testing'
+              }
+          ],
 
           # Authentication
           #   The securitySchemes and security keywords are used to describe the authentication methods used in your API.

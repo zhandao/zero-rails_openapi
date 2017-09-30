@@ -45,6 +45,7 @@ module OpenApi
         docs.each do |api_name, doc|
           File.open("#{output_path}/#{api_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
+        # pp $open_apis
       end
     end
 

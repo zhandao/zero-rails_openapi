@@ -141,12 +141,11 @@ module OpenApi
         _default: %i[default  dft     default_value   ],
       }.each do |key, aliases|
         define_method key do
-          self[key].tap do |it|
-            aliases.each do |alias_name|
-              break if it == false
-              it ||= self[alias_name]
-            end if it.nil?
-          end
+          aliases.each do |alias_name|
+            break if self[key] == false
+            self[key] ||= self[alias_name]
+          end if self[key].nil?
+          self[key]
         end
         define_method "#{key}=" do |value| self[key] = value end
       end

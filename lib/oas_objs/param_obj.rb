@@ -19,7 +19,7 @@ module OpenApi
 
       def process
         assign(_desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.process_for name }
+        processed.tap { |it| it[:schema] = schema.process_for self[:name] }
       end
 
 
@@ -36,27 +36,6 @@ module OpenApi
           self[key]
         end
       end
-
-
-      # Interfaces for directly taking the info what you focus on,
-      #   The next step you may want to verify the parameters based on these infos.
-      #   The implementation of the parameters validator, see:
-      #     TODO
-      alias_method :range, :_range
-      alias_method :length, :_length
-      { # INTERFACE_MAPPING
-          name:     %i[name          ],
-          required: %i[required      ],
-          in:       %i[in            ],
-          enum:     %i[schema enum   ],
-          pattern:  %i[schema pattern],
-          regexp:   %i[schema pattern],
-          type:     %i[schema type   ],
-          is:       %i[schema format ],
-      }.each do |method, path|
-        define_method method do path.inject(processed, &:[]) end # Get value from hash by key path
-      end
-      alias_method :required?, :required
     end
   end
 end
