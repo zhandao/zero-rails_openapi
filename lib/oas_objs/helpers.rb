@@ -7,11 +7,11 @@ module OpenApi
     end
 
     def value_present
-      Proc.new { |_, v| truly_present? v }
+      proc { |_, v| truly_present? v }
     end
 
     def assign(value)
-      @assign = value.is_a?(Symbol)? self.send("_#{value}") : value
+      @assign = value.is_a?(Symbol) ? send("_#{value}") : value
       self
     end
 
@@ -22,7 +22,7 @@ module OpenApi
 
     def to_processed(who)
       if who.is_a?(Symbol)
-        self.send("#{who}=", @assign)
+        send("#{who}=", @assign)
       else
         processed[who.to_sym] = @assign
       end if truly_present?(@assign)

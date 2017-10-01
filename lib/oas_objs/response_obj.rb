@@ -9,7 +9,7 @@ module OpenApi
 
       attr_accessor :processed, :code, :media_type
       def initialize(code, desc, media_type, schema_hash)
-        self.code       = "#{code}"
+        self.code       = code.to_s
         self.media_type = MediaTypeObj.new(media_type, schema_hash)
         self.processed  = { description: desc }
       end

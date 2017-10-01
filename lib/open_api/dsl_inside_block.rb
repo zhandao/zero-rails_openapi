@@ -45,9 +45,9 @@ module OpenApi
       end
 
       { # alias_methods mapping
-        response:         %i[error_response  resp                     ],
-        default_response: %i[dft_resp        dft_response             ],
-        error_response:   %i[other_response  oth_resp  error  err_resp],
+          response:         %i[error_response  resp                     ],
+          default_response: %i[dft_resp        dft_response             ],
+          error_response:   %i[other_response  oth_resp  error  err_resp],
       }.each do |original_name, aliases|
         aliases.each do |alias_name|
           alias_method alias_name, original_name

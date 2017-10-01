@@ -13,19 +13,19 @@ module OpenApi
         if api_name.present?
           [{ api_name => generate_doc(api_name) }]
         else
-          OpenApi.apis.keys.map { |api_key| { api_key => generate_doc(api_key)} }.reduce({ }, :merge)
+          OpenApi.apis.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
         end
       end
 
       def generate_doc(api_name)
         settings = OpenApi.apis[api_name]
-        doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge({
+        doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge(
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
                     securitySchemes: settings[:global_security_schemes],
                     schemas: { }
                 }
-              })
+              )
 
         settings[:root_controller].descendants.each do |ctrl|
           ctrl_infos = ctrl.instance_variable_get('@_ctrl_infos')

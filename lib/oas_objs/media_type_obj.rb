@@ -11,9 +11,9 @@ module OpenApi
       end
 
       def process
-        schema_processed = self.schema.process
+        schema_processed = schema.process
         schema = schema_processed.values.join.blank? ? { } : { schema: schema_processed }
-        media_type.nil? ? { } : { media_type =>  schema }
+        media_type.nil? ? { } : { media_type => schema }
       end
 
       # https://swagger.io/docs/specification/media-types/
@@ -23,32 +23,32 @@ module OpenApi
       def media_type_mapping(media_type)
         return media_type if media_type.is_a? String
         case media_type
-          when :app;   'application/*'
-          when :json;  'application/json'
-          when :xml;   'application/xml'
-          when :xwww;  'application/x-www-form-urlencoded'
-          when :pdf;   'application/pdf'
-          when :zip;   'application/zip'
-          when :gzip;  'application/gzip'
-          when :doc;   'application/msword'
-          when :docx;  'application/application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          when :xls;   'application/vnd.ms-excel'
-          when :xlsx;  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          when :ppt;   'application/vnd.ms-powerpoint'
-          when :pptx;  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-          # when :pdf;   'application/pdf'
-          when :form;  'multipart/form-data'; when :form_data; 'multipart/form-data'
-          when :text;  'text/*'
-          when :plain; 'text/plain; charset=utf-8'
-          when :html;  'text/html'
-          when :csv;   'text/csv'
-          when :image; 'image/*'
-          when :png;   'image/png'
-          when :jpeg;  'image/jpeg'
-          when :gif;   'image/gif'
-          when :audio; 'audio/*'
-          when :video; 'video/*'
-          else;        nil
+        when :app then   'application/*'
+        when :json then  'application/json'
+        when :xml then   'application/xml'
+        when :xwww then  'application/x-www-form-urlencoded'
+        when :pdf then   'application/pdf'
+        when :zip then   'application/zip'
+        when :gzip then  'application/gzip'
+        when :doc then   'application/msword'
+        when :docx then  'application/application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        when :xls then   'application/vnd.ms-excel'
+        when :xlsx then  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        when :ppt then   'application/vnd.ms-powerpoint'
+        when :pptx then  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        # when :pdf then   'application/pdf'
+        when :form then  'multipart/form-data'; when :form_data then 'multipart/form-data'
+        when :text then  'text/*'
+        when :plain then 'text/plain then charset=utf-8'
+        when :html then  'text/html'
+        when :csv then   'text/csv'
+        when :image then 'image/*'
+        when :png then   'image/png'
+        when :jpeg then  'image/jpeg'
+        when :gif then   'image/gif'
+        when :audio then 'audio/*'
+        when :video then 'video/*'
+        else;            nil
         end
       end
     end

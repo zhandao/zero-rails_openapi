@@ -18,7 +18,7 @@ module OpenApi
         #        However, user can decide how to write --
         #          `type: number, format: double`, or `type: double`
         self.type = type
-        self.merge! schema_hash
+        merge! schema_hash
       end
 
 
@@ -85,7 +85,7 @@ module OpenApi
 
         # generate_enums_by_enum_array
         values = _enum || _value
-        self._enum = (values.is_a?(Array) ? values : [values]) if truly_present?(values)
+        self._enum = Array(values) if truly_present?(values)
 
         # generate length range fields by _lth array
         lth = _length || [ ]
@@ -131,14 +131,14 @@ module OpenApi
 
 
       { # SELF_MAPPING
-        _enum:    %i[enum     values  allowable_values],
-        _value:   %i[must_be  value   allowable_value ],
-        _range:   %i[range    number_range            ],
-        _length:  %i[length   lth                     ],
-        _is:      %i[is_a     is                      ], # NOT OAS Spec, just an addition
-        _format:  %i[format   fmt                     ],
-        _pattern: %i[pattern  regexp  pr   reg        ],
-        _default: %i[default  dft     default_value   ],
+          _enum:    %i[enum     values  allowable_values],
+          _value:   %i[must_be  value   allowable_value ],
+          _range:   %i[range    number_range            ],
+          _length:  %i[length   lth                     ],
+          _is:      %i[is_a     is                      ], # NOT OAS Spec, just an addition
+          _format:  %i[format   fmt                     ],
+          _pattern: %i[pattern  regexp  pr   reg        ],
+          _default: %i[default  dft     default_value   ],
       }.each do |key, aliases|
         define_method key do
           aliases.each do |alias_name|

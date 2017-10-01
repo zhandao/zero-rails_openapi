@@ -1,6 +1,6 @@
 # ZRO: OpenApi 3 DocGenerator for Rails
 
-Provide concise DSL for you to generate the OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON file for Rails application, 
+Provide concise DSL for generating the OpenAPI Specification 3 (**OAS3**, formerly Swagger3) documentation JSON file for Rails application, 
 then you can use Swagger UI 3.2.0+ to show the documentation.
 
 ## Contributing
