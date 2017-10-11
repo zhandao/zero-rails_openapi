@@ -64,8 +64,8 @@ module OpenApi
                     item.match?(/:/) ? "{#{item[1..-1]}}" : item
                   end.join('/'),          # => "/api/v1/examples/{id}"
             action_path: infos[2]         # => "api/v1/examples#index"
-        }
-      end.group_by {|api| api[:action_path].split('#').first } # => { "api/v1/examples" => [..] }, group by paths
+        } rescue next
+      end.compact.group_by {|api| api[:action_path].split('#').first } # => { "api/v1/examples" => [..] }, group by paths
     end
 
     def self.get_actions_by_ctrl_path(path)
