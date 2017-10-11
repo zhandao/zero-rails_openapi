@@ -7,7 +7,7 @@ module OpenApi
       attr_accessor :media_type, :schema
       def initialize(media_type, schema_hash)
         self.media_type = media_type_mapping media_type
-        self.schema     = SchemaObj.new(schema_hash[:type], schema_hash)
+        self.schema     = SchemaObj.new(schema_hash[:type] || schema_hash[:data], schema_hash)
       end
 
       def process

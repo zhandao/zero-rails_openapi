@@ -1,5 +1,7 @@
 # ZRO: OpenApi 3 DocGenerator for Rails
 
+[![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
+
 Provide concise DSL for generating the OpenAPI Specification 3 (**OAS3**, formerly Swagger3) documentation JSON file for Rails application, 
 then you can use Swagger UI 3.2.0+ to show the documentation.
 
@@ -300,7 +302,14 @@ parameters, request body, responses, securities, servers.
   def form desc = '', schema_hash = { }
     body :form, desc, schema_hash
   end
+  # usage
+  form! 'register', data: {
+          name: String,
+          password: String,
+          password_confirmation: String
+      }
 
+  # method implement
   def file! media_type, desc = '', schema_hash = { type: File }
     body! media_type, desc, schema_hash
   end

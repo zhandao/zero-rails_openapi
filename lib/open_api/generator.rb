@@ -1,5 +1,3 @@
-require 'active_support/hash_with_indifferent_access'
-
 module OpenApi
   module Generator
     def self.included(base)
@@ -9,6 +7,7 @@ module OpenApi
     module ClassMethods
       def generate_docs(api_name = nil)
         Dir['./app/controllers/**/*.rb'].each { |file| require file }
+        # TODO: _doc should be configured
         Dir['./app/**/*_doc.rb'].each { |file| require file }
         if api_name.present?
           [{ api_name => generate_doc(api_name) }]
@@ -34,8 +33,9 @@ module OpenApi
           doc[:tags] << ctrl_infos[:tag]
           doc[:components].merge! ctrl_infos[:components]
         end
-        doc[:components].delete_if { |_,v| v.blank? }
-        ($open_apis ||= { })[api_name] ||= HashWithIndifferentAccess.new(doc.delete_if { |_,v| v.blank? })
+        doc[:components].delete_if { |_, v| v.blank? }
+        ($open_apis ||= { })[api_name] ||=
+            ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
       def write_docs

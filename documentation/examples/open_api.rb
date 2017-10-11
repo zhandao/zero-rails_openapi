@@ -54,11 +54,11 @@ OpenApi.configure do |c|
                   # This URL supports Server Variables and MAY be relative,
                   #   to indicate that the host location is relative to the location where
                   #   the OpenAPI document is being served.
-                  url: 'http://localhost:2333',
+                  url: 'http://localhost:3000',
                   # An optional string describing the host designated by the URL.
                   description: 'Optional server description, e.g. Main (production) server'
               },{
-                  url: 'http://localhost:3332',
+                  url: 'http://localhost:3001',
                   description: 'Optional server description, e.g. Internal staging server for testing'
               }
           ],

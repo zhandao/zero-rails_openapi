@@ -8,7 +8,7 @@ module OpenApi
   module DSL
     module CommonDSL
       def arrow_writing_support
-        Proc.new do |args, executor|
+        proc do |args, executor|
           if args.count == 1 && args.first.is_a?(Hash)
             send(executor, args[0].keys.first, *args[0].values.first)
           else
