@@ -38,10 +38,10 @@ module OpenApi
             ApiInfoObj.new(action_path).merge! summary: summary, operationId: method, tags: [@_apis_tag]
 
         current_api.tap do |it|
-          it.instance_eval &block if block_given?
           [method, :all].each do |key| # blocks_store_key
             @_apis_blocks&.[](key)&.each { |blk| it.instance_eval &blk }
           end
+          it.instance_eval &block if block_given?
         end
       end
 

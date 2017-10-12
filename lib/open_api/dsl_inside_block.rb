@@ -61,7 +61,7 @@ module OpenApi
     class CtrlInfoObj < Hash
       include DSL::CommonDSL
 
-      def _schema component_key, type, schema_hash
+      def _schema component_key, type, schema_hash = { }
         (self[:schemas] ||= { }).merge! component_key => SchemaObj.new(type, schema_hash).process
       end
       def schema *args
@@ -140,7 +140,7 @@ module OpenApi
       end
 
       def body_ref component_key
-        self[:requestBody] = RefObj.new(:parameter, component_key).process
+        self[:requestBody] = RefObj.new(:requestBody, component_key).process
       end
 
       def response_ref code_compkey_hash

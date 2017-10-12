@@ -31,7 +31,7 @@ A request body with a referenced model definition.
 {
   "description": "user to add to the system",
   "content": {
-    "application/json": {
+    "multipart/form-data": {
       "schema": {
         "$ref": "#/components/schemas/User"
       },

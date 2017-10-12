@@ -10,7 +10,7 @@ module OpenApi
       attr_accessor :processed
       def initialize(ref_to, component_key)
         self.processed = {
-            '$ref': "#components/#{ref_to}s/#{component_key}"
+            '$ref': "#components/#{ref_to.to_s.pluralize}/#{component_key}"
         }
       end
 
