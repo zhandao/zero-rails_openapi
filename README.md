@@ -406,7 +406,7 @@ In order to use it, you may have to enable CORS, [see](https://github.com/swagge
 
 #### Write the DSL Somewhere Else
 
-Does your documentation take too mant lines?  
+Does your documentation take too many lines?  
 Do you want to separate documentation from business controller to simplify both?  
 Very easy! Just use `ctrl_path`.
 
