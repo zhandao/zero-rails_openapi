@@ -1,5 +1,6 @@
 # ZRO: OpenApi 3 DocGenerator for Rails
 
+[![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
 [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
 
 Provide concise DSL for generating the OpenAPI Specification 3 (**OAS3**, formerly Swagger3) documentation JSON file for Rails application, 
@@ -24,7 +25,8 @@ but I dont have enough time now = ▽ =
   - [Generate JSON Documentation File](#generate-json-documentation-file)
   - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
   - [Tricks](#tricks)
-    - [Write the DSL Somewhere Else](#write-the-dsl-somewhere-else)
+    - [Write DSL Somewhere Else](#write-the-dsl-somewhere-else)
+    - [DRYing](#drying)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -91,7 +93,7 @@ end
 You can also set the *global configuration(/component)* of OAS: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/open_api.rb)
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
 
 ## Usage
 
@@ -113,14 +115,14 @@ class ApplicationController < ActionController::API
 ```ruby
 class Api::V1::ExamplesController < Api::V1::BaseController
   apis_set 'ExamplesController\'s APIs' do
-    schema :Dog           => [ { id!: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
+    schema :Dog           => [ String, must_be: 'doge' ]
     query! :QueryCompUuid => [ :product_uuid, String, desc: 'product uuid' ]
     path!  :PathCompId    => [ :id, Integer, desc: 'user id' ]
     resp   :RespComp      => [ 'bad request', :json ]
     body!  :RqBodyComp    => [ :form ]
   end
 
-  open_api_set %i[index show], 'common response' do
+  api_dry %i[index show], 'common response' do
     response '567', 'query result export', :pdf, type: File
   end
 
@@ -180,17 +182,17 @@ end
   desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name ), but are optional. 
   the focus is on the block, the DSL methods in the block will generate components.
 
-- `open_api_set` [Optional]
+- `api_dry` [Optional]
 
   this method is for DRYing.
   
   ```ruby
   # method signature
-  open_api_set method = :all, desc = '', &block
+  api_dry method = :all, desc = '', &block
   # usage
-  open_api_set :all, 'common response' do; end
-  open_api_set :index do; end
-  open_api_set [:index, :show] do; end
+  api_dry :all, 'common response' do; end
+  api_dry :index do; end
+  api_dry [:index, :show] do; end
   ```
   
   As you think, the DSL methods in the block will be executed to each API that you set by method.
@@ -207,7 +209,7 @@ end
   ```
 
 
-#### \>\> DSL methods inside *open_api* and *open_api_set*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
+#### \>\> DSL methods inside *open_api* and *api_dry*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
 
 These methods in the block describe the specified API(s): description, valid?,
 parameters, request body, responses, securities, servers.
@@ -239,6 +241,8 @@ parameters, request body, responses, securities, servers.
 
   You can of course describe the input in it's DSL method (like `query! :done` [this line](https://github.com/zhandao/zero-rails_openapi#-dsl-usage-example)), 
   but that will make it long and ugly. We recommend that unite descriptions in this place.
+  
+  In addition, when you want to dry the same parameters (each with a different description), it will be of great use.
 
 - param family methods (OAS - [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#parameterObject))
   - `param`
@@ -307,6 +311,13 @@ parameters, request body, responses, securities, servers.
           name: String,
           password: String,
           password_confirmation: String
+      }
+  # advance usage
+  form 'for creating a user', data: {
+          :name! =>     { type: String, desc: 'user name' },
+          :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
+          # optional
+          :remarks =>   { type: String, desc: 'remarks' },
       }
 
   # method implement
@@ -380,9 +391,16 @@ The DSL methods used to generate the components in this block are:
   schema component_key, type, schema_hash
   # usage
   schema :Dog  => [ { id!: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
+  # advance usage
+  schema :Dog => [{
+                       id!: Integer,
+                       name: { type: String, must_be: 'zhandao', desc: 'name' }
+                   }, # this is schema type*
+                   dft: { id: 1, name: 'pet' }]
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }
   ```
+  *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md#type)
 
 ### Generate JSON Documentation File
 
@@ -406,7 +424,7 @@ In order to use it, you may have to enable CORS, [see](https://github.com/swagge
 
 #### Write the DSL Somewhere Else
 
-Does your documentation take too mant lines?  
+Does your documentation take too many lines?  
 Do you want to separate documentation from business controller to simplify both?  
 Very easy! Just use `ctrl_path`.
 
@@ -433,6 +451,14 @@ end
 ```
 
 Notes: convention is the file name ends with `_doc.rb`
+
+#### DRYing
+
+To be written.
+
+You can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_dsl.rb) at the moment.  
+In general is to use method `api_dry`.
+The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 
 ## Troubleshooting
 

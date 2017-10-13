@@ -29,9 +29,9 @@ module OpenApi
         settings[:root_controller].descendants.each do |ctrl|
           ctrl_infos = ctrl.instance_variable_get('@_ctrl_infos')
           next if ctrl_infos.nil?
-          doc[:paths].merge! ctrl.instance_variable_get('@_api_infos')
+          doc[:paths].merge! ctrl.instance_variable_get('@_api_infos') || { }
           doc[:tags] << ctrl_infos[:tag]
-          doc[:components].merge! ctrl_infos[:components]
+          doc[:components].merge! ctrl_infos[:components] || { }
         end
         doc[:components].delete_if { |_, v| v.blank? }
         ($open_apis ||= { })[api_name] ||=
@@ -70,7 +70,7 @@ module OpenApi
 
     def self.get_actions_by_ctrl_path(path)
       @routes_list ||= generate_routes_list
-      @routes_list[path].map do |action_info|
+      @routes_list[path]&.map do |action_info|
         action_info[:action_path].split('#').last
       end
     end

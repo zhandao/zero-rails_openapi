@@ -22,13 +22,18 @@ module OpenApi
       end
 
 
-      def process_for(param_name = nil)
+      def process_for(param_name = nil, options = { process_desc: false })
         processed.merge! processed_type
+
+        description = options[:process_desc] ? { description: self[:desc] } : nil
         all(processed_enum_and_length,
             processed_range,
             processed_is_and_format(param_name),
-            { pattern: _pattern&.inspect&.delete('/'),
-              default: _default }
+            {
+                pattern: _pattern&.inspect&.delete('/'),
+                default: _default,
+            },
+            description
         ).for_merge
       end
       alias_method :process, :process_for
@@ -36,7 +41,15 @@ module OpenApi
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : "#{type}".downcase
         if t.is_a? Hash
-          recursive_obj_type t
+          # For support writing:
+          #   form 'desc', data: {
+          #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
+          # }
+          if t.key? :type
+            SchemaObj.new(t[:type], t).process_for @prop_name, process_desc: true
+          else
+            recursive_obj_type t
+          end
         elsif t.is_a? Array
           recursive_array_type t
         elsif t.is_a? Symbol
@@ -52,7 +65,7 @@ module OpenApi
         end
       end
       def recursive_obj_type(t) # DSL use { prop_name: prop_type } to represent object structure
-        return processed_type(t) unless t.is_a? Hash
+        return processed_type(t) if !t.is_a?(Hash) || t.key?(:type)
 
         _schema = {
             type: 'object',
@@ -60,6 +73,7 @@ module OpenApi
             required: [ ]
         }
         t.each do |prop_name, prop_type|
+          @prop_name = prop_name
           _schema[:required] << "#{prop_name}".delete('!') if "#{prop_name}".match? '!'
           _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
         end

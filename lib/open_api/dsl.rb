@@ -29,7 +29,7 @@ module OpenApi
 
         # select the routing info (corresponding to the current method) from the routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{method}"
-        routes_info = ctrl_routes_list.select { |api| api[:action_path].match? /^#{action_path}$/ }.first
+        routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
         puts "[zero-rails_openapi] Routing mapping failed: #{@_ctrl_path}##{method}" or return if routes_info.nil?
 
         # structural { path: { http_method:{ } } }, for Paths Object.
@@ -42,11 +42,12 @@ module OpenApi
             @_apis_blocks&.[](key)&.each { |blk| it.instance_eval &blk }
           end
           it.instance_eval &block if block_given?
+          it.merge! responses: it.delete(:responses)
         end
       end
 
       # For DRY; method could be symbol array
-      def open_api_set method = :all, desc = '', &block
+      def api_dry method = :all, desc = '', &block
         @_apis_blocks ||= { }
         if method.is_a? Array
           method.each { |m| (@_apis_blocks[m.to_sym] ||= [ ]) << block }

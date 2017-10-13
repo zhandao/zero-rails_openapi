@@ -1,12 +1,15 @@
 ### More Explanation of Param() 
 
-- [param_type] OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location: 
+#### param_type
+OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location: 
 **header, path, query, cookie**. [more](https://swagger.io/docs/specification/describing-parameters/)
 
-- [name] parameter name. If param_type is :path, it must correspond to the associated path segment form 
+#### name
+parameter name. If param_type is :path, it must correspond to the associated path segment form 
 the routing path, for example: the path is `/good/:id`, then you have to declare a path parameter with name `id`.
 
-- [type] parameter (schema) type. Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
+#### type
+parameter (schema) type. Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
 In addition, you can use `format` in schema_hash to define in fine detail the data type being used, like: 
 int32, float, date ...  
 All the types you can use are:
@@ -27,9 +30,12 @@ All the types you can use are:
   You can use `Object.const_set()` to define a constant that does not exist, but note that 
   the value you set could not be a Symbol (it will be explained as a Ref Object), should be a String.
 
-- [required] :opt or :req
+#### required
+ :opt or :req
 
-- The [[schema]](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) defining the type used for the parameter. 
+#### Schema Hash
+
+The [[schema]](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) defining the type used for the parameter. 
 schema_hash(optional) will be used to generate Schema Object inside Parameter Object.  
 [source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/schema_obj.rb)  
 You can set the schema by following keys (all are optional), the words in parentheses are available aliases of the keys:  

@@ -115,12 +115,31 @@ module OpenApi
 
       def desc desc, inputs_descs = { }
         @inputs_descs = inputs_descs
+        merge_desc_for_dryed_param
         self[:description] = desc
+      end
+
+      # TODO: HACK
+      def merge_desc_for_dryed_param
+        @inputs_descs.each do |param_name, desc|
+          self[:parameters].each do |param|
+            if param[:name] == param_name
+              param.merge! description: desc
+            end
+          end
+        end
       end
 
       def param param_type, name, type, required, schema_hash = { }
         schema_hash[:desc] = @inputs_descs[name] if @inputs_descs&.[](name).present?
-        (self[:parameters] ||= [ ]) << ParamObj.new(name, param_type, type, required, schema_hash).process
+        param_obj = ParamObj.new(name, param_type, type, required, schema_hash).process
+        # The definition of the same name parameter will be overwritten
+        index = self[:parameters]&.map { |p| p[:name] }&.index name
+        if index.present?
+          self[:parameters][index] = param_obj
+        else
+          (self[:parameters] ||= [ ]) << param_obj
+        end
       end
 
       def _param_agent name, type, schema_hash = { }
@@ -149,7 +168,7 @@ module OpenApi
         end
       end
 
-      # 注意同时只能写一句 request body，包括 form 和 file
+      # TODO: 目前只能写一句 request body，包括 form 和 file， 需要同时支持一下扁平化
       def form desc = '', schema_hash = { }
         body :form, desc, schema_hash
       end
