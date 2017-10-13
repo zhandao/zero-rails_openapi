@@ -22,21 +22,49 @@ module OpenApi
       end
 
 
-      def process_for(param_name = nil, options = { process_desc: false })
-        processed.merge! processed_type
+      def process_for(param_name = nil, options = { desc_inside: false })
+        return processed if @preprocessed
 
-        description = options[:process_desc] ? { description: self[:desc] } : nil
-        all(processed_enum_and_length,
-            processed_range,
-            processed_is_and_format(param_name),
-            {
-                pattern: _pattern&.inspect&.delete('/'),
-                default: _default,
-            },
-            description
-        ).for_merge
+        processed.merge! processed_type
+        reduceee processed_enum_and_length,
+                 processed_range,
+                 processed_is_and_format(param_name),
+                 {
+                     pattern: _pattern&.inspect&.delete('/'),
+                     default: _default,
+                 }
+        then_merge!
+
+        assign(processed_desc options).then_merge!
       end
       alias_method :process, :process_for
+
+      def preprocess_with_desc desc, param_name = nil
+        self.__desc = desc
+        process_for param_name
+        @preprocessed = true
+        __desc
+      end
+
+      def processed_desc(options)
+        result = __desc ? self.__desc = process_desc : _desc
+        options[:desc_inside] ? { description: result } : nil
+      end
+
+      def process_desc
+        if processed[:enum].present?
+          if @enum_info.present?
+            @enum_info.each_with_index do |(info, value), index|
+              __desc.concat "#{index + 1}/ #{info}: #{value}<br/>"
+            end
+          else
+            processed[:enum].each_with_index do |value, index|
+              __desc.concat "#{index + 1}/ #{value}<br/>"
+            end
+          end
+        end
+        __desc
+      end
 
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : "#{type}".downcase
@@ -46,7 +74,7 @@ module OpenApi
           #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
           # }
           if t.key? :type
-            SchemaObj.new(t[:type], t).process_for @prop_name, process_desc: true
+            SchemaObj.new(t[:type], t).process_for @prop_name, desc_inside: true
           else
             recursive_obj_type t
           end
@@ -60,6 +88,8 @@ module OpenApi
           { type: 'string', format: t}
         elsif t.eql? 'file'
           { type: 'string', format: OpenApi.config.dft_file_format }
+        elsif t.eql? 'datetime'
+          { type: 'string', format: 'date-time' }
         else # other string
           { type: t }
         end
@@ -92,6 +122,16 @@ module OpenApi
       end
 
       def processed_enum_and_length
+        # Support this writing for auto generating desc from enum.
+        #   enum: {
+        #     'all_data': :all,
+        #     'one_page': :one
+        # }
+        if _enum.is_a? Hash
+          @enum_info = _enum
+          self._enum = _enum.values
+        end
+
         %i[_enum _length].each do |key|
           value = self.send(key)
           self[key] = value.to_a if value.present? && value.is_a?(Range)
@@ -138,21 +178,23 @@ module OpenApi
       def recognize_is_options_in(name)
         # identify whether `is` patterns matched the name, if so, generate `is`.
         OpenApi.config.is_options.each do |pattern|
-          self._is = pattern or break if "#{name}".match? /#{pattern}/
+          self._is = pattern or break if name.match? /#{pattern}/
         end if _is.nil?
         self.delete :_is if _is.in?([:x, :we])
       end
 
 
       { # SELF_MAPPING
-          _enum:    %i[enum     values  allowable_values],
-          _value:   %i[must_be  value   allowable_value ],
-          _range:   %i[range    number_range            ],
-          _length:  %i[length   lth                     ],
-          _is:      %i[is_a     is                      ], # NOT OAS Spec, just an addition
-          _format:  %i[format   fmt                     ],
-          _pattern: %i[pattern  regexp  pr   reg        ],
-          _default: %i[default  dft     default_value   ],
+          _enum:    %i[ enum     values  allowable_values ],
+          _value:   %i[ must_be  value   allowable_value  ],
+          _range:   %i[ range    number_range             ],
+          _length:  %i[ length   lth                      ],
+          _is:      %i[ is_a     is                       ], # NOT OAS Spec, just an addition
+          _format:  %i[ format   fmt                      ],
+          _pattern: %i[ pattern  regexp  pr   reg         ],
+          _default: %i[ default  dft     default_value    ],
+          _desc:    %i[ desc     description              ],
+          __desc:   %i[ desc!    description!             ],
       }.each do |key, aliases|
         define_method key do
           aliases.each do |alias_name|

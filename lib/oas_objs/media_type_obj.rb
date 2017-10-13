@@ -48,7 +48,7 @@ module OpenApi
         when :gif then   'image/gif'
         when :audio then 'audio/*'
         when :video then 'video/*'
-        else;            nil
+        else             nil
         end
       end
     end

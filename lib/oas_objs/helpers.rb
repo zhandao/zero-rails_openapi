@@ -15,7 +15,7 @@ module OpenApi
       self
     end
 
-    def all(*values)
+    def reduceee(*values)
       @assign = values.compact.reduce({ }, :merge).keep_if &value_present
       self
     end
@@ -34,7 +34,7 @@ module OpenApi
       self[who.to_sym] = @assign if truly_present?(@assign)
     end
 
-    def for_merge # to_processed
+    def then_merge! # to_processed
       processed.tap { |it| it.merge! @assign if truly_present?(@assign) }
     end
   end

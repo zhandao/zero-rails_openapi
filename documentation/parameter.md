@@ -39,16 +39,16 @@ The [[schema]](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/ve
 schema_hash(optional) will be used to generate Schema Object inside Parameter Object.  
 [source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/schema_obj.rb)  
 You can set the schema by following keys (all are optional), the words in parentheses are available aliases of the keys:  
-  - enum (values, allowable_values)  
+  - **enum (values, allowable_values)**  
   Must be Array or Range(will be converted to Array)
-  - value (must_be, allowable_value)  
+  - **must_be (value, allowable_value)**  
   Single value, could be a String, Array ...  
-  - range (number_range)  
+  - **range (number_range)**  
   Allow value in this continuous range. Set this field like this: `{ gt: 0, le: 5 }`
-  - length (lth)  
+  - **length (lth)**  
   Must be an Integer, Integer Array, Integer Range, or the following format Symbol: `:gt_`, `:ge_`, `:lt_`, `:le_`, examples: :ge_5 means "greater than or equal 5"; :lt_9 means "lower than 9".
-  - format (fmt)
-  - is (is_a)  
+  - **format (fmt)**
+  - **is (is_a)**  
     1. It's not in OAS, just an addition field for better express.You can see it as `format`, but in fact they are quite different.  
     2. Look at this example: the `format` is set to "int32", but you also want to express that this 
     schema is an "id" format —— this cannot be expressed in the current OAS version.  
@@ -57,5 +57,5 @@ You can set the schema by following keys (all are optional), the words in parent
     for example the parameter name "user_email" will generate "is: email". Default `is` options are:  
     [email phone password uuid uri url time date], to overwrite it you can set it in initializer `c.is_options = %w[]`.
     5. If type is Object, for describing each property's schema, the only way is use ref type, like: `{ id: :Id, name: :Name }`
-  - pattern (regexp, pr, reg)
-  - default (dft, default_value)
+  - **pattern (regexp, pr, reg)**
+  - **default (dft, default_value)**

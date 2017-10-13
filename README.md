@@ -25,8 +25,9 @@ but I dont have enough time now = ▽ =
   - [Generate JSON Documentation File](#generate-json-documentation-file)
   - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
   - [Tricks](#tricks)
-    - [Write DSL Somewhere Else](#write-the-dsl-somewhere-else)
-    - [DRYing](#drying)
+    - [Write DSL Somewhere Else](#trick1-write-the-dsl-somewhere-else)
+    - [DRYing](#trick2-drying)
+    - [Auto Generate Description](#trick3-auto-generate-description)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -69,7 +70,7 @@ OpenApi.configure do |c|
   # [REQUIRED] The output location where .json doc file will be written to.
   c.file_output_path = 'public/open_api'
 
-  c.register_apis = {
+  c.register_docs = {
       homepage_api: {
           # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
           root_controller: Api::V1::BaseController,
@@ -112,6 +113,7 @@ class ApplicationController < ActionController::API
 
 #### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/examples_controller.rb)
 
+(TODO: I consider that, here should be put in a the simplest case.)
 ```ruby
 class Api::V1::ExamplesController < Api::V1::BaseController
   apis_set 'ExamplesController\'s APIs' do
@@ -422,7 +424,7 @@ In order to use it, you may have to enable CORS, [see](https://github.com/swagge
 
 ### Tricks
 
-#### Write the DSL Somewhere Else
+#### Trick1 - Write the DSL Somewhere Else
 
 Does your documentation take too many lines?  
 Do you want to separate documentation from business controller to simplify both?  
@@ -452,13 +454,44 @@ end
 
 Notes: convention is the file name ends with `_doc.rb`
 
-#### DRYing
+#### Trick2 - DRYing
 
 To be written.
 
 You can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_dsl.rb) at the moment.  
 In general is to use method `api_dry`.
 The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
+
+#### Trick3 - Auto Generate Description
+
+```ruby
+desc 'api desc',
+     search_type!: 'search field, allows：<br/>'
+query :search_type, String, enum: %w[name creator category price]
+
+# or
+
+query :search_type, String, desc!: 'search field, allows：<br/>',
+      enum: %w[name creator category price]
+```
+
+Notice `!` use (`search_type!`, `desc!`), it tells ZRO to append
+information that analyzed from definitions (enum, must_be ..) to description automatically.
+
+Any one of above will generate:  
+`search field, allows：<br/>1/ name<br/>2/ creator,<br/>3/ category<br/>4/ price<br/>`
+
+ZRO also allows you use Hash to define `enum`:
+```ruby
+query :view, String, enum: {
+        'all goods (default)': :all,
+        'only online':         :online,
+        'only offline':        :offline,
+        'expensive goods':     :get,
+        'cheap goods':         :borrow,
+    }
+```
+Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_desc.rb) to learn more.
 
 ## Troubleshooting
 

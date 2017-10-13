@@ -6,7 +6,7 @@ OpenApi.configure do |c|
 
   # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
   # Getting started: https://swagger.io/docs/specification/basic-structure/
-  c.register_apis = {
+  c.register_docs = {
       homepage_api: {
           # [REQUIRED] ZRO will scan all the descendants of the root_controller, then generate their docs.
           root_controller: Api::V1::BaseController,

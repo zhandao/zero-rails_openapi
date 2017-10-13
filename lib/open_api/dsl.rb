@@ -35,14 +35,18 @@ module OpenApi
         # structural { path: { http_method:{ } } }, for Paths Object.
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path).merge! summary: summary, operationId: method, tags: [@_apis_tag]
+            ApiInfoObj.new(action_path)
+                .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
+                        parameters: [ ], requestBody: '', responses: { },
+                        security: [ ], servers: [ ]
 
         current_api.tap do |it|
           [method, :all].each do |key| # blocks_store_key
             @_apis_blocks&.[](key)&.each { |blk| it.instance_eval &blk }
           end
           it.instance_eval &block if block_given?
-          it.merge! responses: it.delete(:responses)
+          it.instance_eval { process_params }
+          it.delete_if { |_, v| v.blank? }
         end
       end
 

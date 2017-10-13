@@ -18,8 +18,16 @@ module OpenApi
       end
 
       def process
-        assign(_desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.process_for self[:name] }
+        assign(desc).to_processed 'description'
+        processed.tap { |it| it[:schema] = schema.process_for self.processed[:name] }
+      end
+
+      def desc
+        if __desc.present?
+          schema.preprocess_with_desc __desc, self[:name]
+        else
+          _desc
+        end
       end
 
 
@@ -27,9 +35,10 @@ module OpenApi
       # This mapping allows user to select the aliases in DSL writing,
       #   without increasing the complexity of the implementation.
       { # SELF_MAPPING
-          _range:  %i[range   number_range],
-          _length: %i[length  lth         ],
-          _desc:   %i[desc    description ],
+          _range:  %i[ range   number_range ],
+          _length: %i[ length  lth          ],
+          _desc:   %i[ desc    description  ],
+          __desc:  %i[ desc!   description! ],
       }.each do |key, aliases|
         define_method key do
           aliases.each { |alias_name| self[key] ||= self[alias_name] } if self[key].nil?

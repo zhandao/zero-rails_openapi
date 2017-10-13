@@ -45,9 +45,9 @@ module OpenApi
       end
 
       { # alias_methods mapping
-          response:         %i[error_response  resp                     ],
-          default_response: %i[dft_resp        dft_response             ],
-          error_response:   %i[other_response  oth_resp  error  err_resp],
+          response:         %i[ error_response  resp                      ],
+          default_response: %i[ dft_resp        dft_response              ],
+          error_response:   %i[ other_response  oth_resp  error  err_resp ],
       }.each do |original_name, aliases|
         aliases.each do |alias_name|
           alias_method alias_name, original_name
@@ -123,22 +123,33 @@ module OpenApi
       def merge_desc_for_dryed_param
         @inputs_descs.each do |param_name, desc|
           self[:parameters].each do |param|
-            if param[:name] == param_name
-              param.merge! description: desc
+            if param_name.match?(?!) && param.processed[:name].to_s == param_name.to_s.delete(?!)
+              param.merge!(desc!: desc).process
             end
           end
         end
       end
 
       def param param_type, name, type, required, schema_hash = { }
-        schema_hash[:desc] = @inputs_descs[name] if @inputs_descs&.[](name).present?
-        param_obj = ParamObj.new(name, param_type, type, required, schema_hash).process
+        if @inputs_descs&.[](name).present?
+          schema_hash[:desc] = @inputs_descs[name]
+        elsif @inputs_descs&.[]("#{name}!".to_sym).present?
+          schema_hash[:desc!] = @inputs_descs["#{name}!".to_sym]
+        end
+
+        param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
         # The definition of the same name parameter will be overwritten
-        index = self[:parameters]&.map { |p| p[:name] }&.index name
+        index = self[:parameters].map { |p_obj| p_obj.processed[:name] }.index name
         if index.present?
           self[:parameters][index] = param_obj
         else
-          (self[:parameters] ||= [ ]) << param_obj
+          self[:parameters] << param_obj
+        end
+      end
+
+      def process_params
+        self[:parameters].each_with_index do |param_obj, index|
+          self[:parameters][index] = param_obj.process
         end
       end
 
@@ -147,7 +158,7 @@ module OpenApi
       end
 
       def param_ref component_key, *keys
-        (self[:parameters] ||= [ ]).concat [component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process }
+        self[:parameters].concat [component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process }
       end
 
       def request_body required, media_type, desc = '', schema_hash = { }
@@ -164,7 +175,7 @@ module OpenApi
 
       def response_ref code_compkey_hash
         code_compkey_hash.each do |code, component_key|
-          (self[:responses] ||= { }).merge! code => RefObj.new(:response, component_key).process
+          self[:responses].merge! code => RefObj.new(:response, component_key).process
         end
       end
 
@@ -183,11 +194,11 @@ module OpenApi
       end
 
       def security scheme_name, requirements = [ ]
-        (self[:security] ||= [ ]) << { scheme_name => requirements }
+        self[:security] << { scheme_name => requirements }
       end
 
       def server url, desc
-        (self[:servers] ||= [ ]) << { url: url, description: desc }
+        self[:servers] << { url: url, description: desc }
       end
     end # ----------------------------------------- end of ApiInfoObj
   end

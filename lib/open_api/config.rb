@@ -19,15 +19,15 @@ module OpenApi
       end
 
       ### config options
-      # register_apis = {
-      #     version: {
+      # register_docs = {
+      #     doc_name: {
       #         :file_output_path, :root_controller
       #         info: {}
       #     }}
       # is_options = %w[]
 
       def apis
-        @apis ||= @config.register_apis
+        @apis ||= @config.register_docs
       end
     end
   end
