@@ -30,7 +30,7 @@ module OpenApi
         # select the routing info (corresponding to the current method) from the routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{method}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
-        puts "[zero-rails_openapi] Routing mapping failed: #{@_ctrl_path}##{method}" or return if routes_info.nil?
+        puts "[ZRO] Routing mapping failed: #{@_ctrl_path}##{method}" or return if routes_info.nil?
 
         # structural { path: { http_method:{ } } }, for Paths Object.
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }

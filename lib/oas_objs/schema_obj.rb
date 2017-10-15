@@ -92,7 +92,7 @@ module OpenApi
         elsif t.in? %w[binary base64]
           { type: 'string', format: t}
         elsif t.eql? 'file'
-          { type: 'string', format: OpenApi.config.dft_file_format }
+          { type: 'string', format: Config.dft_file_format }
         elsif t.eql? 'datetime'
           { type: 'string', format: 'date-time' }
         else # other string
@@ -182,7 +182,7 @@ module OpenApi
       end
       def recognize_is_options_in(name)
         # identify whether `is` patterns matched the name, if so, generate `is`.
-        OpenApi.config.is_options.each do |pattern|
+        Config.is_options.each do |pattern|
           self._is = pattern or break if name.match? /#{pattern}/
         end if _is.nil?
         self.delete :_is if _is.in?([:x, :we])

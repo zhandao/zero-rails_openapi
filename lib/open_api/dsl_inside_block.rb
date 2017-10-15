@@ -144,7 +144,9 @@ module OpenApi
 
         param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
         # The definition of the same name parameter will be overwritten
-        index = self[:parameters].map { |p_obj| p_obj.processed[:name] }.index name
+        index = self[:parameters].map do |p|
+          p.processed[:name] if p.is_a? ParamObj
+        end.index name
         if index.present?
           self[:parameters][index] = param_obj
         else
@@ -153,8 +155,8 @@ module OpenApi
       end
 
       def process_params
-        self[:parameters].each_with_index do |param_obj, index|
-          self[:parameters][index] = param_obj.process
+        self[:parameters].each_with_index do |p, index|
+          self[:parameters][index] = p.is_a?(ParamObj) ? p.process : p
         end
       end
 

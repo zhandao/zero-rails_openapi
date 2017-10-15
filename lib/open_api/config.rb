@@ -1,41 +1,60 @@
 module OpenApi
   module Config
-    def self.included(base)
-      base.extend ClassMethods
+    # [REQUIRED] The location where .json doc file will be output.
+    cattr_accessor :file_output_path do
+      'public/open_api'
     end
 
-    DEFAULT_CONFIG = {
-        is_options: %w[email phone password uuid uri url time date],
-        dft_file_format: 'binary'
-    }.freeze
+    # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
+    # Getting started: https://swagger.io/docs/specification/basic-structure/
+    cattr_accessor :register_docs do
+      {
+          # [REQUIRED] At least one doc.
+          zero_rails: {
+              # [REQUIRED] ZRO will scan all the descendants of the root_controller, and then generate their docs.
+              root_controller: ApplicationController,
 
-    module ClassMethods
-      def config
-        @config ||= ActiveSupport::InheritableOptions.new(DEFAULT_CONFIG)
-      end
+              # [REQUIRED] Info Object: The info section contains API information
+              info: {
+                  # [REQUIRED] The title of the application.
+                  title: 'Zero Rails Apis',
+                  # [REQUIRED] The version of the OpenAPI document
+                  # (which is distinct from the OpenAPI Specification version or the API implementation version).
+                  version: '0.0.1'
+              }
+          }
+      }
+    end
 
-      def configure(&block)
-        config.instance_eval &block
-      end
+    cattr_accessor :is_options do
+      %w[ email phone password uuid uri url time date ]
+    end
 
-      ### config options
-      # register_docs = {
-      #     doc_name: {
-      #         file_output_path: '',
-      #         root_controller: Base
-      #         info: {}
-      #     }}
-      # is_options = %w[]
-      # dft_file_format = 'base64'
-      #
-      # generate_jbuilder_file = true
-      # jbuilder_template = <<-FILE
-      #   jbuilder_template
-      # FILE
+    cattr_accessor :dft_file_format do
+      'binary'
+    end
 
-      def apis
-        @apis ||= @config.register_docs
-      end
+    cattr_accessor :generate_jbuilder_file do
+      false
+    end
+
+    cattr_accessor :overwrite_jbuilder_file do
+      false
+    end
+
+    cattr_accessor :jbuilder_template do
+      <<-FILE
+json.partial! 'api/base', total: @data.count
+json.data do
+  json.array! @data.page(@_page).per(@_rows) do |datum|
+    json.(datum, *datum.show_attrs) if datum.present?
+  end
+end
+      FILE
+    end
+
+    def self.docs
+      register_docs
     end
   end
 end

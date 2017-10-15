@@ -1,6 +1,6 @@
 require 'open_api'
 
-OpenApi.configure do |c|
+OpenApi::Config.tap do |c|
   # [REQUIRED] The location where .json doc file will be output.
   c.file_output_path = 'public/open_api'
 
@@ -83,7 +83,8 @@ OpenApi.configure do |c|
       }
   }
 
-  c.generate_jbuilder_file = true
+  c.generate_jbuilder_file  = true
+  c.overwrite_jbuilder_file = false
   c.jbuilder_template = <<-FILE
 json.partial! 'api/base', total: @data.count
 json.data do

@@ -15,7 +15,7 @@ int32, float, date ...
 All the types you can use are:
   - **String, 'binary', 'base64'**
   - **Integer, Long, 'int32', 'int64', Float, Double**
-  - **File** (it will be converted as `{ type: 'string', format: OpenApi.config.dft_file_format }`)
+  - **File** (it will be converted as `{ type: 'string', format: Config.dft_file_format }`)
   - **Date, DateTime**
   - **Boolean**
   - **Array**: `Array[String]` or `[String]`

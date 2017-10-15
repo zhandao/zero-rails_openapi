@@ -1,3 +1,5 @@
+require 'open_api/config'
+
 module OpenApi
   module Generator
     def self.included(base)
@@ -12,12 +14,12 @@ module OpenApi
         if api_name.present?
           [{ api_name => generate_doc(api_name) }]
         else
-          OpenApi.apis.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
+          Config.docs.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
         end
       end
 
       def generate_doc(api_name)
-        settings = OpenApi.apis[api_name]
+        settings = Config.docs[api_name]
         doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge(
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
@@ -40,23 +42,26 @@ module OpenApi
 
       def write_docs
         docs = generate_docs
-        output_path = OpenApi.config.file_output_path
+        output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
-        docs.each do |api_name, doc|
-          File.open("#{output_path}/#{api_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
+        max_length = docs.keys.map(&:size).sort.last
+        docs.each do |doc_name, doc|
+          File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
+          puts "[ZRO] `%#{max_length}s.json` is generated." % "#{doc_name}"
         end
         # pp $open_apis
       end
     end
 
     def self.generate_builder_file(option)
-      return unless OpenApi.config.generate_jbuilder_file
-      return unless option[:builder] == :builder
-      path = "app/views/#{option[:path]}"
-      FileUtils.mkdir_p path
-      File.open("#{path}/#{option[:action]}.json.jbuilder", 'w') do |file|
-        file.write OpenApi.config.jbuilder_template
-      end
+      return unless Config.generate_jbuilder_file
+      return unless option[:builder]
+      dir_path = "app/views/#{option[:path]}"
+      FileUtils.mkdir_p dir_path
+      file_path = "#{dir_path}/#{option[:action]}.json.jbuilder"
+      File.open(file_path, 'w') do |file|
+        file.write Config.jbuilder_template
+      end unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
     end
 
     def self.generate_routes_list

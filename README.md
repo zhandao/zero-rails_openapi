@@ -66,7 +66,7 @@ This is the simplest configuration example:
 # config/initializers/open_api.rb
 require 'open_api'
 
-OpenApi.configure do |c|
+OpenApi::Config.tap do |c|
   # [REQUIRED] The output location where .json doc file will be written to.
   c.file_output_path = 'public/open_api'
 

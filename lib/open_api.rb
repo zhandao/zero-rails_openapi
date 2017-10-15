@@ -4,6 +4,5 @@ require "open_api/generator"
 require "open_api/dsl"
 
 module OpenApi
-  include Config
   include Generator
 end
