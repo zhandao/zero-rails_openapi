@@ -119,6 +119,11 @@ module OpenApi
         self[:description] = desc
       end
 
+      # TODO: load info from db, Floor.column[0].name
+      def load_schema *attrs
+        ;
+      end
+
       # TODO: HACK
       def merge_desc_for_dryed_param
         @inputs_descs.each do |param_name, desc|

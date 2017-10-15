@@ -59,3 +59,4 @@ You can set the schema by following keys (all are optional), the words in parent
     5. If type is Object, for describing each property's schema, the only way is use ref type, like: `{ id: :Id, name: :Name }`
   - **pattern (regexp, pr, reg)**
   - **default (dft, default_value)**
+  - **as** # TODO

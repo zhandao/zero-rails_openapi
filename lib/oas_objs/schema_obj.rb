@@ -30,8 +30,11 @@ module OpenApi
                  processed_range,
                  processed_is_and_format(param_name),
                  {
-                     pattern: _pattern&.inspect&.delete('/'),
-                     default: _default,
+                     pattern:    _pattern&.inspect&.delete('/'),
+                     default:    _default,
+                     as:         _as,
+                     permit:     _permit,
+                     not_permit: _npermit,
                  }
         then_merge!
 
@@ -51,6 +54,8 @@ module OpenApi
         options[:desc_inside] ? { description: result } : nil
       end
 
+      # TODO: more info
+      # TODO: configure i18n
       def process_desc
         if processed[:enum].present?
           if @enum_info.present?
@@ -189,12 +194,15 @@ module OpenApi
           _value:   %i[ must_be  value   allowable_value  ],
           _range:   %i[ range    number_range             ],
           _length:  %i[ length   lth                      ],
-          _is:      %i[ is_a     is                       ], # NOT OAS Spec, just an addition
+          _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
           _format:  %i[ format   fmt                      ],
-          _pattern: %i[ pattern  regexp  pr   reg         ],
+          _pattern: %i[ pattern  regexp  pt   reg         ],
           _default: %i[ default  dft     default_value    ],
-          _desc:    %i[ desc     description              ],
-          __desc:   %i[ desc!    description!             ],
+          _desc:    %i[ desc     description  d           ],
+          __desc:   %i[ desc!    description! d!          ],
+          _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
+          _permit:  %i[ permit   pmt                      ], # NOT OAS Spec, it's for zero-params_processor
+          _npermit: %i[ npmt     not_permit   unpermit    ], # NOT OAS Spec, it's for zero-params_processor
       }.each do |key, aliases|
         define_method key do
           aliases.each do |alias_name|

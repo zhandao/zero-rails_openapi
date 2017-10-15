@@ -21,10 +21,17 @@ module OpenApi
       ### config options
       # register_docs = {
       #     doc_name: {
-      #         :file_output_path, :root_controller
+      #         file_output_path: '',
+      #         root_controller: Base
       #         info: {}
       #     }}
       # is_options = %w[]
+      # dft_file_format = 'base64'
+      #
+      # generate_jbuilder_file = true
+      # jbuilder_template = <<-FILE
+      #   jbuilder_template
+      # FILE
 
       def apis
         @apis ||= @config.register_docs

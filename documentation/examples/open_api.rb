@@ -82,6 +82,17 @@ OpenApi.configure do |c|
           global_security: [{ ApiKeyAuth: [] }],
       }
   }
+
+  c.generate_jbuilder_file = true
+  c.jbuilder_template = <<-FILE
+json.partial! 'api/base', total: @data.count
+json.data do
+  json.array! @data.page(@_page).per(@_rows) do |datum|
+    json.(datum, *datum.show_attrs)
+  end
+end
+  FILE
+
 end
 
 Object.const_set('Boolean', 'boolean') # Support `Boolean` writing in DSL

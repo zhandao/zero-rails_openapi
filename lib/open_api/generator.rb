@@ -49,6 +49,16 @@ module OpenApi
       end
     end
 
+    def self.generate_builder_file(option)
+      return unless OpenApi.config.generate_jbuilder_file
+      return unless option[:builder] == :builder
+      path = "app/views/#{option[:path]}"
+      FileUtils.mkdir_p path
+      File.open("#{path}/#{option[:action]}.json.jbuilder", 'w') do |file|
+        file.write OpenApi.config.jbuilder_template
+      end
+    end
+
     def self.generate_routes_list
       # ref https://github.com/rails/rails/blob/master/railties/lib/rails/tasks/routes.rake
       require './config/routes'

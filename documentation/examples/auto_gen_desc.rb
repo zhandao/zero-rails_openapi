@@ -23,6 +23,8 @@ class V1::GoodsDoc < BaseDoc
     # Same as:
     # query :search_type, String, desc!: 'search field, allows：<br/>',
     #       enum: %w[name creator category price]
+
+    # TODO: Support `desc: '', auto_desc: true or [:enum, :must_be]`
   end
 
 end

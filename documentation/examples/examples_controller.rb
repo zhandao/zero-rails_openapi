@@ -16,7 +16,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     response '567', 'query result export', :pdf, type: File
   end
 
-  open_api :index, '(SUMMARY) this api blah blah ...' do
+  open_api :index, '(SUMMARY) this api blah blah ...', :builder do
     this_api_is_invalid! 'this api is expired!'
     desc 'Optional multiline or single-line Markdown-formatted description',
          id:         'user id',

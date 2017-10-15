@@ -25,9 +25,9 @@ but I dont have enough time now = ▽ =
   - [Generate JSON Documentation File](#generate-json-documentation-file)
   - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
   - [Tricks](#tricks)
-    - [Write DSL Somewhere Else](#trick1-write-the-dsl-somewhere-else)
-    - [DRYing](#trick2-drying)
-    - [Auto Generate Description](#trick3-auto-generate-description)
+    - [Write DSL Somewhere Else](#trick1---write-the-dsl-somewhere-else)
+    - [DRYing](#trick2---drying)
+    - [Auto Generate Description](#trick3---auto-generate-description)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -94,7 +94,7 @@ end
 You can also set the *global configuration(/component)* of OAS: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
 
 ## Usage
 
@@ -128,7 +128,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     response '567', 'query result export', :pdf, type: File
   end
 
-  open_api :index, '(SUMMARY) this api blah blah ...' do
+  open_api :index, '(SUMMARY) this api blah blah ...', :builder do
     this_api_is_invalid! 'this api is expired!'
     desc 'Optional multiline or single-line Markdown-formatted description',
          id:         'user id',
@@ -205,10 +205,15 @@ end
   
   ```ruby
   # method signature
-  open_api method, summary = '', &block
+  open_api method, summary = '', builder = false, &block
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...' do; end
+  open_api :index, '(SUMMARY) this api blah blah ...', :builder do end
   ```
+  If pass `:builder` to the third parameter,
+  and `generate_jbuilder_file` in your setting file is set `true`,
+  ZRO will generate JBuilder file by using template that you set
+  `jbuilder_template` in your setting file.  
+  For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
 
 
 #### \>\> DSL methods inside *open_api* and *api_dry*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
@@ -276,7 +281,7 @@ parameters, request body, responses, securities, servers.
   query!  :done,      Boolean, must_be: false, default: true
   ```
 
-  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
+  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob//parameter.md)
 
 - request_body family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
   - `request_body`
@@ -402,7 +407,7 @@ The DSL methods used to generate the components in this block are:
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }
   ```
-  *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md#type)
+  *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob//parameter.md#type)
 
 ### Generate JSON Documentation File
 
@@ -491,7 +496,7 @@ query :view, String, enum: {
         'cheap goods':         :borrow,
     }
 ```
-Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_desc.rb) to learn more.
+Read this [file](https://github.com/zhandao/zero-rails_openapi/blob//examples/auto_gen_desc.rb) to learn more.
 
 ## Troubleshooting
 
