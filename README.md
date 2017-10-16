@@ -128,7 +128,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     response '567', 'query result export', :pdf, type: File
   end
 
-  open_api :index, '(SUMMARY) this api blah blah ...', :builder do
+  open_api :index, '(SUMMARY) this api blah blah ...', :builder_template1 do
     this_api_is_invalid! 'this api is expired!'
     desc 'Optional multiline or single-line Markdown-formatted description',
          id:         'user id',
@@ -207,12 +207,12 @@ end
   # method signature
   open_api method, summary = '', builder = false, &block
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...', :builder do end
+  open_api :index, '(SUMMARY) this api blah blah ...', :builder_template1 do end
   ```
-  If pass `:builder` to the third parameter,
+  If pass `:builder_template_name` to the third parameter,
   and `generate_jbuilder_file` in your setting file is set `true`,
-  ZRO will generate JBuilder file by using template that you set
-  `jbuilder_template` in your setting file.  
+  ZRO will generate JBuilder file by using specified template that you set
+  `jbuilder_templates` in your setting file.  
   For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
 
 

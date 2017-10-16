@@ -42,15 +42,49 @@ module OpenApi
       false
     end
 
-    cattr_accessor :jbuilder_template do
-      <<-FILE
+    cattr_accessor :jbuilder_templates do
+      {
+          index: (
+          <<-FILE
 json.partial! 'api/base', total: @data.count
+
 json.data do
   json.array! @data.page(@_page).per(@_rows) do |datum|
+    json.(datum, *datum.show_attrs)
+  end
+end
+          FILE
+          ),
+
+          show: (
+          <<-FILE
+json.partial! 'api/base', total: 1
+
+json.data do
+  json.array! [@data] do |datum|
     json.(datum, *datum.show_attrs) if datum.present?
   end
 end
-      FILE
+          FILE
+          ),
+
+          success: (
+          <<-FILE
+json.partial! 'api/success'
+          FILE
+          ),
+
+          success_or_not: (
+          <<-FILE
+unless @status
+  # @_code, @_msg = @error_info.present? ? @error_info : ApiError.action_failed.info
+end
+
+json.partial! 'api/base', total: 0
+json.data ''
+          FILE
+          ),
+      }
     end
 
     def self.docs

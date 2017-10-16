@@ -85,14 +85,48 @@ OpenApi::Config.tap do |c|
 
   c.generate_jbuilder_file  = true
   c.overwrite_jbuilder_file = false
-  c.jbuilder_template = <<-FILE
+  c.jbuilder_templates = {
+      index: (
+      <<-FILE
 json.partial! 'api/base', total: @data.count
+
 json.data do
   json.array! @data.page(@_page).per(@_rows) do |datum|
     json.(datum, *datum.show_attrs)
   end
 end
-  FILE
+      FILE
+      ),
+
+      show: (
+      <<-FILE
+json.partial! 'api/base', total: 1
+
+json.data do
+  json.array! [@data] do |datum|
+    json.(datum, *datum.show_attrs) if datum.present?
+  end
+end
+      FILE
+      ),
+
+      success: (
+      <<-FILE
+json.partial! 'api/success'
+      FILE
+      ),
+
+      success_or_not: (
+      <<-FILE
+unless @status
+  # @_code, @_msg = @error_info.present? ? @error_info : ApiError.action_failed.info
+end
+
+json.partial! 'api/base', total: 0
+json.data ''
+      FILE
+      ),
+  }
 
 end
 

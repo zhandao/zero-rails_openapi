@@ -60,7 +60,7 @@ module OpenApi
       FileUtils.mkdir_p dir_path
       file_path = "#{dir_path}/#{option[:action]}.json.jbuilder"
       File.open(file_path, 'w') do |file|
-        file.write Config.jbuilder_template
+        file.write Config.jbuilder_templates[option[:builder]]
       end unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
     end
 
