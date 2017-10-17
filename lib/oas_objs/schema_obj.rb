@@ -38,7 +38,7 @@ module OpenApi
                  }
         then_merge!
 
-        assign(processed_desc options).then_merge!
+        reduceee(processed_desc options).then_merge!
       end
       alias_method :process, :process_for
 
@@ -55,7 +55,7 @@ module OpenApi
       end
 
       # TODO: more info
-      # TODO: configure i18n
+      # TODO: desc configure
       def process_desc
         if processed[:enum].present?
           if @enum_info.present?

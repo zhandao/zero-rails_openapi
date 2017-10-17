@@ -205,14 +205,14 @@ end
   
   ```ruby
   # method signature
-  open_api method, summary = '', builder = false, &block
+  open_api method, summary = '', options = { }, &block
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...', :builder_template1 do end
+  open_api :index, '(SUMMARY) this api blah blah ...', builder: template1 do end
   ```
-  If pass `:builder_template_name` to the third parameter,
+  If pass `builder` or `bd` to the third parameter,
   and `generate_jbuilder_file` in your setting file is set `true`,
   ZRO will generate JBuilder file by using specified template that you set
-  `jbuilder_templates` in your setting file.  
+  `template1` in your setting file.  
   For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
 
 
@@ -463,7 +463,7 @@ Notes: convention is the file name ends with `_doc.rb`
 
 To be written.
 
-You can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_dsl.rb) at the moment.  
+You can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_doc.rb) at the moment.  
 In general is to use method `api_dry`.
 The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 

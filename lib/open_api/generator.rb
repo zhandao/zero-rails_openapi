@@ -45,6 +45,7 @@ module OpenApi
         output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
         max_length = docs.keys.map(&:size).sort.last
+        puts '[ZRO] * * * * * *'
         docs.each do |doc_name, doc|
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
           puts "[ZRO] `%#{max_length}s.json` is generated." % "#{doc_name}"
@@ -61,6 +62,7 @@ module OpenApi
       file_path = "#{dir_path}/#{option[:action]}.json.jbuilder"
       File.open(file_path, 'w') do |file|
         file.write Config.jbuilder_templates[option[:builder]]
+        puts "[ZRO] JBuilder file generated: #{option[:path]}/#{option[:action]}"
       end unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
     end
 

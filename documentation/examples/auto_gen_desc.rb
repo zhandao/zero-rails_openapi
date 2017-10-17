@@ -14,10 +14,10 @@ class V1::GoodsDoc < BaseDoc
     # query :view,        String, enum: %w[all online offline get borrow]
     query :view, String, enum: {
         'all goods (default)': :all,
-        'only online':         :online,
-        'only offline':        :offline,
-        'expensive goods':     :get,
-        'cheap goods':         :borrow,
+                'only online': :online,
+               'only offline': :offline,
+            'expensive goods': :get,
+                'cheap goods': :borrow,
     }
     query :search_type, String, enum: %w[name creator category price]
     # Same as:

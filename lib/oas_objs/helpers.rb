@@ -10,11 +10,13 @@ module OpenApi
       proc { |_, v| truly_present? v }
     end
 
+    # assign.to
     def assign(value)
       @assign = value.is_a?(Symbol) ? send("_#{value}") : value
       self
     end
 
+    # reduceee.then_merge! => for Hash
     def reduceee(*values)
       @assign = values.compact.reduce({ }, :merge).keep_if &value_present
       self

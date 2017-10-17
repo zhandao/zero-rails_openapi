@@ -24,7 +24,7 @@ module OpenApi
         current_ctrl.instance_eval &block if block_given?
       end
 
-      def open_api method, summary = '', builder = false, &block
+      def open_api method, summary = '', options = { }, &block
         apis_set if @_ctrl_infos.nil?
 
         # select the routing info (corresponding to the current method) from the routing list.
@@ -37,13 +37,14 @@ module OpenApi
         current_api = path[routes_info[:http_verb]] =
             ApiInfoObj.new(action_path)
                 .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
-                        parameters: [ ], requestBody: '', responses: { },
-                        security: [ ], servers: [ ]
+                        parameters: [ ], requestBody: '', responses: { }, security: [ ], servers: [ ]
 
-        Generator
-            .generate_builder_file path:    action_path.split('#').first,
-                                   action:  action_path.split('#').last,
-                                   builder: builder
+        if builder = options.values_at(:builder, :bd, :jbuilder).compact.first
+          Generator
+              .generate_builder_file path:    action_path.split('#').first,
+                                     action:  action_path.split('#').last,
+                                     builder: builder
+        end
 
         current_api.tap do |it|
           [method, :all].each do |key| # blocks_store_key

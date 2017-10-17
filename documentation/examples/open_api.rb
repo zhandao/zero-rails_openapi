@@ -91,8 +91,10 @@ OpenApi::Config.tap do |c|
 json.partial! 'api/base', total: @data.count
 
 json.data do
+  # @data = @data.page(@_page).per(@_rows) if @_page || @_rows
+  # json.array! @data do |datum|
   json.array! @data.page(@_page).per(@_rows) do |datum|
-    json.(datum, *datum.show_attrs)
+    json.(datum, *datum.show_attrs) if datum.present?
   end
 end
       FILE
@@ -103,7 +105,7 @@ end
 json.partial! 'api/base', total: 1
 
 json.data do
-  json.array! [@data] do |datum|
+  json.array! [ @data ] do |datum|
     json.(datum, *datum.show_attrs) if datum.present?
   end
 end
