@@ -60,11 +60,11 @@ module OpenApi
         if processed[:enum].present?
           if @enum_info.present?
             @enum_info.each_with_index do |(info, value), index|
-              __desc.concat "#{index + 1}/ #{info}: #{value}<br/>"
+              __desc.concat "<br/>#{index + 1}/ #{info}: #{value}"
             end
           else
             processed[:enum].each_with_index do |value, index|
-              __desc.concat "#{index + 1}/ #{value}<br/>"
+              __desc.concat "<br/>#{index + 1}/ #{value}"
             end
           end
         end
@@ -74,7 +74,7 @@ module OpenApi
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : "#{type}".downcase
         if t.is_a? Hash
-          # For support writing:
+          # For supporting writing:
           #   form 'desc', data: {
           #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
           # }

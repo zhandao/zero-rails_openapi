@@ -5,6 +5,10 @@ module OpenApi
       'public/open_api'
     end
 
+    cattr_accessor :generate_doc do
+      true
+    end
+
     # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
     # Getting started: https://swagger.io/docs/specification/basic-structure/
     cattr_accessor :register_docs do
