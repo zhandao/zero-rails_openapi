@@ -40,8 +40,9 @@ module OpenApi
             ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
-      def write_docs
+      def write_docs(generate_files = true)
         docs = generate_docs
+        return unless generate_files
         output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
         max_length = docs.keys.map(&:size).sort.last

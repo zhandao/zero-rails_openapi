@@ -193,7 +193,7 @@ module OpenApi
           _enum:    %i[ enum     values  allowable_values ],
           _value:   %i[ must_be  value   allowable_value  ],
           _range:   %i[ range    number_range             ],
-          _length:  %i[ length   lth                      ],
+          _length:  %i[ length   lth     size             ],
           _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
           _format:  %i[ format   fmt                      ],
           _pattern: %i[ pattern  regexp  pt   reg         ],
