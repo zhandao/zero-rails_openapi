@@ -3,6 +3,7 @@ require 'oas_objs/param_obj'
 require 'oas_objs/response_obj'
 require 'oas_objs/request_body_obj'
 require 'oas_objs/ref_obj'
+require 'open_api/helpers'
 
 module OpenApi
   module DSL
@@ -100,10 +101,13 @@ module OpenApi
 
     class ApiInfoObj < Hash
       include DSL::CommonDSL
+      include DSL::Helpers
 
-      attr_accessor :action_path
-      def initialize(action_path)
+      attr_accessor :action_path, :param_skip, :param_use
+      def initialize(action_path, options = { })
         self.action_path = action_path
+        self.param_skip  = options[:skip] || [ ]
+        self.param_use   = options[:use]  || [ ]
       end
 
       def this_api_is_invalid! explain = ''
@@ -119,11 +123,6 @@ module OpenApi
         self[:description] = desc
       end
 
-      # TODO: load info from db, Floor.column[0].name
-      def load_schema *attrs
-        ;
-      end
-
       # TODO: HACK
       def merge_desc_for_dryed_param
         @inputs_descs.each do |param_name, desc|
@@ -136,6 +135,9 @@ module OpenApi
       end
 
       def param param_type, name, type, required, schema_hash = { }
+        return if param_skip.include? name
+        return unless param_use.include? name if param_use.present?
+
         if @inputs_descs&.[](name).present?
           schema_hash[:desc] = @inputs_descs[name]
         elsif @inputs_descs&.[]("#{name}!".to_sym).present?

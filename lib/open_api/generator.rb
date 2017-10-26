@@ -48,8 +48,8 @@ module OpenApi
         max_length = docs.keys.map(&:size).sort.last
         puts '[ZRO] * * * * * *'
         docs.each do |doc_name, doc|
-          File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
           puts "[ZRO] `%#{max_length}s.json` is generated." % "#{doc_name}"
+          File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
         # pp $open_apis
       end

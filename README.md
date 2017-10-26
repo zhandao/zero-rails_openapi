@@ -22,12 +22,14 @@ but I dont have enough time now = ▽ =
 - [Configure](#configure)
 - [Usage](#usage)
   - [DSL for documenting your controller](#dsl-for-documenting-your-controller)
-  - [Generate JSON Documentation File](#generate-json-documentation-file)
+  - [Generate JSON documentation file](#generate-json-documentation-file)
   - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
   - [Tricks](#tricks)
-    - [Write DSL Somewhere Else](#trick1---write-the-dsl-somewhere-else)
-    - [DRYing](#trick2---drying)
-    - [Auto Generate Description](#trick3---auto-generate-description)
+    - [Write DSL somewhere else](#trick1---write-the-dsl-somewhere-else)
+    - [Global DRYing](#trick2---global-drying)
+    - [Auto generate description](#trick3---auto-generate-description)
+    - [Skip or Use parameters define in api_dry](#trick4---skip-or-use-parameters-define-in-api_dry)
+    - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -277,7 +279,7 @@ parameters, request body, responses, securities, servers.
   header! name, type, schema_hash = { }
   query!  name, type, schema_hash = { }
   # usage
-  header! :'X-Token', String
+  header! :'Token', String
   query!  :done,      Boolean, must_be: false, default: true
   ```
 
@@ -459,12 +461,11 @@ end
 
 Notes: convention is the file name ends with `_doc.rb`
 
-#### Trick2 - DRYing
+#### Trick2 - Global DRYing
 
-To be written.
+Method `api_dry` is for DRY but its scope is limited to the current controller.
 
-You can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_doc.rb) at the moment.  
-In general is to use method `api_dry`.
+I have no idea of best practices, But you can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_doc.rb).  
 The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 
 #### Trick3 - Auto Generate Description
@@ -496,7 +497,23 @@ query :view, String, enum: {
         'cheap goods':         :borrow,
     }
 ```
-Read this [file](https://github.com/zhandao/zero-rails_openapi/blob//examples/auto_gen_desc.rb) to learn more.
+Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/auto_gen_desc.rb) to learn more.
+
+#### Trick4 - Skip or Use parameters define in api_dry
+
+Pass `skip: []` and `use: []` to `open_api` like following code:
+```ruby
+open_api :index, 'desc', builder: :index, skip: [ :Token ]
+```
+
+Look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/goods_doc.rb) to learn more.
+
+#### Trick5 - Auto Generate index/show Actions's Responses Based on DB Schema
+
+Use method `load_schema` in `api_dry`.
+
+See this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/auto_gen_doc.rb#L51) for uasge information.
+
 
 ## Troubleshooting
 

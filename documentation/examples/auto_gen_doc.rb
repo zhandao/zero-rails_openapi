@@ -1,6 +1,6 @@
 require 'open_api/generator'
 
-# Usage: add `include AutoGenDoc` to base controller.
+# Usage: add `include AutoGenDoc` to your base controller.
 module AutoGenDoc
   def self.included(base)
     base.extend ClassMethods
@@ -22,42 +22,63 @@ module AutoGenDoc
       ctrl_path = try(:controller_path) || instance_variable_get('@_ctrl_path')
       ::OpenApi::Generator.get_actions_by_ctrl_path(ctrl_path)&.each do |action|
         api_dry action do
-          # Token in Header\
-          with_out_token = %w[
-              users#login users#create
-          ]
-          unless action_path.match? Regexp.new with_out_token.join('|')
-            # if !action_path.match?(/NoVerificationController/) && !%w[create login].include?(action)
-            header! 'Token', String, desc: 'user token'
-          end
+          header! :Token, String, desc: 'user token'
 
           # Common :index parameters
-          # if !action_path.match?(/NotDRYController/) && action == 'index'
-          #   query :page,     Integer, desc: 'page', range: { ge: 1 }, dft: 1
-          #   query :per_page, Integer, desc: 'per', range: { ge: 1 }, dft: 10
-          # end
+          if action == 'index'
+            query :page, Integer, desc: 'page, greater than 1', range: { ge: 1 }, dft: 1
+            query :rows, Integer, desc: 'data count per page',  range: { ge: 1 }, dft: 10
+          end
 
+          # Common :show parameters
+          if action == 'show'
+            path! :id, Integer, desc: 'id'
+          end
+
+          # Common :destroy parameters
+          if action == 'destroy'
+            path! :id, Integer, desc: 'id'
+          end
+
+          # Common :update parameters
+          if action == 'update'
+            path! :id, Integer, desc: 'id'
+          end
+
+          ### Common responses
           # OAS require at least one response on each api.
           # default_response 'default response', :json
+          model = Object.const_get(action_path.split('#').first.split('/').last[0..-2].camelize) rescue nil
+          type = action.in?(['index', 'show']) ? Array[load_schema(model)] : String
           response '200', 'success', :json, type: {
               code:      { type: Integer, dft: 200 },
               msg:       { type: String,  dft: 'success' },
               total:     { type: Integer },
               timestamp: { type: Integer },
               language:  { type: String, dft: 'Ruby' },
-              data:      { type: [Object], dft: [ ] }
+              data:      { type: type }
           }
 
-          # automatically generate responses based on the agreed error class.
-          # api/v1/examples#index => ExamplesError
-          error_class_name = action_path.split('#').first.split('/').last.camelize.concat('Error')
-          error_class = Object.const_get(error_class_name) rescue next
-          errors = error_class.errors
-          cur_errs = (errors[action.to_sym] || []) + (errors[:_public] || [ ])
-          cur_errs.each do |error|
-            info = error_class.send(error, :info)
-            response info[:code], info[:msg]
-          end
+
+          ### Automatically generate responses based on the agreed error class.
+          #   The business error-class's implementation see:
+          #     https://github.com/zhandao/zero-rails/blob/master/lib/business_error/z_error.rb
+          #   It's usage see:
+          #     https://github.com/zhandao/zero-rails/blob/master/app/controllers/api/v1/base_controller.rb
+          #   Then, the following code will auto generate error responses by
+          #     extracting the specified error classes info, for example,
+          #     in ExamplesError: `mattr_reader :name_not_found, 'can not find the name', 404`
+          #     will generate: `"404": { "description": "can not find the name" }`
+          ###
+          # # api/v1/examples#index => ExamplesError
+          # error_class_name = action_path.split('#').first.split('/').last.camelize.concat('Error')
+          # error_class = Object.const_get(error_class_name) rescue next
+          # errors = error_class.errors
+          # cur_errs = (errors[action.to_sym] || []) + (errors[:private] || [ ]) + (errors[:_public] || [ ])
+          # cur_errs.each do |error|
+          #   info = error_class.send(error, :info)
+          #   response info[:code], info[:msg]
+          # end
         end
       end
     end

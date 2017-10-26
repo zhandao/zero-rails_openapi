@@ -30,33 +30,34 @@ module OpenApi
         # select the routing info (corresponding to the current method) from the routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{method}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
-        puts "[ZRO Warnning] Routing mapping failed: #{@_ctrl_path}##{method}" or return if routes_info.nil?
+        pp "[ZRO Warnning] Routing mapping failed: #{@_ctrl_path}##{method}" and return if routes_info.nil?
 
-        # structural { path: { http_method:{ } } }, for Paths Object.
+        # structural { #path: { #http_method:{ } } }, for pushing into Paths Object.
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path)
+            ApiInfoObj.new(action_path, options.slice(:skip, :use))
                 .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
                         parameters: [ ], requestBody: '', responses: { }, security: [ ], servers: [ ]
 
-        if builder = options.values_at(:builder, :bd, :jbuilder).compact.first
+        if (builder = options.values_at(:builder, :bd, :jbuilder).compact.first).present?
           Generator
               .generate_builder_file path:    action_path.split('#').first,
                                      action:  action_path.split('#').last,
                                      builder: builder
         end
 
-        current_api.tap do |it|
+        current_api.tap do |api|
           [method, :all].each do |key| # blocks_store_key
-            @_apis_blocks&.[](key)&.each { |blk| it.instance_eval &blk }
+            @_apis_blocks&.[](key)&.each { |blk| api.instance_eval &blk }
           end
-          it.instance_eval &block if block_given?
-          it.instance_eval { process_params }
-          it.delete_if { |_, v| v.blank? }
+          api.param_use = nil
+          api.instance_eval &block if block_given?
+          api.instance_eval { process_params }
+          api.delete_if { |_, v| v.blank? }
         end
       end
 
-      # For DRY; method could be symbol array
+      # method could be symbol array, like: %i[ .. ]
       def api_dry method = :all, desc = '', &block
         @_apis_blocks ||= { }
         if method.is_a? Array

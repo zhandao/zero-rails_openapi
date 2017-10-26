@@ -1,0 +1,2998 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Zero Rails Apis",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Optional server description, e.g. Main (production) server"
+    },
+    {
+      "url": "http://staging_server",
+      "description": "Optional server description, e.g. Internal staging server for testing"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": [
+
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Goods"
+    },
+    {
+      "name": "Permissions"
+    },
+    {
+      "name": "Roles"
+    },
+    {
+      "name": "Categories"
+    },
+    {
+      "name": "Inventories"
+    },
+    {
+      "name": "Stores"
+    },
+    {
+      "name": "Users"
+    }
+  ],
+  "paths": {
+    "/api/v1/goods": {
+      "get": {
+        "description": "Get list of Goods.",
+        "summary": "Get list of Goods.",
+        "operationId": "index",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_start_at",
+            "in": "query",
+            "required": false,
+            "description": "时间起点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "start"
+            }
+          },
+          {
+            "name": "created_end_at",
+            "in": "query",
+            "required": false,
+            "description": "时间终点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "end"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页数，从 1 开始",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "per page, 请求的数据条数",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "description": "请求来自的视图，允许值：<br/>1/ 所有物品 (default): all<br/>2/ 上线物品: online<br/>3/ 下线物品: offline",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "online",
+                "offline"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "search_type",
+            "in": "query",
+            "required": false,
+            "description": "搜索的字段名，允许值：<br/>1/ name<br/>2/ creator<br/>3/ category_name<br/>4/ unit<br/>5/ price",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "creator",
+                "category_name",
+                "unit",
+                "price"
+              ],
+              "as": "field"
+            }
+          },
+          {
+            "name": "export",
+            "in": "query",
+            "required": false,
+            "description": "是否将查询结果导出 Excel 文件",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a Good, returns id of the good that was created.",
+        "operationId": "create",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a good",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "名字"
+                  },
+                  "category_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "as": "cate",
+                    "not_permit": true,
+                    "description": "子类 id"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "description": "单位"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "minimum": 0,
+                    "description": "单价"
+                  },
+                  "is_online": {
+                    "type": "boolean",
+                    "description": "是否上线?"
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "description": "其他说明"
+                  },
+                  "pic_path": {
+                    "type": "string",
+                    "format": "url",
+                    "is": "url",
+                    "description": "图片路径"
+                  }
+                },
+                "required": [
+                  "name",
+                  "category_id",
+                  "unit",
+                  "price"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "600": {
+            "description": "create failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/goods/{id}": {
+      "get": {
+        "summary": "Show a Good.",
+        "operationId": "show",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要查询的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a Good.",
+        "operationId": "update",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要更新的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for updating a good",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "名字"
+                  },
+                  "category_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "as": "cate",
+                    "not_permit": true,
+                    "description": "子类 id"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "description": "单位"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "minimum": 0,
+                    "description": "单价"
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "description": "其他说明"
+                  },
+                  "pic_path": {
+                    "type": "string",
+                    "format": "url",
+                    "is": "url",
+                    "description": "图片路径"
+                  },
+                  "is_online": {
+                    "type": "boolean",
+                    "description": "是否上线"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "601": {
+            "description": "update failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Good.",
+        "operationId": "destroy",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要删除的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "602": {
+            "description": "destroy failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/goods/{id}/change_online": {
+      "post": {
+        "summary": "Change online status of Good, will do: is_online = !is_online.",
+        "operationId": "change_online",
+        "tags": [
+          "Goods"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要上/下线的物品 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "700": {
+            "description": "change online failed"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/permissions": {
+      "get": {
+        "summary": "Get list of Permissions of specified model",
+        "operationId": "index",
+        "tags": [
+          "Permissions"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]",
+              "default": "User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "POST create a Permission",
+        "operationId": "create",
+        "tags": [
+          "Permissions"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a permission",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "name of permission"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "default": "true",
+                    "description": "暂不必传"
+                  },
+                  "remarks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles": {
+      "get": {
+        "summary": "Get list of Roles of specified model",
+        "operationId": "index",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]",
+              "default": "Admin"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "POST create a Role",
+        "operationId": "create",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a role",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "name of role"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "default": "true",
+                    "description": "暂不必传"
+                  },
+                  "remarks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{id}/permissions": {
+      "post": {
+        "summary": "GET Permissions of specified role",
+        "operationId": "permissions",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要查询的 role id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{id}/permissions/add": {
+      "post": {
+        "summary": "POST add Permissions to specified role",
+        "operationId": "permissions_add",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "role id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for adding permissions to role",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "permission_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "permission_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/roles/{id}/permissions/remove": {
+      "post": {
+        "summary": "POST remove Permissions from specified role",
+        "operationId": "permissions_remove",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "role id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for removing permissions from the role",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "permission_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "permission_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "summary": "Get list of Categories.",
+        "operationId": "index",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "偏移量，从 0 开始",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "per page, 请求的数据条数",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a Category, returns id of the category that was created.",
+        "operationId": "create",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a category",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "名字"
+                  },
+                  "is_smaller": {
+                    "type": "boolean",
+                    "description": "icon name"
+                  },
+                  "icon_name": {
+                    "type": "string",
+                    "description": "是否二级分类?"
+                  },
+                  "base_id": {
+                    "type": "integer",
+                    "description": "一级分类的 id"
+                  }
+                },
+                "required": [
+                  "name",
+                  "is_smaller"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "600": {
+            "description": "create failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/category_list": {
+      "get": {
+        "summary": "Get nested list of Categories.",
+        "operationId": "nested_list",
+        "tags": [
+          "Categories"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "patch": {
+        "summary": "Update a Category.",
+        "operationId": "update",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要更新的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a category",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "名字"
+                  },
+                  "is_smaller": {
+                    "type": "boolean",
+                    "description": "icon name"
+                  },
+                  "icon_name": {
+                    "type": "string",
+                    "description": "是否二级分类?"
+                  },
+                  "base_id": {
+                    "type": "integer",
+                    "description": "一级分类的 id"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "601": {
+            "description": "update failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Category.",
+        "operationId": "destroy",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要删除的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "602": {
+            "description": "destroy failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/inventories": {
+      "get": {
+        "description": "Get list of Goods",
+        "summary": "Get list of Inventories.",
+        "operationId": "index",
+        "tags": [
+          "Inventories"
+        ],
+        "parameters": [
+          {
+            "name": "created_start_at",
+            "in": "query",
+            "required": false,
+            "description": "时间起点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "start"
+            }
+          },
+          {
+            "name": "created_end_at",
+            "in": "query",
+            "required": false,
+            "description": "时间终点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "end"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页数，从 1 开始",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "per page, 请求的数据条数",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            }
+          },
+          {
+            "name": "store_code",
+            "in": "query",
+            "required": true,
+            "description": "商店代号",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search_type",
+            "in": "query",
+            "required": false,
+            "description": "搜索的字段名，允许值：<br/>1/ name<br/>2/ creator<br/>3/ category_name<br/>4/ unit<br/>5/ price",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "creator",
+                "category_name",
+                "unit",
+                "price"
+              ],
+              "as": "field"
+            }
+          },
+          {
+            "name": "export",
+            "in": "query",
+            "required": false,
+            "description": "是否将查询结果导出 Excel 文件",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stores": {
+      "get": {
+        "summary": "Get list of Stores.",
+        "operationId": "index",
+        "tags": [
+          "Stores"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "偏移量，从 0 开始",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "per page, 请求的数据条数",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a Store, returns id of the store that was created.",
+        "operationId": "create",
+        "tags": [
+          "Stores"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for creating a store",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "description": "商店代号"
+                  },
+                  "addr": {
+                    "type": "string",
+                    "description": "对应的商店地址"
+                  }
+                },
+                "required": [
+                  "code",
+                  "addr"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "600": {
+            "description": "create failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/stores/{id}": {
+      "get": {
+        "summary": "Show a Store.",
+        "operationId": "show",
+        "tags": [
+          "Stores"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a Store.",
+        "operationId": "update",
+        "tags": [
+          "Stores"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要更新的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for updating a store",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "description": "商店代号"
+                  },
+                  "addr": {
+                    "type": "string",
+                    "description": "对应的商店地址"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "601": {
+            "description": "update failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Store.",
+        "operationId": "destroy",
+        "tags": [
+          "Stores"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要删除的 id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "602": {
+            "description": "destroy failed"
+          },
+          "-1": {
+            "description": "invalid token"
+          },
+          "-10": {
+            "description": "role verification failed"
+          },
+          "-11": {
+            "description": "insufficient permission"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": {
+          "use": [
+            "Token"
+          ]
+        },
+        "operationId": "index",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_start_at",
+            "in": "query",
+            "required": false,
+            "description": "时间起点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "start"
+            }
+          },
+          {
+            "name": "created_end_at",
+            "in": "query",
+            "required": false,
+            "description": "时间终点, YY-MM-DD (HH:MM:SS, 可选)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "as": "end"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页数，从 1 开始",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "description": "per page, 请求的数据条数",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      },
+      "post": {
+        "summary": "register",
+        "operationId": "create",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "register",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "password",
+                  "password_confirmation"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "600": {
+            "description": "invalid info"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": {
+          "use": [
+            "Token"
+          ]
+        },
+        "operationId": "show",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/login": {
+      "post": {
+        "summary": "user login, and get token.",
+        "operationId": "login",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "login",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "user name"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "601": {
+            "description": "admin not found"
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/roles": {
+      "get": {
+        "summary": "GET Roles of specified user",
+        "operationId": "roles",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要查询的 user id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/permissions": {
+      "get": {
+        "summary": "GET Permissions of specified user",
+        "operationId": "permissions",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "要查询的 user id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/roles/add": {
+      "post": {
+        "summary": "POST add Roles to specified user",
+        "operationId": "roles_add",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "user id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for adding roles to user",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "role_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/roles/remove": {
+      "post": {
+        "summary": "POST remove Roles from specified user",
+        "operationId": "roles_remove",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Token",
+            "in": "header",
+            "required": true,
+            "description": "user token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "user id",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "for removing roles from the user",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "role_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "default": 200
+                    },
+                    "msg": {
+                      "type": "string",
+                      "default": "success"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "type": "integer",
+                      "format": "time",
+                      "is": "time"
+                    },
+                    "language": {
+                      "type": "string",
+                      "default": "Ruby"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "param validation failure"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "name": "server_token",
+        "in": "query"
+      }
+    }
+  }
+}
