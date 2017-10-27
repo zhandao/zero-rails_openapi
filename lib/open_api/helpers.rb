@@ -19,7 +19,7 @@ module OpenApi
               # TODO: 如何获知关系是 many？因为不能只判断结尾是否 ‘s’
               assoc_model = Object.const_get(attr.to_s.split('_').first.singularize.camelize)
               { attr => load_schema(assoc_model) }
-            end
+            end rescue next
           end
         else
           model&.columns&.map do |column|

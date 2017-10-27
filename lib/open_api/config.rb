@@ -1,5 +1,9 @@
+require 'open_api/config_dsl'
+
 module OpenApi
   module Config
+    include ConfigDSL
+
     # [REQUIRED] The location where .json doc file will be output.
     cattr_accessor :file_output_path do
       'public/open_api'

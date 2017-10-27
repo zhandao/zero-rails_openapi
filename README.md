@@ -29,7 +29,7 @@ but I dont have enough time now = ▽ =
     - [Global DRYing](#trick2---global-drying)
     - [Auto generate description](#trick3---auto-generate-description)
     - [Skip or Use parameters define in api_dry](#trick4---skip-or-use-parameters-define-in-api_dry)
-    - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5)
+    - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-responses-based-on-db-schema)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -96,7 +96,7 @@ end
 You can also set the *global configuration(/component)* of OAS: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
 
 ## Usage
 
@@ -113,7 +113,7 @@ class ApplicationController < ActionController::API
  end
 ```
 
-#### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/examples_controller.rb)
+#### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/examples_controller.rb)
 
 (TODO: I consider that, here should be put in a the simplest case.)
 ```ruby
@@ -169,7 +169,7 @@ end
   ctrl_path 'api/v1/examples'
   ```
   This option allows you to set the Tag* (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
-  [Here's a trick](#write-the-dsl-somewhere-else-recommend): Using `ctrl_path`, you can write the DSL somewhere else 
+  [Here's a trick](#trick1---write-the-dsl-somewhere-else): Using `ctrl_path`, you can write the DSL somewhere else 
   to simplify the current controller.  
   \* take the tag from `path.split('/').last`
 
@@ -215,7 +215,7 @@ end
   and `generate_jbuilder_file` in your setting file is set `true`,
   ZRO will generate JBuilder file by using specified template that you set
   `template1` in your setting file.  
-  For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob//examples/open_api.rb)
+  For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
 
 
 #### \>\> DSL methods inside *open_api* and *api_dry*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
@@ -283,7 +283,7 @@ parameters, request body, responses, securities, servers.
   query!  :done,      Boolean, must_be: false, default: true
   ```
 
-  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob//parameter.md)
+  [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
 
 - request_body family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
   - `request_body`
@@ -409,7 +409,7 @@ The DSL methods used to generate the components in this block are:
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }
   ```
-  *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob//parameter.md#type)
+  *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md#type)
 
 ### Generate JSON Documentation File
 
@@ -465,7 +465,7 @@ Notes: convention is the file name ends with `_doc.rb`
 
 Method `api_dry` is for DRY but its scope is limited to the current controller.
 
-I have no idea of best practices, But you can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/masterdocumentation/examples/auto_gen_doc.rb).  
+I have no idea of best practices, But you can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb).  
 The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 
 #### Trick3 - Auto Generate Description
@@ -485,7 +485,7 @@ Notice `!` use (`search_type!`, `desc!`), it tells ZRO to append
 information that analyzed from definitions (enum, must_be ..) to description automatically.
 
 Any one of above will generate:  
-`search field, allows：<br/>1/ name<br/>2/ creator,<br/>3/ category<br/>4/ price<br/>`
+> search field, allows：<br/>1/ name<br/>2/ creator,<br/>3/ category<br/>4/ price<br/>
 
 ZRO also allows you use Hash to define `enum`:
 ```ruby
@@ -497,7 +497,7 @@ query :view, String, enum: {
         'cheap goods':         :borrow,
     }
 ```
-Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/auto_gen_desc.rb) to learn more.
+Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_desc.rb) to learn more.
 
 #### Trick4 - Skip or Use parameters define in api_dry
 
@@ -506,13 +506,13 @@ Pass `skip: []` and `use: []` to `open_api` like following code:
 open_api :index, 'desc', builder: :index, skip: [ :Token ]
 ```
 
-Look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/goods_doc.rb) to learn more.
+Look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb) to learn more.
 
-#### Trick5 - Auto Generate index/show Actions's Responses Based on DB Schema
+#### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
 
 Use method `load_schema` in `api_dry`.
 
-See this [file](https://github.com/zhandao/zero-rails_openapi/blob/examples/auto_gen_doc.rb#L51) for uasge information.
+See this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb#L51) for uasge information.
 
 
 ## Troubleshooting
