@@ -106,8 +106,6 @@ For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-r
 
 ```ruby
 # application_controller.rb
-require 'open_api/dsl'
-
 class ApplicationController < ActionController::API
   include OpenApi::DSL
  end

@@ -61,10 +61,11 @@ module OpenApi
       dir_path = "app/views/#{option[:path]}"
       FileUtils.mkdir_p dir_path
       file_path = "#{dir_path}/#{option[:action]}.json.jbuilder"
-      File.open(file_path, 'w') do |file|
-        file.write Config.jbuilder_templates[option[:builder]]
+
+      unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
+        File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[option[:builder]] }
         puts "[ZRO] JBuilder file generated: #{option[:path]}/#{option[:action]}"
-      end unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
+      end
     end
 
     def self.generate_routes_list

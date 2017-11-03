@@ -37,13 +37,12 @@ module OpenApi
         current_api = path[routes_info[:http_verb]] =
             ApiInfoObj.new(action_path, options.slice(:skip, :use))
                 .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
-                        parameters: [ ], requestBody: '', responses: { }, security: [ ], servers: [ ]
+                        parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
 
         if (builder = options.values_at(:builder, :bd, :jbuilder).compact.first).present?
-          Generator
-              .generate_builder_file path:    action_path.split('#').first,
-                                     action:  action_path.split('#').last,
-                                     builder: builder
+          Generator.generate_builder_file path:    action_path.split('#').first,
+                                          action:  action_path.split('#').last,
+                                          builder: builder
         end
 
         current_api.tap do |api|
