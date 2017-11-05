@@ -8,7 +8,9 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :code, :media_type
-      def initialize(code, desc, media_type, schema_hash)
+      def initialize(desc, media_type, schema_hash)
+        @schema_hash = schema_hash
+        @mt = media_type
         self.code       = code.to_s
         self.media_type = MediaTypeObj.new(media_type, schema_hash)
         self.processed  = { description: desc }
@@ -16,7 +18,13 @@ module OpenApi
 
       def process
         assign(media_type.process).to_processed 'content'
-        { code => processed }
+        processed
+      end
+
+      def override type_hash
+        @schema_hash[:type].merge!(type_hash)
+        self.media_type = MediaTypeObj.new(@mt, @schema_hash)
+        self
       end
     end
   end

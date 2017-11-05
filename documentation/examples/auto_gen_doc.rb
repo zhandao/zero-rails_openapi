@@ -22,7 +22,7 @@ module AutoGenDoc
       ctrl_path = try(:controller_path) || instance_variable_get('@_ctrl_path')
       ::OpenApi::Generator.get_actions_by_ctrl_path(ctrl_path)&.each do |action|
         api_dry action do
-          header! :Token, String, desc: 'user token'
+          header! 'Token', String, desc: 'user token'
 
           # Common :index parameters
           if action == 'index'
@@ -73,9 +73,8 @@ module AutoGenDoc
           # # api/v1/examples#index => ExamplesError
           # error_class_name = action_path.split('#').first.split('/').last.camelize.concat('Error')
           # error_class = Object.const_get(error_class_name) rescue next
-          # errors = error_class.errors
-          # cur_errs = (errors[action.to_sym] || []) + (errors[:private] || [ ]) + (errors[:_public] || [ ])
-          # cur_errs.each do |error|
+          # cur_api_errs = error_class.errors.values_at(action.to_sym, :private, :_public).flatten.compact.uniq
+          # cur_api_errs.each do |error|
           #   info = error_class.send(error, :info)
           #   response info[:code], info[:msg]
           # end

@@ -1,6 +1,10 @@
 module OpenApi
   module DSL
     module Helpers
+      def self.included(base)
+        base.extend ClassMethods
+      end
+
       def load_schema(model)
         # About `show_attrs`, see:
         #   (1) BuilderSupport module: https://github.com/zhandao/zero-rails/blob/master/app/models/concerns/builder_support.rb
@@ -29,6 +33,28 @@ module OpenApi
             { name => Object.const_get(type) }
           end
         end&.compact&.reduce({ }, :merge)
+      end
+
+      # Arrow Writing:
+      #   response :RespComponent => [ '200', 'success', :json ]
+      # It is equivalent to:
+      #   response :RespComponent, '200', 'success', :json
+      # But I think, in the definition of a component,
+      #   the key-value (arrow) writing is easy to understand.
+      def arrow_writing_support
+        proc do |args, executor|
+          _args = args.size == 1 && args.first.is_a?(Hash) ? args[0].to_a.flatten : args
+          send executor, *_args
+        end
+      end
+
+      module ClassMethods
+        def arrow_enable method
+          alias_method "_#{method}".to_sym, method
+          define_method method do |*args|
+            arrow_writing_support.call(args, "_#{method}")
+          end
+        end
       end
     end
   end

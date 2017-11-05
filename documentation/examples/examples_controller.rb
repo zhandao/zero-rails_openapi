@@ -1,5 +1,7 @@
 class Api::V1::ExamplesController < Api::V1::BaseController
-  apis_set 'ExamplesController\'s APIs' do
+  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+
+  components do
     schema :Dog => [{
                          id!: Integer,
                          name: { type: String, must_be: 'zhandao', desc: 'name' }

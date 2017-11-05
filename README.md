@@ -116,7 +116,9 @@ class ApplicationController < ActionController::API
 (TODO: I consider that, here should be put in a the simplest case.)
 ```ruby
 class Api::V1::ExamplesController < Api::V1::BaseController
-  apis_set 'ExamplesController\'s APIs' do
+  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  
+  components do
     schema :Dog           => [ String, must_be: 'doge' ]
     query! :QueryCompUuid => [ :product_uuid, String, desc: 'product uuid' ]
     path!  :PathCompId    => [ :id, Integer, desc: 'user id' ]
@@ -171,18 +173,29 @@ end
   to simplify the current controller.  
   \* take the tag from `path.split('/').last`
 
-- `apis_set` [Optional]
+- `apis_tag` [Optional]
 
   ```ruby
   # method signature
-  apis_set desc = '', external_doc_url = '', &block
+  apis_tag name: nil, desc: '', external_doc_url: ''
   # usage
-  apis_set 'ExamplesController\'s APIs' do
-    # DSL for defining components
-  end
+  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
   ```
   desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name ), but are optional. 
-  the focus is on the block, the DSL methods in the block will generate components.
+
+- `components` [Optional]
+
+  ```ruby
+  # method signature
+  components &block
+  # usage
+  components do
+    # DSL for defining components
+    schema :Dog => [ String, dft: { id: 1, name: 'pet' } ]
+  end
+  ```
+  Component can be used to simplify your DSL code in `*_ref` methods.  
+  Each RefObj you define is associated with components through component key.
 
 - `api_dry` [Optional]
 
@@ -205,15 +218,15 @@ end
   
   ```ruby
   # method signature
-  open_api method, summary = '', options = { }, &block
+  open_api method, summary = '', builder: nil, skip: [ ], use: [ ], &block
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...', builder: template1 do end
+  open_api :index, '(SUMMARY) this api blah blah ...', builder: :template1 do end
   ```
-  If pass `builder` or `bd` to the third parameter,
-  and `generate_jbuilder_file` in your setting file is set `true`,
+  If pass `builder` to the third parameter,
+  and `generate_jbuilder_file` is set `true` in your initializer file,
   ZRO will generate JBuilder file by using specified template that you set
   `template1` in your setting file.  
-  For example, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
+  You can see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
 
 
 #### \>\> DSL methods inside *open_api* and *api_dry*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
@@ -239,7 +252,7 @@ parameters, request body, responses, securities, servers.
 
   ```ruby
   # method signature
-  desc desc, inputs_descs = { }
+  desc desc, param_descs = { }
   # usage
   desc 'current API\'s description',
        id:         'user id',
@@ -255,7 +268,8 @@ parameters, request body, responses, securities, servers.
   - `param`
   - `param_ref`
   - `header`, `path`, `query`, `cookie` and bang methods: `header!`, `path!`, `query!`, `cookie!`  
-  **The bang method(`!`) means it is required, so it is optional without `!`, the same below.**
+  - `do_* by: { }`  
+  **The bang method(`!`) means it is required, so without `!` means it is optional. the same below.**
 
   Define the parameters for the API(operation).
   You can use the Reference Object to link to parameters that are defined at the components/parameters by method param_ref().
@@ -264,21 +278,32 @@ parameters, request body, responses, securities, servers.
   # method signature
   param param_type, name, type, required, schema_hash = { }
   # usage
-  param :query,    :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
+  param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
   
   # method signature
   param_ref component_key, *component_keys
   # usage
   param_ref :PathCompId
-  param_ref :PathCompId, :QueryCompUuid, ...
+  param_ref :PathCompId, :QueryComp#, ...
   
   # method signature
   header  name, type, schema_hash = { }
   header! name, type, schema_hash = { }
   query!  name, type, schema_hash = { }
   # usage
-  header! :'Token', String
-  query!  :done,      Boolean, must_be: false, default: true
+  header! 'Token', String
+  query!  :read,   Boolean, must_be: true, default: false
+
+  # method signature
+  do_query by:
+  # usage
+  do_query by: {
+    :search_type => { type: String  },
+        :export! => { type: Boolean }
+  }
+  # Same as below, but a little more succinctly
+  query  :search_type, String
+  query! :export, Boolean
   ```
 
   [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
@@ -305,7 +330,7 @@ parameters, request body, responses, securities, servers.
   body_ref :Body
 
   # method signature
-  body(!) media_type, desc = '', schema_hash = { }
+  body! media_type, desc = '', schema_hash = { }
   # usage
   body :json
   
@@ -367,7 +392,7 @@ parameters, request body, responses, securities, servers.
 
 - server: TODO
   
-#### \>\> DSL methods inside apis_set'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
+#### \>\> DSL methods inside components'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
 
 (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
 

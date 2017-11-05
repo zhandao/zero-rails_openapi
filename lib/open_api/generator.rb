@@ -40,7 +40,7 @@ module OpenApi
             ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
-      def write_docs(generate_files = true)
+      def write_docs(generate_files: true)
         docs = generate_docs
         return unless generate_files
         output_path = Config.file_output_path
@@ -48,23 +48,25 @@ module OpenApi
         max_length = docs.keys.map(&:size).sort.last
         puts '[ZRO] * * * * * *'
         docs.each do |doc_name, doc|
-          puts "[ZRO] `%#{max_length}s.json` is generated." % "#{doc_name}"
+          puts "[ZRO] `%#{max_length}s.json` has been generated." % "#{doc_name}"
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
         # pp $open_apis
       end
     end
 
-    def self.generate_builder_file(option)
+    def self.generate_builder_file(action_path, builder)
       return unless Config.generate_jbuilder_file
-      return unless option[:builder]
-      dir_path = "app/views/#{option[:path]}"
+      return if builder.nil?
+
+      path, action = action_path.split('#')
+      dir_path = "app/views/#{path}"
       FileUtils.mkdir_p dir_path
-      file_path = "#{dir_path}/#{option[:action]}.json.jbuilder"
+      file_path = "#{dir_path}/#{action}.json.jbuilder"
 
       unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
-        File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[option[:builder]] }
-        puts "[ZRO] JBuilder file generated: #{option[:path]}/#{option[:action]}"
+        File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[builder] }
+        puts "[ZRO] JBuilder file has been generated: #{path}/#{action}"
       end
     end
 
@@ -80,7 +82,7 @@ module OpenApi
         {
             http_verb: infos[0].downcase, # => "get"
             path: infos[1][0..-11].split('/').map do |item|
-                    item.match?(/:/) ? "{#{item[1..-1]}}" : item
+                    item[':'] ? "{#{item[1..-1]}}" : item
                   end.join('/'),          # => "/api/v1/examples/{id}"
             action_path: infos[2]         # => "api/v1/examples#index"
         } rescue next

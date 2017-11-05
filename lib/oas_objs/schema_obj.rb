@@ -40,7 +40,7 @@ module OpenApi
 
         reduceee(processed_desc options).then_merge!
       end
-      alias_method :process, :process_for
+      alias process process_for
 
       def preprocess_with_desc desc, param_name = nil
         self.__desc = desc
@@ -109,7 +109,7 @@ module OpenApi
         }
         t.each do |prop_name, prop_type|
           @prop_name = prop_name
-          _schema[:required] << "#{prop_name}".delete('!') if "#{prop_name}".match? '!'
+          _schema[:required] << "#{prop_name}".delete('!') if prop_name['!']
           _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
         end
         _schema.keep_if &value_present

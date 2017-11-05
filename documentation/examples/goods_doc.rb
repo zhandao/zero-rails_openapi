@@ -1,7 +1,7 @@
 class V2::GoodsDoc < BaseDoc
 
   open_api :index, 'Get list of Goods.', builder: :index,
-           use: [ :Token ] do # use parameters write in AutoGenDoc#api_dry
+           use: [ 'Token' ] do # use parameters write in AutoGenDoc#api_dry
            # skip: %i[ Token ] do # you can also skip parameters
     desc 'listing Goods',
          view!: 'search view, allows:：<br/>',
@@ -18,7 +18,7 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  open_api :create, 'Create a Good', builder: :success_or_not, use: token do
+  open_api :create, 'Create a Good', builder: :success_or_not, use: 'Token' do
     form! 'for creating a good', data: {
                :name! => { type: String,  desc: 'good\'s name' },
         :category_id! => { type: Integer, desc: 'sub_category\'s id', npmt: true, range: { ge: 1 }, as: :cate  },
@@ -31,8 +31,8 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  open_api :show, 'Show a Good.', builder: :show, use: [ :Token, :id ]
+  open_api :show, 'Show a Good.', builder: :show, use: [ 'Token', :id ]
 
 
-  open_api :destroy, 'Delete a Good.', builder: :success_or_not, use: [ :Token, :id ]
+  open_api :destroy, 'Delete a Good.', builder: :success_or_not, use: [ 'Token', :id ]
 end
