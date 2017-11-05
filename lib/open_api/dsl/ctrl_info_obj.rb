@@ -11,6 +11,10 @@ module OpenApi
       end
       arrow_enable :schema
 
+      def example summary, example_hash
+        # TODO
+      end
+
       def param component_key, param_type, name, type, required, schema_hash = { }
         (self[:parameters] ||= { })[component_key] =
             ParamObj.new(name, param_type, type, required, schema_hash).process

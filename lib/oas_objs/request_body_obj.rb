@@ -9,8 +9,8 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :media_type
-      def initialize(required, media_type, desc, schema_hash)
-        self.media_type = MediaTypeObj.new(media_type, schema_hash)
+      def initialize(required, media_type, desc, hash)
+        self.media_type = MediaTypeObj.new(media_type, hash)
         self.processed  = { required: required.to_s.match?(/req/), description: desc }
       end
 

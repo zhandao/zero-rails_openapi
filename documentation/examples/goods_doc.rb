@@ -14,7 +14,14 @@ class V2::GoodsDoc < BaseDoc
             'expensive goods': :expensive,
                 'cheap goods': :cheap,
     }
-    query :search_type, String, enum: %w[name creator category price]
+    # query :search_type, String, enum: %w[name creator category price]
+    do_query by: {
+        :search_type => { type: String, enum: %w[ name creator category price ] },
+        :export => { type: Boolean, desc: 'export as Excel format', examples: {
+            :right_input => true,
+            :wrong_input => 'wrong input'
+        }}
+    }
   end
 
 
@@ -27,7 +34,11 @@ class V2::GoodsDoc < BaseDoc
            :is_online => { type: Boolean, desc: 'it\'s online?' },
              :remarks => { type: String,  desc: 'remarks' },
             :pic_path => { type: String,  desc: 'picture url', is: :url },
-    }
+    }, exp_by: %i[ name category_id price ],
+          examples: {
+              :right_input => [ 'good1', 6, 5.7 ],
+              :wrong_input => [ 'good2', 0, -1  ]
+          }
   end
 
 

@@ -1,4 +1,3 @@
-require 'oas_objs/media_type_obj'
 require 'oas_objs/helpers'
 
 module OpenApi

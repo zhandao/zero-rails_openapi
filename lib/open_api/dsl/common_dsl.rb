@@ -23,12 +23,12 @@ module OpenApi
       end
 
       # `code`: when defining components, `code` means `component_key`
-      def response code, desc, media_type = nil, schema_hash = { }
-        (self[:responses] ||= { })[code] = ResponseObj.new(desc, media_type, schema_hash)
+      def response code, desc, media_type = nil, hash = { }
+        (self[:responses] ||= { })[code] = ResponseObj.new(desc, media_type, hash)
       end
 
-      def default_response desc, media_type = nil, schema_hash = { }
-        response :default, desc, media_type, schema_hash
+      def default_response desc, media_type = nil, hash = { }
+        response :default, desc, media_type, hash
       end
 
       { # alias_methods mapping

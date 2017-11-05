@@ -1,4 +1,5 @@
 require 'open_api/config_dsl'
+require 'active_support/all'
 
 module OpenApi
   module Config

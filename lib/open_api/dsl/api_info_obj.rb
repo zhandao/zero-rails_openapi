@@ -64,12 +64,12 @@ module OpenApi
         self[:parameters].concat([component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process })
       end
 
-      def request_body required, media_type, desc = '', schema_hash = { }
-        self[:requestBody] = RequestBodyObj.new(required, media_type, desc, schema_hash).process
+      def request_body required, media_type, desc = '', hash = { }
+        self[:requestBody] = RequestBodyObj.new(required, media_type, desc, hash).process
       end
 
-      def _request_body_agent media_type, desc = '', schema_hash = { }
-        request_body (@method_name['!'] ? :req : :opt), media_type, desc, schema_hash
+      def _request_body_agent media_type, desc = '', hash = { }
+        request_body (@method_name['!'] ? :req : :opt), media_type, desc, hash
       end
 
       def body_ref component_key
@@ -88,17 +88,21 @@ module OpenApi
       end
 
       # TODO: 目前只能写一句 request body，包括 form 和 file， 需要同时支持一下扁平化
-      def form desc = '', schema_hash = { }
-        body :form, desc, schema_hash
+      def form desc = '', hash = { }
+        body :form, desc, hash
       end
-      def form! desc = '', schema_hash = { }
-        body! :form, desc, schema_hash
+
+      def form! desc = '', hash = { }
+        body! :form, desc, hash
       end
-      def file media_type, desc = '', schema_hash = { type: File }
-        body media_type, desc, schema_hash
+
+      # TODO: 这种情况下 form 和 file 无法共存，需要解决（通过 Discriminator?）
+      def file media_type, desc = '', hash = { type: File }
+        body media_type, desc, hash
       end
-      def file! media_type, desc = '', schema_hash = { type: File }
-        body! media_type, desc, schema_hash
+
+      def file! media_type, desc = '', hash = { type: File }
+        body! media_type, desc, hash
       end
 
       def security scheme_name, requirements = [ ]

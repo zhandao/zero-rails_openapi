@@ -1,6 +1,7 @@
 require 'oas_objs/helpers'
 require 'open_api/config'
 require 'oas_objs/ref_obj'
+require 'oas_objs/example_obj'
 
 module OpenApi
   module DSL
@@ -9,6 +10,7 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :type
+
       def initialize(type, schema_hash)
         self.processed = { }
         # [Note] Here is no limit to type, even if the input isn't up to OAS,
@@ -35,11 +37,13 @@ module OpenApi
                      as:         _as,
                      permit:     _permit,
                      not_permit: _npermit,
+                     examples:   self[:examples].present? ? ExampleObj.new(self[:examples]).process : nil
                  }
         then_merge!
 
         reduceee(processed_desc options).then_merge!
       end
+
       alias process process_for
 
       def preprocess_with_desc desc, param_name = nil
@@ -87,7 +91,7 @@ module OpenApi
           recursive_array_type t
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
-        elsif t.in? %w[float double int32 int64] #  TTTTTIP: 这些值应该传 string 进来, symbol 只允许 $ref
+        elsif t.in? %w[float double int32 int64] # to README: 这些值应该传 string 进来, symbol 只允许 $ref
           { type: t.match?('int') ? 'integer' : 'number', format: t}
         elsif t.in? %w[binary base64]
           { type: 'string', format: t}
@@ -99,6 +103,7 @@ module OpenApi
           { type: t }
         end
       end
+
       def recursive_obj_type(t) # DSL use { prop_name: prop_type } to represent object structure
         return processed_type(t) if !t.is_a?(Hash) || t.key?(:type)
 
@@ -114,6 +119,7 @@ module OpenApi
         end
         _schema.keep_if &value_present
       end
+
       def recursive_array_type(t)
         if t.is_a? Array
           {
@@ -180,12 +186,12 @@ module OpenApi
           it.merge! is: _is
         end
       end
+
       def recognize_is_options_in(name)
         # identify whether `is` patterns matched the name, if so, generate `is`.
         Config.is_options.each do |pattern|
           self._is = pattern or break if name.match? /#{pattern}/
         end if _is.nil?
-        self.delete :_is if _is.in?([:x, :we])
       end
 
 
@@ -226,7 +232,12 @@ Primitive Sample
 
 {
   "type": "string",
-  "format": "email"
+  "format": "email",
+  "examples": {
+    "exp1": {
+      "value": 'val'
+    }
+  }
 }
 
 Simple Model

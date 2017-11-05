@@ -278,7 +278,8 @@ parameters, request body, responses, securities, servers.
   # method signature
   param param_type, name, type, required, schema_hash = { }
   # usage
-  param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
+  param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page',
+        examples: { :example => 5 }
   
   # method signature
   param_ref component_key, *component_keys
@@ -320,7 +321,7 @@ parameters, request body, responses, securities, servers.
   
   ```ruby
   # method signature
-  request_body required, media_type, desc = '', schema_hash = { }
+  request_body required, media_type, desc = '', hash = { }
   # usage
   request_body :opt, :form, type: { id!: Integer, name: String }
 
@@ -330,13 +331,13 @@ parameters, request body, responses, securities, servers.
   body_ref :Body
 
   # method signature
-  body! media_type, desc = '', schema_hash = { }
+  body! media_type, desc = '', hash = { }
   # usage
   body :json
   
   # method implement
-  def form desc = '', schema_hash = { }
-    body :form, desc, schema_hash
+  def form desc = '', hash = { }
+    body :form, desc, hash
   end
   # usage
   form! 'register', data: {
@@ -353,40 +354,41 @@ parameters, request body, responses, securities, servers.
       }
 
   # method implement
-  def file! media_type, desc = '', schema_hash = { type: File }
-    body! media_type, desc, schema_hash
+  def file! media_type, desc = '', hash = { type: File }
+    body! media_type, desc, hash
   end
   ```
   
-  **Notice:** Each API can only declare a request body. 
-  That is, all of the above methods you can only choose one of them.
-  
-  Media Type: We provide some [mapping](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
-  
-  schema_hash: As above (see param), but more than a `type` (schema type).
+  (1) **Notice:** Each API can only declare a request body. 
+  That is, all of the above methods you can only choose one of them.  
+  (2) Media Type: We provide some [mapping](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
+  (3) schema_hash: As above (see param), it's just one more a `type` (schema type).
+  (4) `examples` usage see [goods_doc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb)
   
 - response family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
   - `response` (`resp`)
   - `response_ref`
   - `default_response` (`dft_resp`)
   - `error_response` (`other_response`, `oth_resp`, `error`, `err_resp`): Are `response`'s aliases, should be used in the error response context.
+  - `override_response` # TODO
   
   Define the responses for the API(operation).
   You can use the Response Object to link to request body that is defined at the components/responses by method response_ref().
   
   ```ruby
   # method signature
-  response code, desc, media_type = nil, schema_hash = { }
+  response code, desc, media_type = nil, hash = { }
   # usage
-  response '200', 'query result export', :pdf, type: File
+  response 200, 'query result export', :pdf, type: File
 
   # method signature
   response_ref code_compkey_hash
   # usage
-  response_ref '700' => :RespComp, '800' => :RespComp
+  response_ref 700 => :RespComp, 800 => :RespComp
   ```
   
-  **practice:** Combined with wrong class, automatically generate error responses. TODO
+  (1) **practice:** Combined with wrong class, automatically generate error responses. TODO  
+  (2) `examples` usage see [goods_doc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb)
   
 - security: TODO
 
