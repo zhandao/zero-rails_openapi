@@ -34,7 +34,8 @@ class V2::GoodsDoc < BaseDoc
            :is_online => { type: Boolean, desc: 'it\'s online?' },
              :remarks => { type: String,  desc: 'remarks' },
             :pic_path => { type: String,  desc: 'picture url', is: :url },
-    }, exp_by: %i[ name category_id price ],
+    },
+          exp_by:    %i[ name category_id price ],
           examples: {
               :right_input => [ 'good1', 6, 5.7 ],
               :wrong_input => [ 'good2', 0, -1  ]

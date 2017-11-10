@@ -36,22 +36,22 @@ module OpenApi
         # select the routing info (corresponding to the current method) from the routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{method}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
-        pp "[ZRO Warnning] Routing mapping failed: #{@_ctrl_path}##{method}" and return if routes_info.nil?
+        pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{method}" and return if routes_info.nil?
         Generator.generate_builder_file(action_path, builder) if builder.present?
 
         # structural { #path: { #http_method:{ } } }, for pushing into Paths Object.
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path, skip: skip, use: use)
+            ApiInfoObj.new(action_path, skip: Array(skip), use: Array(use))
                 .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
                         parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
 
         current_api.tap do |api|
           [method, :all].each do |key| # blocks_store_key
-            @_apis_blocks&.[](key)&.each { |blk| api.instance_eval &blk }
+            @_apis_blocks&.[](key)&.each { |blk| api.instance_eval(&blk) }
           end
           api.param_use = [ ] # skip 和 use 是对 dry 块而言的
-          api.instance_eval &block if block_given?
+          api.instance_eval(&block) if block_given?
           api._process_objs
           api.delete_if { |_, v| v.blank? }
         end

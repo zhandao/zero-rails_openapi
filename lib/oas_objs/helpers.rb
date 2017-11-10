@@ -17,7 +17,7 @@ module OpenApi
     end
 
     # reduceee.then_merge! => for Hash
-    def reduceee(*values)
+    def reducx(*values)
       @assign = values.compact.reduce({ }, :merge).keep_if &value_present
       self
     end

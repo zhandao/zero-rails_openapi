@@ -28,20 +28,19 @@ module OpenApi
         return processed if @preprocessed
 
         processed.merge! processed_type
-        reduceee processed_enum_and_length,
-                 processed_range,
-                 processed_is_and_format(param_name),
-                 {
-                     pattern:    _pattern&.inspect&.delete('/'),
-                     default:    _default,
-                     as:         _as,
-                     permit:     _permit,
-                     not_permit: _npermit,
-                     examples:   self[:examples].present? ? ExampleObj.new(self[:examples]).process : nil
-                 }
+        reducx processed_enum_and_length,
+               processed_range,
+               processed_is_and_format(param_name),
+               {
+                   pattern:    _pattern&.inspect&.delete('/'),
+                   default:    '_default',
+                   examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
+               },
+               { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }
         then_merge!
+        processed[:default] = _default unless _default.nil?
 
-        reduceee(processed_desc options).then_merge!
+        reducx(processed_desc options).then_merge!
       end
 
       alias process process_for
@@ -154,16 +153,12 @@ module OpenApi
 
         # generate length range fields by _lth array
         lth = _length || [ ]
-        if self[:type] == 'array'
-          {
-              minItems: lth.is_a?(Array) ? lth.first : nil,
-              maxItems: lth.is_a?(Array) ? lth.last : nil
-          }
+        max = lth.is_a?(Array) ? lth.first : ("#{lth}".match?('ge') ? "#{lth}".split('_').last.to_i : nil)
+        min = lth.is_a?(Array) ? lth.last : ("#{lth}".match?('le') ? "#{lth}".split('_').last.to_i : nil)
+        if processed[:type] == 'array'
+          { minItems: max, maxItems: min }
         else
-          {
-              minLength: lth.is_a?(Array) ? lth.first : ("#{lth}".match?('ge') ? "#{lth}".split('_').last.to_i : nil),
-              maxLength: lth.is_a?(Array) ? lth.last : ("#{lth}".match?('le') ? "#{lth}".split('_').last.to_i : nil)
-          }
+          { minLength: max, maxLength: min }
         end.merge!(enum: _enum).keep_if &value_present
       end
 
@@ -209,6 +204,8 @@ module OpenApi
           _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
           _permit:  %i[ permit   pmt                      ], # NOT OAS Spec, it's for zero-params_processor
           _npermit: %i[ npmt     not_permit   unpermit    ], # NOT OAS Spec, it's for zero-params_processor
+          _req_if:  %i[ req_if   req_when                 ], # NOT OAS Spec, it's for zero-params_processor
+          _opt_if:  %i[ opt_if   opt_when                 ], # NOT OAS Spec, it's for zero-params_processor
       }.each do |key, aliases|
         define_method key do
           aliases.each do |alias_name|

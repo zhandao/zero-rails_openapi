@@ -36,6 +36,9 @@ module OpenApi
           doc[:components].merge! ctrl_infos[:components] || { }
         end
         doc[:components].delete_if { |_, v| v.blank? }
+        doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
+        doc[:paths] = doc[:paths].sort.to_h
+
         ($open_apis ||= { })[api_name] ||=
             ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end

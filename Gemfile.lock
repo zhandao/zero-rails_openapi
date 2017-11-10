@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zero-rails_openapi (1.3.1)
+    zero-rails_openapi (1.3.2)
 
 GEM
   remote: https://rubygems.org/
@@ -44,8 +44,5 @@ DEPENDENCIES
   rspec (~> 3.0)
   zero-rails_openapi!
 
-RUBY VERSION
-   ruby 2.4.1p111
-
 BUNDLED WITH
-   1.16.0.pre.2
+   1.16.0
