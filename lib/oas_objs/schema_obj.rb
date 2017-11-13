@@ -33,7 +33,7 @@ module OpenApi
                processed_is_and_format(param_name),
                {
                    pattern:    _pattern&.inspect&.delete('/'),
-                   default:    '_default',
+                   default:    _default.nil? ? nil : '_default',
                    examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
                },
                { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }

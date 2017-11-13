@@ -21,7 +21,7 @@ module OpenApi
           # [REQUIRED] At least one doc.
           zero_rails: {
               # [REQUIRED] ZRO will scan all the descendants of the root_controller, and then generate their docs.
-              root_controller: ApplicationController,
+              # root_controller: ApplicationController,
 
               # [REQUIRED] Info Object: The info section contains API information
               info: {
