@@ -33,7 +33,7 @@ module OpenApi
       def open_api method, summary = '', builder: nil, skip: [ ], use: [ ], &block
         apis_tag if @_ctrl_infos.nil?
 
-        # select the routing info (corresponding to the current method) from the routing list.
+        # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{method}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
         pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{method}" and return if routes_info.nil?
@@ -68,8 +68,7 @@ module OpenApi
       end
 
       def ctrl_routes_list
-        @routes_list ||= Generator.generate_routes_list
-        @routes_list[@_ctrl_path]
+        Generator.routes_list[@_ctrl_path]
       end
     end
   end

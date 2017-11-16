@@ -113,6 +113,22 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
+      def params_examples exp_by = :all, examples_hash
+        _process_objs
+        exp_by = self[:parameters].map { |p| p[:name] } if exp_by == :all
+        # TODO: ref obj
+        # exp_in_params = self[:parameters].map { |p| p[:schema][:examples] }.compact
+        # examples_hash.map! do |key, value|
+        #   if value == []
+        #     if key.in?(exp_in_params.map { |e| e.keys }.flatten.uniq)
+        #       # TODO
+        #     end
+        #   end
+        # end
+        self[:examples] = ExampleObj.new(examples_hash, exp_by).process
+      end
+      alias_method :examples, :params_examples
+
 
       def _process_objs
         self[:parameters]&.each_with_index do |p, index|

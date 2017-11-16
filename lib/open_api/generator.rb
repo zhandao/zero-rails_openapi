@@ -34,6 +34,7 @@ module OpenApi
           doc[:paths].merge! ctrl.instance_variable_get('@_api_infos') || { }
           doc[:tags] << ctrl_infos[:tag]
           doc[:components].merge! ctrl_infos[:components] || { }
+          ($api_paths_index ||= { })[ctrl.instance_variable_get('@_ctrl_path')] = api_name
         end
         doc[:components].delete_if { |_, v| v.blank? }
         doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
@@ -67,19 +68,20 @@ module OpenApi
       FileUtils.mkdir_p dir_path
       file_path = "#{dir_path}/#{action}.json.jbuilder"
 
-      unless !Config.overwrite_jbuilder_file && File::exists?(file_path)
+      if Config.overwrite_jbuilder_file || !File.exists?(file_path)
         File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[builder] }
         puts "[ZRO] JBuilder file has been generated: #{path}/#{action}"
       end
     end
 
-    def self.generate_routes_list
+    def self.routes_list
       # ref https://github.com/rails/rails/blob/master/railties/lib/rails/tasks/routes.rake
       require './config/routes'
       all_routes = Rails.application.routes.routes
       require 'action_dispatch/routing/inspector'
       inspector = ActionDispatch::Routing::RoutesInspector.new(all_routes)
 
+      @routes_list ||=
       inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil).split("\n").drop(1).map do |line|
         infos = line.match(/[A-Z].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
         {
@@ -92,11 +94,19 @@ module OpenApi
       end.compact.group_by {|api| api[:action_path].split('#').first } # => { "api/v1/examples" => [..] }, group by paths
     end
 
-    def self.get_actions_by_ctrl_path(path)
-      @routes_list ||= generate_routes_list
-      @routes_list[path]&.map do |action_info|
+    def self.get_actions_by_ctrl_path(ctrl_path)
+      routes_list[ctrl_path]&.map do |action_info|
         action_info[:action_path].split('#').last
       end
+    end
+
+    def self.find_path_httpverb_by(ctrl_path, action)
+      routes_list[ctrl_path]&.map do |action_info|
+        if action_info[:action_path].split('#').last == action.to_s
+          return [ action_info[:path], action_info[:http_verb] ]
+        end
+      end
+      nil
     end
   end
 end
