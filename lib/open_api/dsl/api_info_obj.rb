@@ -6,7 +6,7 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :param_skip, :param_use, :param_descs
+      attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_sort
 
       def initialize(action_path, skip: [ ], use: [ ])
         self.action_path = action_path
@@ -50,7 +50,7 @@ module OpenApi
       %i[header header! path path! query query! cookie cookie!].each do |param_type|
         define_method "do_#{param_type}" do |by:|
           by.each do |key, value|
-            args = [ key.dup.to_s.delete('!'), value.delete(:type), value ]
+            args = [ key.dup.to_s.delete('!').to_sym, value.delete(:type), value ]
             key.to_s['!'] ? send("#{param_type}!", *args) : send(param_type, *args)
           end
         end unless param_type.to_s['!']
@@ -113,7 +113,11 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
-      def params_examples exp_by = :all, examples_hash
+      def sort *param_names
+        self.param_sort = param_names
+      end
+
+      def param_examples exp_by = :all, examples_hash
         _process_objs
         exp_by = self[:parameters].map { |p| p[:name] } if exp_by == :all
         # TODO: ref obj
@@ -127,13 +131,18 @@ module OpenApi
         # end
         self[:examples] = ExampleObj.new(examples_hash, exp_by).process
       end
-      alias_method :examples, :params_examples
+      alias_method :examples, :param_examples
 
 
       def _process_objs
         self[:parameters]&.each_with_index do |p, index|
           self[:parameters][index] = p.process if p.is_a?(ParamObj)
         end
+
+        # Parameters sorting
+        self[:parameters].clone.each do |p|
+          self[:parameters][param_sort.index(p[:name])] = p
+        end if param_sort.present?
 
         self[:responses]&.each do |code, obj|
           self[:responses][code] = obj.process if obj.is_a?(ResponseObj)

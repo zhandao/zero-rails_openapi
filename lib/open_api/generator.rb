@@ -21,6 +21,7 @@ module OpenApi
       def generate_doc(api_name)
         settings = Config.docs[api_name]
         doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge(
+                # TODO: rename to just `security`
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
                     securitySchemes: settings[:global_security_schemes],

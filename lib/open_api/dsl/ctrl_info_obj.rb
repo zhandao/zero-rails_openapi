@@ -6,7 +6,7 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      def schema component_key, type, schema_hash = { }
+      def schema component_key, type, schema_hash# = { }
         (self[:schemas] ||= { })[component_key] = SchemaObj.new(type, schema_hash).process
       end
       arrow_enable :schema

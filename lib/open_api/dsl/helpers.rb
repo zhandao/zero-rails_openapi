@@ -32,7 +32,7 @@ module OpenApi
             type = 'DateTime' if type == 'Datetime'
             { name => Object.const_get(type) }
           end
-        end.compact.reduce({ }, :merge) rescue nil
+        end.compact.reduce({ }, :merge) rescue ''
       end
 
       # Arrow Writing:
