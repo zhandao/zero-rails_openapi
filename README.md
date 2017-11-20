@@ -20,11 +20,10 @@ but I dont have enough time now = ▽ =
 - [About OAS](#about-oas) (OpenAPI Specification)
 - [Installation](#installation)
 - [Configure](#configure)
-- [Usage](#usage)
-  - [DSL for documenting your controller](#dsl-for-documenting-your-controller)
-  - [Generate JSON documentation file](#generate-json-documentation-file)
-  - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
-  - [Tricks](#tricks)
+- [Usage - DSL](#usage-dsl)
+- [Usage - Generate JSON documentation file](#usage-generate-json-documentation-file)
+- [Usage - Use Swagger UI(very beautiful web page) to show your Documentation](#usage-use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+- [Tricks](#tricks)
     - [Write DSL somewhere else](#trick1---write-the-dsl-somewhere-else)
     - [Global DRYing](#trick2---global-drying)
     - [Auto generate description](#trick3---auto-generate-description)
@@ -48,6 +47,8 @@ Add this line to your Rails's Gemfile:
 
 ```ruby
 gem 'zero-rails_openapi'
+# or
+gem 'zero-rails_openapi', github: 'zhandao/zero-rails_openapi'
 ```
 
 And then execute:
@@ -80,7 +81,7 @@ OpenApi::Config.tap do |c|
           # [REQUIRED] OAS Info Object: The section contains API information.
           info: {
               # [REQUIRED] The title of the application.
-              title: 'Rails APIs',
+              title: 'Homepage APIs',
               # Description of the application.
               description: 'API documentation of Rails Application. <br/>' \
                            'Optional multiline or single-line Markdown-formatted description ' \
@@ -93,153 +94,157 @@ OpenApi::Config.tap do |c|
   }
 end
 ```
-You can also set the *global configuration(/component)* of OAS: 
+The following global configuration and component of OAS are allow to be set in the initializer: 
 Server Object / Security Scheme Object / Security Requirement Object ...
 
-For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
-
-## Usage
-
-### DSL for documenting your controller
-
-#### \> First of all, extend DSL for your base controller, for example:
+In addition to direct use of Hash, you can also use Config DSL to configure:
 
 ```ruby
-# application_controller.rb
-class ApplicationController < ActionController::API
-  include OpenApi::DSL
- end
-```
+# config/initializers/open_api.rb
+require 'open_api'
 
-#### \> [DSL Usage Example](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/examples_controller.rb)
-
-(TODO: I consider that, here should be put in a the simplest case.)
-```ruby
-class Api::V1::ExamplesController < Api::V1::BaseController
-  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
-  
-  components do
-    schema :Dog           => [ String, must_be: 'doge' ]
-    query! :QueryCompUuid => [ :product_uuid, String, desc: 'product uuid' ]
-    path!  :PathCompId    => [ :id, Integer, desc: 'user id' ]
-    resp   :RespComp      => [ 'bad request', :json ]
-    body!  :RqBodyComp    => [ :form ]
-  end
-
-  api_dry %i[index show], 'common response' do
-    response '567', 'query result export', :pdf, type: File
-  end
-
-  open_api :index, '(SUMMARY) this api blah blah ...', :builder_template1 do
-    this_api_is_invalid! 'this api is expired!'
-    desc 'Optional multiline or single-line Markdown-formatted description',
-         id:         'user id',
-         email_addr: 'email_addr\'s desc'
-    email = 'git@github.com'
-
-    query! :id,         Integer, enum: 0..5,     length: [1, 2], pattern: /^[0-9]$/, range: {gt:0, le:5}
-    query! :done,       Boolean, must_be: false, default: true,  desc: 'must be false'
-    query  :email_addr, String,  lth: :ge_3,     default: email  # is_a: :email
-    # form! 'form', type: { id!: Integer, name: String }
-    file :pdf, 'desc: the media type is application/pdf'
-    
-    response :success, 'success response', :json, type: :Dog
-    
-    security :ApiKeyAuth
-  end
-
-  open_api :show do
-    param_ref    :PathCompId, :QueryCompUuid
-    response_ref '123' => :RespComp, '223' => :RespComp
+OpenApi::Config.tap do |c|
+  c.instance_eval do
+    api :homepage_api, root_controller: ApiDoc
+    info version: '1.0.0', title: 'Homepage APIs'
   end
 end
-
 ```
 
-#### \> Explanation
+For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)  
+See all the settings you can configure: [config.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/config.rb)
 
-#### \>\> controller class methods ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
+## Usage - DSL
 
-- `ctrl_path` (controller path) [Optional]
+### First of all, extend DSL for your base controller, for example:
+
+```ruby
+# app/controllers/api/api_controller.rb
+class ApiController < ActionController::API
+  include OpenApi::DSL
+end
+```
+
+### DSL Usage Example
+
+Here is the simplest usage:
+
+```ruby
+class Api::V1::ExamplesController < Api::V1::BaseController
+  open_api :index, 'GET list' do
+    query :page, Integer#, desc: 'page, greater than 1', range: { ge: 1 }, dft: 1
+    query :rows, Integer#, desc: 'per page', range: { ge: 1 }, default: 10
+  end
+end
+```
+
+For more example, see [goods_doc.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb), and
+[examples_controller.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/examples_controller.rb)
+
+### DSL methods of controller ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
+
+#### `ctrl_path` (controller path) [optional]
 
   ```ruby
   # method signature
-  ctrl_path path
+  ctrl_path(path)
   # usage
   ctrl_path 'api/v1/examples'
   ```
-  This option allows you to set the Tag* (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
+  It is optional because `ctrl_path` defaults to `controller_path`.
+  
   [Here's a trick](#trick1---write-the-dsl-somewhere-else): Using `ctrl_path`, you can write the DSL somewhere else 
   to simplify the current controller.  
-  \* take the tag from `path.split('/').last`
 
-- `apis_tag` [Optional]
+#### `apis_tag` [optional]
 
   ```ruby
   # method signature
-  apis_tag name: nil, desc: '', external_doc_url: ''
+  apis_tag(name: nil, desc: '', external_doc_url: '')
   # usage
   apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
   ```
-  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name ), but are optional. 
+  This method allows you to set the Tag (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
+  
+  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name), but are optional. 
 
-- `components` [Optional]
+#### `components` [optional]
 
   ```ruby
   # method signature
-  components &block
+  components(&block)
   # usage
   components do
     # DSL for defining components
-    schema :Dog => [ String, dft: { id: 1, name: 'pet' } ]
+    schema :DogSchema => [ { id: Integer, name: String }, dft: { id: 1, name: 'pet' } ]
+    query! :UidQuery  => [ :uid, String, desc: 'uid' ]
+    resp   :BadRqResp => [ 'bad request', :json ]
+  end
+  
+  # to use component
+  open_api :action, 'summary' do
+    query :doge, :DogSchema # to use a Schema component
+    param_ref :UidQuery     # to use a Parameter component
+    response_ref :BadRqResp # to use a Response component
   end
   ```
-  Component can be used to simplify your DSL code in `*_ref` methods.  
-  Each RefObj you define is associated with components through component key.
+  Component can be used to simplify your DSL code (by using `*_ref` methods).
+  
+  Each RefObj you defined is associated with components through component key.
+  We suggest that component keys should be camelized symbol.
 
-- `api_dry` [Optional]
+#### `api_dry` [optional]
 
-  this method is for DRYing.
+  This method is for DRYing.
   
   ```ruby
   # method signature
-  api_dry method = :all, desc = '', &block
+  api_dry(action = :all, desc = '', &block)
   # usage
-  api_dry :all, 'common response' do; end
-  api_dry :index do; end
-  api_dry [:index, :show] do; end
+  api_dry :all, 'common response' # block ...
+  api_dry :index # block ...
+  api_dry [:index, :show] do
+    query! #...
+  end
   ```
   
-  As you think, the DSL methods in the block will be executed to each API that you set by method.
+  As you think, the block will be executed to each specified API(action) **firstly**.
   
-- `open_api` [Required]
+#### `open_api` [required]
 
-  Define the specified API (in the following example is index).
+  Define the specified API (controller action, in the following example is index).
   
   ```ruby
   # method signature
-  open_api method, summary = '', builder: nil, skip: [ ], use: [ ], &block
+  open_api(action, summary = '', builder: nil, skip: [ ], use: [ ], &block)
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...', builder: :template1 do end
+  open_api :index, '(SUMMARY) this api blah blah ...', builder: :index # block ...
   ```
-  If pass `builder` to the third parameter,
-  and `generate_jbuilder_file` is set `true` in your initializer file,
-  ZRO will generate JBuilder file by using specified template that you set
-  `template1` in your setting file.  
-  You can see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
+  If you pass `builder`, and `generate_jbuilder_file` is set to `true` (in your initializer),
+  ZRO will generate JBuilder file by using specified template called `index`.  
+  About template settings, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
+  
+  `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
+  
+  ```ruby
+    open_api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
+  ```
 
+### DSL methods inside [open_api]() and [api_dry]()'s block
 
-#### \>\> DSL methods inside *open_api* and *api_dry*'s block ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: ApiInfoObj)
+[source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb)::ApiInfoObj
 
-These methods in the block describe the specified API(s): description, valid?,
+These following methods in the block describe the specified API action: description, valid?,
 parameters, request body, responses, securities, servers.
 
 (Here corresponds to OAS [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#operationObject))
 
-- `this_api_is_invalid!`, its aliases are:
-  - `this_api_is_expired!`
-  - `this_api_is_unused!`
-  - `this_api_is_under_repair!`
+#### `this_api_is_invalid!`, its aliases:
+  ```
+  this_api_is_expired!
+  this_api_is_unused!
+  this_api_is_under_repair!
+  ```
 
   ```ruby
   # method signature
@@ -247,28 +252,34 @@ parameters, request body, responses, securities, servers.
   # usage
   this_api_is_invalid! 'this api is expired!'
   ```
+  
+  Then `deprecated` of this API will be set to true.
 
-- `desc`: description for current API and its inputs (parameters and request body)
+#### `desc`: description for the current API and its inputs (parameters and request body)
 
   ```ruby
   # method signature
   desc desc, param_descs = { }
   # usage
   desc 'current API\'s description',
-       id:         'user id',
-       email_addr: 'email_addr\'s desc'
+       id:    'desc of the parameter :id',
+       email: 'desc of the parameter :email'
   ```
 
-  You can of course describe the input in it's DSL method (like `query! :done` [this line](https://github.com/zhandao/zero-rails_openapi#-dsl-usage-example)), 
+  You can of course describe the input in it's DSL method (like `query! :done ...` [this line](https://github.com/zhandao/zero-rails_openapi#-dsl-usage-example)), 
   but that will make it long and ugly. We recommend that unite descriptions in this place.
   
   In addition, when you want to dry the same parameters (each with a different description), it will be of great use.
 
-- param family methods (OAS - [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#parameterObject))
-  - `param`
-  - `param_ref`
-  - `header`, `path`, `query`, `cookie` and bang methods: `header!`, `path!`, `query!`, `cookie!`  
-  - `do_* by: { }`  
+#### `param` family methods (OAS - [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#parameterObject))
+  ```
+  param
+  param_ref
+  header,  path,  query,  cookie
+  header!, path!, query!, cookie!
+  do_* by: { parameter_hashes }
+  sort
+  ```
   **The bang method(`!`) means it is required, so without `!` means it is optional. the same below.**
 
   Define the parameters for the API(operation).
@@ -279,7 +290,7 @@ parameters, request body, responses, securities, servers.
   param param_type, name, type, required, schema_hash = { }
   # usage
   param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page',
-        examples: { :example => 5 }
+        examples: { :right_input => 5 }
   
   # method signature
   param_ref component_key, *component_keys
@@ -309,15 +320,18 @@ parameters, request body, responses, securities, servers.
 
   [**>> More About Param DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
 
-- request_body family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
-  - `request_body`
-  - `body_ref`
-  - `body` and bang `body!`
-  - `form`, `form!`; `file`, `file!`
+#### request_body family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
+  ```
+  request_body
+  body_ref      # use ref obj to define the body
+  body, body!   # alias of request_body
+  form, form!   # define a multipart/form-data body
+  file, file!   # define a File media-type body
+  ```
   
   OpenAPI 3.0 uses the requestBody keyword to distinguish the payload from parameters.  
-  Define the request body for the API(operation).
-  You can use the Reference Object to link to request body that is defined at the components/requestBodies by method body_ref().
+  Define the request body for the API (action),
+  You can use the Reference Object to link to request body that is defined at the components/requestBodies by method `body_ref()`.
   
   ```ruby
   # method signature
@@ -325,15 +339,18 @@ parameters, request body, responses, securities, servers.
   # usage
   request_body :opt, :form, type: { id!: Integer, name: String }
 
+
   # method signature
   body_ref component_key
   # usage
   body_ref :Body
 
+
   # method signature
   body! media_type, desc = '', hash = { }
   # usage
   body :json
+  
   
   # method implement
   def form desc = '', hash = { }
@@ -347,13 +364,14 @@ parameters, request body, responses, securities, servers.
       }
   # advance usage
   form 'for creating a user', data: {
-          :name! =>     { type: String, desc: 'user name' },
+              :name! => { type: String, desc: 'user name' },
           :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
           # optional
-          :remarks =>   { type: String, desc: 'remarks' },
+            :remarks => { type: String, desc: 'remarks' },
       }
 
-  # method implement
+
+  # about `file`
   def file! media_type, desc = '', hash = { type: File }
     body! media_type, desc, hash
   end
@@ -365,7 +383,7 @@ parameters, request body, responses, securities, servers.
   (3) schema_hash: As above (see param), it's just one more a `type` (schema type).
   (4) `examples` usage see [goods_doc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb)
   
-- response family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
+#### response family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
   - `response` (`resp`)
   - `response_ref`
   - `default_response` (`dft_resp`)
@@ -390,11 +408,11 @@ parameters, request body, responses, securities, servers.
   (1) **practice:** Combined with wrong class, automatically generate error responses. TODO  
   (2) `examples` usage see [goods_doc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb)
   
-- security: TODO
+#### security: TODO
 
-- server: TODO
+#### server: TODO
   
-#### \>\> DSL methods inside components'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
+### DSL methods inside components'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
 
 (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
 
@@ -436,7 +454,7 @@ The DSL methods used to generate the components in this block are:
   ```
   *: see: [Type](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md#type)
 
-### Generate JSON Documentation File
+## Usage - Generate JSON Documentation File
 
 Initializer or Console, run:
 
@@ -446,7 +464,7 @@ OpenApi.write_docs
 
 Then the JSON files will be written to the directory you set. (Each API a file.)
 
-### Use Swagger UI(very beautiful web page) to show your Documentation
+## Usage - Use Swagger UI(very beautiful web page) to show your Documentation
 
 Download [Swagger UI](https://github.com/swagger-api/swagger-ui) (version >= 2.3.0 support the OAS3) 
 to your project,  
@@ -454,9 +472,9 @@ modify the default JSON file path(url) in the index.html
 (window.onload >> SwaggerUIBundle >> url).  
 In order to use it, you may have to enable CORS, [see](https://github.com/swagger-api/swagger-ui#cors-support)
 
-### Tricks
+## Tricks
 
-#### Trick1 - Write the DSL Somewhere Else
+### Trick1 - Write the DSL Somewhere Else
 
 Does your documentation take too many lines?  
 Do you want to separate documentation from business controller to simplify both?  
@@ -486,14 +504,16 @@ end
 
 Notes: convention is the file name ends with `_doc.rb`
 
-#### Trick2 - Global DRYing
+### Trick2 - Global DRYing
 
 Method `api_dry` is for DRY but its scope is limited to the current controller.
 
 I have no idea of best practices, But you can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb).  
 The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 
-#### Trick3 - Auto Generate Description
+You can use `sort` to specify the order of parameters.
+
+### Trick3 - Auto Generate Description
 
 ```ruby
 desc 'api desc',
@@ -524,7 +544,7 @@ query :view, String, enum: {
 ```
 Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_desc.rb) to learn more.
 
-#### Trick4 - Skip or Use parameters define in api_dry
+### Trick4 - Skip or Use parameters define in api_dry
 
 Pass `skip: []` and `use: []` to `open_api` like following code:
 ```ruby
@@ -533,7 +553,7 @@ open_api :index, 'desc', builder: :index, skip: [ :Token ]
 
 Look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb) to learn more.
 
-#### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
+### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
 
 Use method `load_schema` in `api_dry`.
 

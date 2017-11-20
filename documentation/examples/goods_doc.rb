@@ -1,12 +1,13 @@
 class V2::GoodsDoc < BaseDoc
 
-  open_api :index, 'Get list of Goods.', builder: :index,
-           use: [ 'Token' ] do # use parameters write in AutoGenDoc#api_dry
-           # skip: %i[ Token ] do # you can also skip parameters
+  open_api :index, 'GET list of Goods.', builder: :index, # jbuilder templates is set in initializers/open_api.rb
+           use: [ 'Token', :page, :rows ] do # use parameters write in AutoGenDoc#api_dry
+           # skip: [ 'Token' ] do # you can also skip parameters
     desc 'listing Goods',
          view!: 'search view, allows:：<br/>',
          search_type!: 'search field, allows：<br/>'
 
+    # Single `query`
     query :view, String, enum: {
         'all goods (default)': :all,
                 'only online': :online,
@@ -14,22 +15,23 @@ class V2::GoodsDoc < BaseDoc
             'expensive goods': :expensive,
                 'cheap goods': :cheap,
     }
-    # query :search_type, String, enum: %w[name creator category price]
+    # Batch `query`
     do_query by: {
         :search_type => { type: String, enum: %w[ name creator category price ] },
-        :export => { type: Boolean, desc: 'export as Excel format', examples: {
-            :right_input => true,
-            :wrong_input => 'wrong input'
-        }}
+              :value => String,
+             :export => { type: Boolean, desc: 'export as Excel format', examples: {
+                 :right_input => true,
+                 :wrong_input => 'wrong input'
+             }}
     }
   end
 
 
-  open_api :create, 'Create a Good', builder: :success_or_not, use: 'Token' do
+  open_api :create, 'POST create a Good', builder: :success_or_not, use: 'Token' do
     form! 'for creating a good', data: {
                :name! => { type: String,  desc: 'good\'s name' },
         :category_id! => { type: Integer, desc: 'sub_category\'s id', npmt: true, range: { ge: 1 }, as: :cate  },
-              :price! => { type: Float,   desc: 'good\'s price', range: { ge: 0} },
+              :price! => { type: Float,   desc: 'good\'s price', range: { ge: 0 } },
         # -- optional
            :is_online => { type: Boolean, desc: 'it\'s online?' },
              :remarks => { type: String,  desc: 'remarks' },
@@ -43,8 +45,8 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  open_api :show, 'Show a Good.', builder: :show, use: [ 'Token', :id ]
+  open_api :show, 'GET a Good.', builder: :show, use: [ 'Token', :id ]
 
 
-  open_api :destroy, 'Delete a Good.', builder: :success_or_not, use: [ 'Token', :id ]
+  open_api :destroy, 'DELETE a Good.', builder: :success_or_not, use: [ 'Token', :id ]
 end

@@ -23,9 +23,9 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     desc 'Optional multiline or single-line Markdown-formatted description',
          id:         'user id',
          email_addr: 'email_addr\'s desc'
-    email = 'git@github.com'
+    email = 'zero@rails.org'
 
-    query! :id,         Integer, enum: 0..5,     length: [1, 2], pattern: /^[0-9]$/, range: {gt:0, le:5}
+    query! :id,         Integer, enum: 0..5,     length: [1, 2], pattern: /^[0-9]$/, range: { gt:0, le:5 }
     query! :done,       Boolean, must_be: false, default: true,  desc: 'must be false'
     query  :email_addr, String,  lth: :ge_3,     default: email  # is_a: :email
 

@@ -30,24 +30,24 @@ module OpenApi
         current_ctrl._process_objs
       end
 
-      def open_api method, summary = '', builder: nil, skip: [ ], use: [ ], &block
+      def open_api action, summary = '', builder: nil, skip: [ ], use: [ ], &block
         apis_tag if @_ctrl_infos.nil?
 
         # select the routing info (corresponding to the current method) from routing list.
-        action_path = "#{@_ctrl_path ||= controller_path}##{method}"
+        action_path = "#{@_ctrl_path ||= controller_path}##{action}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
-        pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{method}" and return if routes_info.nil?
+        pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{action}" and return if routes_info.nil?
         Generator.generate_builder_file(action_path, builder) if builder.present?
 
         # structural { #path: { #http_method:{ } } }, for pushing into Paths Object.
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         current_api = path[routes_info[:http_verb]] =
             ApiInfoObj.new(action_path, skip: Array(skip), use: Array(use))
-                .merge! description: '', summary: summary, operationId: method, tags: [@_apis_tag],
+                .merge! description: '', summary: summary, operationId: action, tags: [@_apis_tag],
                         parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
 
         current_api.tap do |api|
-          [method, :all].each do |key| # blocks_store_key
+          [action, :all].each do |key| # blocks_store_key
             @_apis_blocks&.[](key)&.each { |blk| api.instance_eval(&blk) }
           end
           api.param_use = [ ] # skip 和 use 是对 dry 块而言的
@@ -58,12 +58,12 @@ module OpenApi
       end
 
       # method could be symbol array, like: %i[ .. ]
-      def api_dry method = :all, desc = '', &block
+      def api_dry action = :all, desc = '', &block
         @_apis_blocks ||= { }
-        if method.is_a? Array
-          method.each { |m| (@_apis_blocks[m.to_sym] ||= [ ]) << block }
+        if action.is_a? Array
+          action.each { |m| (@_apis_blocks[m.to_sym] ||= [ ]) << block }
         else
-          (@_apis_blocks[method.to_sym] ||= [ ]) << block
+          (@_apis_blocks[action.to_sym] ||= [ ]) << block
         end
       end
 
