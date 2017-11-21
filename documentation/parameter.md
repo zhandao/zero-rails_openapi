@@ -1,21 +1,26 @@
-### More Explanation of Param() 
+### More Explanation for `param` and `schema_hash`
 
-#### param_type
+#### param_type (param_location)
 OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location: 
 **header, path, query, cookie**. [more](https://swagger.io/docs/specification/describing-parameters/)
 
-#### name
-parameter name. If param_type is :path, it must correspond to the associated path segment form 
-the routing path, for example: the path is `/good/:id`, then you have to declare a path parameter with name `id`.
+#### name (param_name)
+The name of parameter. It can be Symbol or String.
 
-#### type
-parameter (schema) type. Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
+If param_type is :path, it must correspond to the associated path segment form 
+the routing path, for example: if the API path is `/good/:id`, you have to declare a path parameter with name `id` to it.
+
+#### type (schema_type)
+Parameter's (schema) type. We call it `schema_type` because it is inside SchemaObj.
+
+Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
+
 In addition, you can use `format` in schema_hash to define in fine detail the data type being used, like: 
 int32, float, date ...  
-All the types you can use are:
+All the types you can use as following:
   - **String, 'binary', 'base64'**
   - **Integer, Long, 'int32', 'int64', Float, Double**
-  - **File** (it will be converted as `{ type: 'string', format: Config.dft_file_format }`)
+  - **File** (it will be converted to `{ type: 'string', format: Config.dft_file_format }`)
   - **Date, DateTime**
   - **Boolean**
   - **Array**: `Array[String]` or `[String]`
@@ -24,8 +29,8 @@ All the types you can use are:
   (`!` bang key means it is required).
   - Nested Object: `{ id!: Integer, name: { first: String, last: String } }`
   - Nested Array and Object: `[[{ id!: Integer, name: { first: String, last: String } }]]`
-  - **:ComponentKey**: the Symbol value pass to type will generate a Schema Reference Object link 
-  to the component correspond to ComponentKey.
+  - **:ComponentKey**: pass **Symbol** value to type will generate a Schema Reference Object link 
+  to the component correspond to ComponentKey, like: :IdPath, :NameQuery
   
   You can use `Object.const_set()` to define a constant that does not exist, but note that 
   the value you set could not be a Symbol (it will be explained as a Ref Object), should be a String.

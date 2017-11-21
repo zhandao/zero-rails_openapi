@@ -6,7 +6,7 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_sort
+      attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_order
 
       def initialize(action_path, skip: [ ], use: [ ])
         self.action_path = action_path
@@ -113,8 +113,8 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
-      def sort *param_names
-        self.param_sort = param_names
+      def order *param_names
+        self.param_order = param_names
       end
 
       def param_examples exp_by = :all, examples_hash
@@ -141,8 +141,8 @@ module OpenApi
 
         # Parameters sorting
         self[:parameters].clone.each do |p|
-          self[:parameters][param_sort.index(p[:name])] = p
-        end if param_sort.present?
+          self[:parameters][param_order.index(p[:name])] = p
+        end if param_order.present?
 
         self[:responses]&.each do |code, obj|
           self[:responses][code] = obj.process if obj.is_a?(ResponseObj)
