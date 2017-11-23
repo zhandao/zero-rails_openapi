@@ -1,0 +1,91 @@
+# This is the configuration used to check the rubocop source code.
+
+#require: rbocop/cop/internal_affairs
+
+AllCops:
+  # Include common Ruby source files.
+  Exclude:
+    - 'spec/**/*'
+    - 'zero-params_processor.gemspec'
+    - 'Gemfile'
+    - 'bin/**/*'
+  DisplayCopNames: true
+  TargetRubyVersion: 2.4
+  TargetRailsVersion: 5.1
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 1200
+
+Metrics/ClassLength:
+  Max: 1200
+
+Metrics/MethodLength:
+  Max: 1200
+
+Metrics/ModuleLength:
+  Max: 1200
+
+Metrics/BlockLength:
+  Max: 1200
+
+Style/Documentation:
+  Enabled: false
+
+Layout/SpaceInsideBrackets:
+  Enabled: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Layout/IndentHash:
+  Enabled: false
+
+Layout/AlignHash:
+  Enabled: false
+
+Style/HashSyntax:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Layout/EmptyLines:
+  Enabled: false
+
+Lint/UnneededSplatExpansion:
+  Enabled: false
+
+#Style/StringLiterals:
+#  Enabled: true
+#  EnforcedStyle: double_quotes
+
+
+
+
+Style/UnneededPercentQ:
+  Enabled: false
+
+Style/RedundantSelf:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# False positives
+Layout/EmptyLineBetweenDefs:
+  Enabled: false

@@ -22,7 +22,7 @@ module OpenApi
     end
 
     def to_processed(who)
-      return processed if truly_present?(@assign)
+      return processed unless truly_present?(@assign)
 
       if who.is_a?(Symbol)
         send("#{who}=", @assign)
