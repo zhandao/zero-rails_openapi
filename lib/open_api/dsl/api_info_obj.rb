@@ -76,9 +76,9 @@ module OpenApi
         self[:requestBody] = RefObj.new(:requestBody, component_key).process
       end
 
-      def override_response code, type_hash
+      def merge_to_resp code, by:
         _response = self[:responses].fetch(code)
-        self[:responses][code] = _response.override(type_hash).process
+        self[:responses][code] = _response.override(by).process
       end
 
       def response_ref code_compkey_hash
@@ -115,6 +115,8 @@ module OpenApi
 
       def order *param_names
         self.param_order = param_names
+        self.param_use = param_order if param_use.blank?
+        self.param_skip = param_use - param_order
       end
 
       def param_examples exp_by = :all, examples_hash

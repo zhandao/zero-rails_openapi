@@ -21,7 +21,7 @@ module OpenApi
       def process
         schema_processed = schema.process
         result = schema_processed.values.join.blank? ? { } : { schema: schema_processed }
-        result.merge!(examples: examples.process) unless examples.nil?
+        result[:examples] = examples.process unless examples.nil?
         media_type.nil? ? { } : { media_type => result }
       end
 

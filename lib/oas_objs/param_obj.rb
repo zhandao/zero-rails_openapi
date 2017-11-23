@@ -11,7 +11,7 @@ module OpenApi
         self.processed = {
             name: name,
             in: param_type,
-            required: required.to_s.match?(/req/),
+            required: required.to_s.match?(/req/)
         }
         self.schema = SchemaObj.new(type, schema_hash)
         merge! schema_hash

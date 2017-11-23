@@ -427,6 +427,7 @@
   response_ref
   default_response or dft_resp
   error_response, other_response, oth_resp, error, err_resp # response's aliases, should be used in the error response context.
+  merge_to_resp
   ```
   
   ```ruby
@@ -439,6 +440,15 @@
   response_ref(code_compkey_hash)
   # usage
   response_ref 700 => :AResp, 800 => :BResp
+
+  # method signature
+  merge_to_resp(code, by:)
+  # usage
+  merge_to_resp 200, by: {
+      data: {
+          type: String
+      }
+  }
   ```
   
   **practice:** Combined with wrong class, automatically generate error responses. [AutoGenDoc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb#L63)  
@@ -469,14 +479,16 @@
   # method signature
   schema(component_key, type, schema_hash)
   # usage
-  schema :Dog  => [ String, desc: 'dogee' ]
+  schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
   # advance usage
-  schema :Dog => [{
-                       id!: Integer,
-                       name: { type: String, must_be: 'name', desc: 'name' }
-                   }, # <= this hash is schema type[1]
-                   dft: { id: 1, name: 'pet' },
-                   desc: 'dogee']
+  schema :Dog => [
+      {
+          id!: Integer,
+          name: { type: String, must_be: 'name', desc: 'name' }
+      }, # <= this hash is schema type[1]
+      dft: { id: 1, name: 'pet' },
+      desc: 'dogee'
+  ]
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
   ```
@@ -572,7 +584,7 @@
                  'only offline': :offline,
               'expensive goods': :get,
                   'cheap goods': :borrow,
-      }
+  }
   ```
   Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_desc.rb) to learn more.
 

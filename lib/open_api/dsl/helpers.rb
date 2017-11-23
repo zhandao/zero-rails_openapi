@@ -12,7 +12,7 @@ module OpenApi
         #   (3) jbuilder file: https://github.com/zhandao/zero-rails/blob/mster/app/views/api/v1/goods/index.json.jbuilder
         # in a word, BuilderSupport let you control the `output fields and nested association infos` very easily.
         if model.respond_to? :show_attrs
-          columns = model.columns.map(&:name).map(&:to_sym)
+          columns = model.column_names.map(&:to_sym)
           model.show_attrs.map do |attr|
             if columns.include? attr
               index = columns.index attr

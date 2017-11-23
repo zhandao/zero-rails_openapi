@@ -5,4 +5,12 @@ require "open_api/dsl"
 
 module OpenApi
   include Generator
+
+  cattr_accessor :paths_index do
+    { }
+  end
+
+  cattr_accessor :docs do
+    { }
+  end
 end

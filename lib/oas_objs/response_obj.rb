@@ -21,7 +21,7 @@ module OpenApi
         processed
       end
 
-      def override type_hash
+      def override(type_hash)
         @hash[:type].merge!(type_hash)
         self.media_type = MediaTypeObj.new(@mt, @hash)
         self

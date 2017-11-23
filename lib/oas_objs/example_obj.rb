@@ -10,7 +10,7 @@ module OpenApi
       attr_accessor :processed, :examples_hash, :keys_of_value
 
       def initialize(examples_hash, keys_of_value = nil)
-        self.examples_hash  = examples_hash
+        self.examples_hash = examples_hash
         self.keys_of_value = keys_of_value
       end
 

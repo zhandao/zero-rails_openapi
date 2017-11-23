@@ -35,14 +35,13 @@ module OpenApi
           doc[:paths].merge! ctrl.instance_variable_get('@_api_infos') || { }
           doc[:tags] << ctrl_infos[:tag]
           doc[:components].merge! ctrl_infos[:components] || { }
-          ($api_paths_index ||= { })[ctrl.instance_variable_get('@_ctrl_path')] = api_name
+          OpenApi.paths_index[ctrl.instance_variable_get('@_ctrl_path')] = api_name
         end
         doc[:components].delete_if { |_, v| v.blank? }
         doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
         doc[:paths] = doc[:paths].sort.to_h
 
-        ($open_apis ||= { })[api_name] ||=
-            ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
+        OpenApi.docs[api_name] ||= ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
       def write_docs(generate_files: true)
@@ -56,7 +55,7 @@ module OpenApi
           puts "[ZRO] `%#{max_length}s.json` has been generated." % "#{doc_name}"
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
-        # pp $open_apis
+        # pp OpenApi.docs
       end
     end
 
@@ -69,7 +68,7 @@ module OpenApi
       FileUtils.mkdir_p dir_path
       file_path = "#{dir_path}/#{action}.json.jbuilder"
 
-      if Config.overwrite_jbuilder_file || !File.exists?(file_path)
+      if Config.overwrite_jbuilder_file || !File.exist?(file_path)
         File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[builder] }
         puts "[ZRO] JBuilder file has been generated: #{path}/#{action}"
       end

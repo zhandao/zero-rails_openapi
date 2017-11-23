@@ -34,7 +34,7 @@ module OpenApi
                {
                    pattern:    _pattern&.inspect&.delete('/'),
                    default:    _default.nil? ? nil : '_default',
-                   examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
+                   examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
                },
                { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }
         then_merge!
@@ -75,7 +75,7 @@ module OpenApi
       end
 
       def processed_type(type = self.type)
-        t = type.class.in?([Hash, Array, Symbol]) ? type : "#{type}".downcase
+        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
         if t.is_a? Hash
           # For supporting writing:
           #   form 'desc', data: {

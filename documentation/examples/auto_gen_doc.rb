@@ -11,7 +11,7 @@ module AutoGenDoc
       super
       subclass.class_eval do
         break unless self.name.match? /sController|sDoc/
-        ctrl_path "api/#{self.name.sub('Doc', '').downcase.gsub('::', '/')}" if self.name.match? /sDoc/
+        ctrl_path self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
         open_api_dry
       end
     end
@@ -49,7 +49,7 @@ module AutoGenDoc
           # OAS require at least one response on each api.
           # default_response 'default response', :json
           model = Object.const_get(action_path.split('#').first.split('/').last[0..-2].camelize) rescue nil
-          type = action.in?(['index', 'show']) ? Array[load_schema(model)] : String
+          type = action.in?(%w[ index show ]) ? Array[load_schema(model)] : String
           response '200', 'success', :json, type: {
               code:      { type: Integer, dft: 200 },
               msg:       { type: String,  dft: 'success' },

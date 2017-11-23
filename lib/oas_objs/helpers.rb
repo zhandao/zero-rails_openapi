@@ -1,6 +1,5 @@
 module OpenApi
   module Helpers
-
     # TODO: comment-block doc
     def truly_present?(obj)
       obj == false || obj.present?
@@ -23,11 +22,13 @@ module OpenApi
     end
 
     def to_processed(who)
+      return processed if truly_present?(@assign)
+
       if who.is_a?(Symbol)
         send("#{who}=", @assign)
       else
         processed[who.to_sym] = @assign
-      end if truly_present?(@assign)
+      end
 
       processed
     end
