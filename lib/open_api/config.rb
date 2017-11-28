@@ -14,6 +14,10 @@ module OpenApi
       true
     end
 
+    cattr_accessor :rails_routes_file do
+      nil
+    end
+
     # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
     # Getting started: https://swagger.io/docs/specification/basic-structure/
     cattr_accessor :register_docs do

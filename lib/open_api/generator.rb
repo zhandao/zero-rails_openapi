@@ -75,14 +75,19 @@ module OpenApi
     end
 
     def self.routes_list
-      # ref https://github.com/rails/rails/blob/master/railties/lib/rails/tasks/routes.rake
-      require './config/routes'
-      all_routes = Rails.application.routes.routes
-      require 'action_dispatch/routing/inspector'
-      inspector = ActionDispatch::Routing::RoutesInspector.new(all_routes)
+      routes =
+        if (f = Config.rails_routes_file)
+          File.read(f)
+        else
+          # ref https://github.com/rails/rails/blob/master/railties/lib/rails/tasks/routes.rake
+          require './config/routes'
+          all_routes = Rails.application.routes.routes
+          require 'action_dispatch/routing/inspector'
+          inspector = ActionDispatch::Routing::RoutesInspector.new(all_routes)
+          inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil)
+        end
 
-      @routes_list ||=
-      inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil).split("\n").drop(1).map do |line|
+      @routes_list ||= routes.split("\n").drop(1).map do |line|
         infos = line.match(/[A-Z].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
         {
             http_verb: infos[0].downcase, # => "get"

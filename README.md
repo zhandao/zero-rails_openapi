@@ -111,8 +111,8 @@
   end
   ```
   
-  For more detailed configuration: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)  
-  See all the settings you can configure: [config.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/config.rb)
+  For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
+  See all the settings you can configure: [config.rb](lib/open_api/config.rb)
 
 ## Usage - DSL
 
@@ -138,10 +138,10 @@
   end
   ```
   
-  For more example, see [goods_doc.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb), and
-  [examples_controller.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/examples_controller.rb)
+  For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
+  [examples_controller.rb](documentation/examples/examples_controller.rb)
 
-### DSL methods of controller ([source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl.rb))
+### DSL methods of controller ([source code](lib/open_api/dsl.rb))
 
 #### (1) `ctrl_path` (controller path) [optional]
 
@@ -222,7 +222,7 @@
   ```
   If you pass `builder`, and `generate_jbuilder_file` is set to `true` (in your initializer),
   ZRO will generate JBuilder file by using specified template called `index`.  
-  About template settings, see: [open_api.rb](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/open_api.rb)
+  About template settings, see: [open_api.rb](documentation/examples/open_api.rb)
   
   `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
   
@@ -232,7 +232,7 @@
 
 ### DSL methods inside [open_api]() and [api_dry]()'s block
 
-  [source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb), ApiInfoObj
+  [source code](lib/open_api/dsl_inside_block.rb), ApiInfoObj
   
   These following methods in the block describe the specified API action: description, valid?,
   parameters, request body, responses, securities, servers.
@@ -341,7 +341,7 @@
   }
   ```
 
-  [**>> More About `param` DSL <<**](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md)
+  [**>> More About `param` DSL <<**](documentation/parameter.md)
 
 #### (4) `request_body` family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
 
@@ -408,7 +408,7 @@
   1. **Notice:** Each API should only declare a request body
      That is, all of the above methods you can only choose one of them.  
      (But **multiple media types** will be supported in the future).
-  2. `media_type`: we provide some [mapping](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
+  2. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
   3. `schema_hash`: as above (see param).  
      **One thing that should be noted is: when use Hash writing, `scham_type` is writed in schema_hash using key :type.**
   4. `exp_by` and `examples`: for the above example, the following has the same effect:
@@ -451,13 +451,13 @@
   }
   ```
   
-  **practice:** Combined with wrong class, automatically generate error responses. [AutoGenDoc](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb#L63)  
+  **practice:** Combined with wrong class, automatically generate error responses. [AutoGenDoc](documentation/examples/auto_gen_doc.rb#L63)  
   
 #### (6) `security`: TODO
 
 #### (7) `server`: TODO
   
-### DSL methods inside [components]()'block ([code source](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
+### DSL methods inside [components]()'block ([code source](lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
   
@@ -492,7 +492,7 @@
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
   ```
-  [1] see: [Type](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/parameter.md#type)
+  [1] see: [Type](documentation/parameter.md#type)
 
 ## Usage - Generate JSON Documentation File
 
@@ -552,7 +552,7 @@
 
   Method `api_dry` is for DRY but its scope is limited to the current controller.
   
-  I have no idea of best practices, But you can look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb).  
+  I have no idea of best practices, But you can look at this [file](documentation/examples/auto_gen_doc.rb).  
   The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
   
   You can use `sort` to specify the order of parameters.
@@ -586,7 +586,7 @@
                   'cheap goods': :borrow,
   }
   ```
-  Read this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_desc.rb) to learn more.
+  Read this [file](documentation/examples/auto_gen_desc.rb) to learn more.
 
 ### Trick4 - Skip or Use parameters define in api_dry
 
@@ -595,13 +595,13 @@
   open_api :index, 'desc', builder: :index, skip: [ :Token ]
   ```
   
-  Look at this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/goods_doc.rb) to learn more.
+  Look at this [file](documentation/examples/goods_doc.rb) to learn more.
 
 ### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
 
   Use method `load_schema` in `api_dry`.
   
-  See this [file](https://github.com/zhandao/zero-rails_openapi/blob/master/documentation/examples/auto_gen_doc.rb#L51) for uasge information.
+  See this [file](documentation/examples/auto_gen_doc.rb#L51) for uasge information.
 
 
 ## Troubleshooting
@@ -621,4 +621,4 @@
 
 ## Code of Conduct
 
-  Everyone interacting in the Zero-OpenApi project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/zhandao/zero-rails_openapi/blob/master/CODE_OF_CONDUCT.md).
+  Everyone interacting in the Zero-OpenApi project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](CODE_OF_CONDUCT.md).

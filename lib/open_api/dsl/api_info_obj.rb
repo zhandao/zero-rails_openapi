@@ -30,7 +30,7 @@ module OpenApi
 
       def param param_type, name, type, required, schema_hash = { }
         return if param_skip.include?(name)
-        return if param_use.present? && !param_use.include?(name)
+        return if param_use.present? && param_use.exclude?(name)
 
         _t = nil
         schema_hash[:desc]  = _t if (_t = param_descs[name]).present?

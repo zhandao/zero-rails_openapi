@@ -14,12 +14,15 @@ OpenApi::Config.tap do |c|
   # [REQUIRED] The location where .json doc file will be output.
   c.file_output_path = 'public/open_api'
 
+  # [Optional] Use this txt instead of running `rails routes`.
+  # c.rails_routes_file = 'config/routes.txt'
+
   # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
   # Getting started: https://swagger.io/docs/specification/basic-structure/
   c.register_docs = {
-      homepage_api: {
+      blog_api: {
           # [REQUIRED] ZRO will scan all the descendants of the root_controller, then generate their docs.
-          root_controller: Api::V1::BaseController,
+          root_controller: ApiController,
 
           # [REQUIRED] Info Object: The info section contains API information
           info: {
@@ -38,7 +41,7 @@ OpenApi::Config.tap do |c|
                   # The URL pointing to the contact information. MUST be in the format of a URL.
                   url: 'http://www.github.com',
                   # The email address of the contact person/organization. MUST be in the format of an email address.
-                  email: 'git@gtihub.com'
+                  email: 'x@y.z'
               },
               # License Object: The license information for the exposed API.
               license: {
@@ -102,9 +105,9 @@ OpenApi::Config.tap do |c|
         json.partial! 'api/base', total: @data.size
         
         json.data do
-          # @data = @data.page(@_page).per(@_rows) if @_page || @_rows
+          # @data = @data.page(@page).per(@rows) if @page || @rows
           # json.array! @data do |datum|
-          json.array! @data.page(@_page).per(@_rows) do |datum|
+          json.array! @data.page(@page).per(@rows) do |datum|
             json.(datum, *datum.show_attrs) if datum.present?
           end
         end
