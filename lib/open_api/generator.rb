@@ -8,7 +8,11 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(api_name = nil)
-        Dir['./app/controllers/**/*.rb'].each { |file| require file }
+        Dir['./app/controllers/**/*s_controller.rb'].each do |file|
+          # Do Not `require`!
+          #   It causes problems, such as making `skip_before_action` not working.
+          file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
+        end
         # TODO: _doc should be configured
         Dir['./app/**/*_doc.rb'].each { |file| require file }
         if api_name.present?
