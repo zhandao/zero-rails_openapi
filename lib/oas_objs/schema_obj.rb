@@ -185,7 +185,7 @@ module OpenApi
       def recognize_is_options_in(name)
         # identify whether `is` patterns matched the name, if so, generate `is`.
         Config.is_options.each do |pattern|
-          self._is = pattern or break if name.match? /#{pattern}/
+          self._is = pattern or break if name.match?(/#{pattern}/)
         end if _is.nil?
       end
 

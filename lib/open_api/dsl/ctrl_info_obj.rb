@@ -20,7 +20,8 @@ module OpenApi
             ParamObj.new(name, param_type, type, required, schema_hash).process
       end
 
-      def _param_agent component_key, name, type, schema_hash = { }
+      def _param_agent component_key, name, type = nil, schema_hash = { }
+        (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
         param component_key,
               "#{@param_type}".delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
       end

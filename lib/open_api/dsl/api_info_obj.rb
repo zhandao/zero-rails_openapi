@@ -42,12 +42,12 @@ module OpenApi
         index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
       end
 
-      # Support this writing: (just like `form '', data: { }`)
+      # For supporting this: (just like `form '', data: { }` usage)
       #   do_query by: {
       #     :search_type => { type: String  },
       #         :export! => { type: Boolean }
       #   }
-      %i[header header! path path! query query! cookie cookie!].each do |param_type|
+      %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
         define_method "do_#{param_type}" do |by:|
           by.each do |key, value|
             args = [ key.dup.to_s.delete('!').to_sym, value.delete(:type), value ]
@@ -56,7 +56,8 @@ module OpenApi
         end unless param_type.to_s['!']
       end
 
-      def _param_agent name, type, schema_hash = { }
+      def _param_agent name, type = nil, schema_hash = { }
+        (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
         param "#{@param_type}".delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
       end
 
@@ -122,18 +123,10 @@ module OpenApi
       def param_examples exp_by = :all, examples_hash
         _process_objs
         exp_by = self[:parameters].map { |p| p[:name] } if exp_by == :all
-        # TODO: ref obj
-        # exp_in_params = self[:parameters].map { |p| p[:schema][:examples] }.compact
-        # examples_hash.map! do |key, value|
-        #   if value == []
-        #     if key.in?(exp_in_params.map { |e| e.keys }.flatten.uniq)
-        #       # TODO
-        #     end
-        #   end
-        # end
         self[:examples] = ExampleObj.new(examples_hash, exp_by).process
       end
-      alias_method :examples, :param_examples
+
+      alias examples param_examples
 
 
       def _process_objs
@@ -143,7 +136,7 @@ module OpenApi
 
         # Parameters sorting
         self[:parameters].clone.each do |p|
-          self[:parameters][param_order.index(p[:name])] = p
+          self[:parameters][param_order.index(p[:name]) || -1] = p
         end if param_order.present?
 
         self[:responses]&.each do |code, obj|

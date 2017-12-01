@@ -8,7 +8,7 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(api_name = nil)
-        Dir['./app/controllers/**/*s_controller.rb'].each do |file|
+        Dir['./app/controllers/**/*_controller.rb'].each do |file|
           # Do Not `require`!
           #   It causes problems, such as making `skip_before_action` not working.
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
@@ -56,7 +56,7 @@ module OpenApi
         max_length = docs.keys.map(&:size).sort.last
         puts '[ZRO] * * * * * *'
         docs.each do |doc_name, doc|
-          puts "[ZRO] `%#{max_length}s.json` has been generated." % "#{doc_name}"
+          puts "[ZRO] `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
         # pp OpenApi.docs
@@ -92,15 +92,17 @@ module OpenApi
         end
 
       @routes_list ||= routes.split("\n").drop(1).map do |line|
-        infos = line.match(/[A-Z].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
+        next unless line.match?('#')
+        infos = line.match(/[A-Z|].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
+
         {
-            http_verb: infos[0].downcase, # => "get"
+            http_verb: infos[0].downcase, # => "get" / "get|post"
             path: infos[1][0..-11].split('/').map do |item|
                     item[':'] ? "{#{item[1..-1]}}" : item
                   end.join('/'),          # => "/api/v1/examples/{id}"
             action_path: infos[2]         # => "api/v1/examples#index"
         } rescue next
-      end.compact.group_by {|api| api[:action_path].split('#').first } # => { "api/v1/examples" => [..] }, group by paths
+      end.compact.group_by { |api| api[:action_path].split('#').first } # => { "api/v1/examples" => [..] }, group by paths
     end
 
     def self.get_actions_by_ctrl_path(ctrl_path)
@@ -112,7 +114,7 @@ module OpenApi
     def self.find_path_httpverb_by(ctrl_path, action)
       routes_list[ctrl_path]&.map do |action_info|
         if action_info[:action_path].split('#').last == action.to_s
-          return [ action_info[:path], action_info[:http_verb] ]
+          return [ action_info[:path], action_info[:http_verb].split('|').first ]
         end
       end
       nil

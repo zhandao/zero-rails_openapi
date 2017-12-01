@@ -30,40 +30,35 @@ module OpenApi
         current_ctrl._process_objs
       end
 
-      def open_api action, summary = '', builder: nil, skip: [ ], use: [ ], &block
+      def open_api action, summary = '', http: nil, builder: nil, skip: [ ], use: [ ], &block
         apis_tag if @_ctrl_infos.nil?
-
         # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{action}"
-        routes_info = ctrl_routes_list&.select { |api| api[:action_path].match? /^#{action_path}$/ }&.first
+        routes_info = ctrl_routes_list&.select { |api| api[:action_path].match?(/^#{action_path}$/) }&.first
         pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{action}" and return if routes_info.nil?
-        Generator.generate_builder_file(action_path, builder) if builder.present?
+        Generator.generate_builder_file(action_path, builder)
 
-        # structural { #path: { #http_method:{ } } }, for pushing into Paths Object.
+        api = ApiInfoObj.new(action_path, skip: Array(skip), use: Array(use))
+                        .merge! description: '', summary: summary, operationId: action, tags: [@_apis_tag],
+                                parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
+        [action, :all].each { |blk_key| @_api_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
+        api.param_use = [ ] # `skip` and `use` only affect `api_dry`'s blocks
+        api.instance_eval(&block) if block_given?
+        api._process_objs
+        api.delete_if { |_, v| v.blank? }
+
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
-        current_api = path[routes_info[:http_verb]] =
-            ApiInfoObj.new(action_path, skip: Array(skip), use: Array(use))
-                .merge! description: '', summary: summary, operationId: action, tags: [@_apis_tag],
-                        parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
-
-        current_api.tap do |api|
-          [action, :all].each do |key| # blocks_store_key
-            @_apis_blocks&.[](key)&.each { |blk| api.instance_eval(&blk) }
-          end
-          api.param_use = [ ] # skip 和 use 是对 dry 块而言的
-          api.instance_eval(&block) if block_given?
-          api._process_objs
-          api.delete_if { |_, v| v.blank? }
-        end
+        http_verbs = (http || routes_info[:http_verb]).split('|')
+        http_verbs.each { |verb| path[verb] = api }
       end
 
       # method could be symbol array, like: %i[ .. ]
       def api_dry action = :all, desc = '', &block
-        @_apis_blocks ||= { }
+        @_api_dry_blocks ||= { }
         if action.is_a? Array
-          action.each { |m| (@_apis_blocks[m.to_sym] ||= [ ]) << block }
+          action.each { |m| (@_api_dry_blocks[m.to_sym] ||= [ ]) << block }
         else
-          (@_apis_blocks[action.to_sym] ||= [ ]) << block
+          (@_api_dry_blocks[action.to_sym] ||= [ ]) << block
         end
       end
 

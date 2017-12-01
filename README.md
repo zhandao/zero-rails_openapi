@@ -28,7 +28,7 @@
     - [Global DRYing](#trick2---global-drying)
     - [Auto generate description](#trick3---auto-generate-description)
     - [Skip or Use parameters define in api_dry](#trick4---skip-or-use-parameters-define-in-api_dry)
-    - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-responses-based-on-db-schema)
+    - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
 - [Troubleshooting](#troubleshooting)
 
 ## About OAS
@@ -232,7 +232,7 @@
 
 ### DSL methods inside [open_api]() and [api_dry]()'s block
 
-  [source code](lib/open_api/dsl_inside_block.rb), ApiInfoObj
+  [source code](lib/open_api/dsl/api_info_obj.rb)
   
   These following methods in the block describe the specified API action: description, valid?,
   parameters, request body, responses, securities, servers.
@@ -305,14 +305,23 @@
   
   
   # method signature
-   header(param_name, schema_type, schema_hash = { })
-  header!(param_name, schema_type, schema_hash = { })
-   query!(param_name, schema_type, schema_hash = { })
+   header(param_name, schema_type = nil, schema_hash = { })
+  header!(param_name, schema_type = nil, schema_hash = { })
+   query!(param_name, schema_type = nil, schema_hash = { })
   # usage
   header! 'Token', String
   query!  :readed, Boolean, must_be: true, default: false
   # The same effect as above, but not simple
-  param   :query, :readed, Boolean, :req, must_be: true, default: false
+  param :query, :readed, Boolean, :req, must_be: true, default: false
+  #
+  # When schema_type is a Object 
+  #   (describe by hash, key means prop's name, value means prop's schema_type)
+  query :good, { name: String, price: Float, spec: { size: String, weight: Integer } }, desc: 'good info'
+  # Or you can use `type:` to sign the schema_type, maybe this is clearer for describing object
+  query :good, type: { name: String, price: Float, spec: { size: String, weight: Integer } }, desc: 'good info'
+  #
+  query :good_name, type: String # It's also OK, but some superfluous
+  query :good_name, String       # recommended
 
 
   # method signature
@@ -457,7 +466,7 @@
 
 #### (7) `server`: TODO
   
-### DSL methods inside [components]()'block ([code source](lib/open_api/dsl_inside_block.rb):: CtrlInfoObj )
+### DSL methods inside [components]()'block ([code source](lib/open_api/dsl/ctrl_info_obj.rb):: CtrlInfoObj )
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
   
@@ -492,7 +501,7 @@
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
   ```
-  [1] see: [Type](documentation/parameter.md#type)
+  [1] see: [Type](documentation/parameter.md#type-schema_type)
 
 ## Usage - Generate JSON Documentation File
 
