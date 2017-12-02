@@ -15,7 +15,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
   end
 
 
-  open_api :index, 'GET examples', use: :Token do
+  api :index, 'GET examples', use: :Token do
     this_api_is_invalid! 'do not use!'
     desc '**GET** list of examples,<br/>and get the status 200.',
          id:    'user id',
@@ -33,13 +33,13 @@ class Api::V1::ExamplesController < Api::V1::BaseController
   end
 
 
-  open_api :show, skip: :Token do
+  api :show, skip: :Token do
     param_ref    :IdPath, :UidQuery
     response_ref 400 => :BadRqResp
   end
 
 
-  open_api :create do
+  api :create do
     form 'for creating a user', data: {
             :name! => String, # <= schema_type is `String`
         :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },

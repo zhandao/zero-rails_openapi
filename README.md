@@ -8,12 +8,9 @@
 
 ## Contributing
 
-  **Hi, here is ZhanDao. This gem was completed when I learned Ruby less than three months, 
-  I'm not sure if it has problem, but it may have a lot to improve.  
-  I'm looking forward to your issues and PRs, thanks!**
-  
-  Currently, I think the most important TODO is the Unit Test (RSpec, I want is), 
-  but I dont have enough time now = ▽ =
+  **Hi, here is ZhanDao = ▽ =
+  I think it's a very useful tool when you want to write API document clearly.  
+  I'm looking forward to your issue and PR, thanks!**
 
 ## Table of Contents
 
@@ -21,6 +18,8 @@
 - [Installation](#installation)
 - [Configure](#configure)
 - [Usage - DSL](#usage---dsl)
+  - [DSL methods inside `open_api` and `api_dry`'s block](#dsl-methods-inside-open_api-and-api_drys-block)
+  - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source-ctrlinfoobj-)
 - [Usage - Generate JSON documentation file](#usage---generate-json-documentation-file)
 - [Usage - Use Swagger UI(very beautiful web page) to show your Documentation](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [Tricks](#tricks)
@@ -29,7 +28,9 @@
     - [Auto generate description](#trick3---auto-generate-description)
     - [Skip or Use parameters define in api_dry](#trick4---skip-or-use-parameters-define-in-api_dry)
     - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
+    - [Combined Schema (oneOf / allOf / anyOf / not)]()
 - [Troubleshooting](#troubleshooting)
+- [About `OpenApi.docs` and `OpenApi.paths_index`]()
 
 ## About OAS
 
@@ -73,7 +74,7 @@
     # [REQUIRED] The output location where .json doc file will be written to.
     c.file_output_path = 'public/open_api'
   
-    c.register_docs = {
+    c.open_api_docs = {
         homepage_api: {
             # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
             root_controller: Api::V1::BaseController,
@@ -105,14 +106,15 @@
   
   OpenApi::Config.tap do |c|
     c.instance_eval do
-      api :homepage_api, root_controller: ApiDoc
+      open_api :homepage_api, root_controller: ApiDoc
       info version: '1.0.0', title: 'Homepage APIs'
     end
   end
   ```
   
   For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
-  See all the settings you can configure: [config.rb](lib/open_api/config.rb)
+  See all the settings you can configure: [config.rb](lib/open_api/config.rb)  
+  See all the Config DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## Usage - DSL
 
@@ -131,7 +133,7 @@
   
   ```ruby
   class Api::V1::ExamplesController < Api::V1::BaseController
-    open_api :index, 'GET list' do
+    api :index, 'GET list' do
       query :page, Integer#, desc: 'page, greater than 1', range: { ge: 1 }, dft: 1
       query :rows, Integer#, desc: 'per page', range: { ge: 1 }, default: 10
     end
@@ -182,7 +184,7 @@
   end
   
   # to use component
-  open_api :action, 'summary' do
+  api :action, 'summary' do
     query :doge, :DogSchema # to use a Schema component
     param_ref :UidQuery     # to use a Parameter component
     response_ref :BadRqResp # to use a Response component
@@ -210,15 +212,15 @@
   
   As you think, the block will be executed to each specified API(action) **firstly**.
   
-#### (5) `open_api` [required]
+#### (5) `api` [required]
 
   Define the specified API (controller action, in the following example is index).
   
   ```ruby
   # method signature
-  open_api(action, summary = '', builder: nil, skip: [ ], use: [ ], &block)
+  api(action, summary = '', builder: nil, skip: [ ], use: [ ], &block)
   # usage
-  open_api :index, '(SUMMARY) this api blah blah ...', builder: :index # block ...
+  api :index, '(SUMMARY) this api blah blah ...', builder: :index # block ...
   ```
   If you pass `builder`, and `generate_jbuilder_file` is set to `true` (in your initializer),
   ZRO will generate JBuilder file by using specified template called `index`.  
@@ -227,10 +229,10 @@
   `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
   
   ```ruby
-  open_api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
+  api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
   ```
 
-### DSL methods inside [open_api]() and [api_dry]()'s block
+### DSL methods inside [api]() and [api_dry]()'s block
 
   [source code](lib/open_api/dsl/api_info_obj.rb)
   
@@ -304,11 +306,12 @@
   param_ref :IdPath, :NameQuery, :TokenHeader
   
   
-  # method signature
-   header(param_name, schema_type = nil, schema_hash = { })
-  header!(param_name, schema_type = nil, schema_hash = { })
-   query!(param_name, schema_type = nil, schema_hash = { })
-  # usage
+  ### method signature
+   header(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+  header!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+   query!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+  # ...
+  ### usage
   header! 'Token', String
   query!  :readed, Boolean, must_be: true, default: false
   # The same effect as above, but not simple
@@ -322,6 +325,7 @@
   #
   query :good_name, type: String # It's also OK, but some superfluous
   query :good_name, String       # recommended
+  # About Combined Schema (`one_of` ..), see the link below.
 
 
   # method signature
@@ -349,6 +353,8 @@
           :wrong_input => [ -1, ''   ]
   }
   ```
+  
+  [This trick show you how to define combined schema (by using `one_of` ..)]()
 
   [**>> More About `param` DSL <<**](documentation/parameter.md)
 
@@ -462,11 +468,74 @@
   
   **practice:** Combined with wrong class, automatically generate error responses. [AutoGenDoc](documentation/examples/auto_gen_doc.rb#L63)  
   
-#### (6) `security`: TODO
-
-#### (7) `server`: TODO
+#### (6) Authentication and Authorization
   
-### DSL methods inside [components]()'block ([code source](lib/open_api/dsl/ctrl_info_obj.rb):: CtrlInfoObj )
+  First of all, please make sure that you have read one of the following documents:  
+  [OpenApi Auth](https://swagger.io/docs/specification/authentication/) 
+  or [securitySchemeObject](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securitySchemeObject)
+  
+  ##### Define Security Scheme
+  
+  Use these DSL in your initializer or `components` block:
+  ```
+  security_scheme # alias `auth_scheme`
+  base_auth       # will call `security_scheme`
+  bearer_auth     # will call `security_scheme`
+  api_key         # will call `security_scheme`
+  ```
+  It's very simple to use (if you understand the above document)
+  ```ruby
+  # method signature
+  security_scheme(scheme_name, other_info)
+  # usage
+  security_scheme :BasicAuth, { type: 'http', scheme: 'basic', desc: 'basic auth' }
+  
+  # method signature
+  base_auth(scheme_name, other_info = { })
+  bearer_auth(scheme_name, format = 'JWT', other_info = { })
+  api_key(scheme_name, field:, in:, **other_info)
+  # usage
+  base_auth :BasicAuth, desc: 'basic auth' # the same effect as ↑↑↑
+  bearer_auth :Token
+  api_key :ApiKeyAuth, field: 'X-API-Key', in: 'header', desc: 'pass api key to header'
+  ```
+  
+  ##### Apply Security
+  
+  ```
+  # In initializer
+  # Global effectiveness
+  global_security_require
+  global_security # alias
+  global_auth     # alias
+  
+  # In `api`'s block
+  # Only valid for the current controller
+  security_require
+  security  # alias
+  auth      # alias
+  need_auth # alias
+  ```
+  Name is different, signature and usage is similar.
+  ```ruby
+  # method signature
+  security_require(scheme_name, scopes: [ ])
+  # usage
+  global_auth :Token
+  need_auth   :Token
+  auth :OAuth, scopes: %w[ read_example admin ]
+  ```
+
+#### (7) Overriding Global Servers by `server`
+  
+  ```ruby
+  # method signature
+  server(url, desc)
+  # usage
+  server 'http://localhost:3000', 'local'
+  ```
+  
+### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/ctrl_info_obj.rb):: CtrlInfoObj )
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
   
@@ -512,7 +581,7 @@
   OpenApi.write_docs generate_files: !Rails.env.production?
   
   # or run directly in console
-  OpenApi.write_docs
+  OpenApi.write_docs # will generate json doc files
   ```
   
   Then the JSON files will be written to the directories you set. (Each API a file.)
@@ -521,8 +590,7 @@
 
   Download [Swagger UI](https://github.com/swagger-api/swagger-ui) (version >= 2.3.0 support the OAS3) 
   to your project,  
-  modify the default JSON file path(url) in the index.html 
-  (window.onload >> SwaggerUIBundle >> url).  
+  change the default JSON file path(url) in index.html.  
   In order to use it, you may have to enable CORS, [see](https://github.com/swagger-api/swagger-ui#cors-support)
 
 ## Tricks
@@ -549,7 +617,7 @@
   class V1::ExamplesDoc < ApiDoc
     ctrl_path 'api/v1/examples'
     
-    open_api :index do
+    api :index do
       # ...
     end
   end
@@ -599,9 +667,9 @@
 
 ### Trick4 - Skip or Use parameters define in api_dry
 
-  Pass `skip: []` and `use: []` to `open_api` like following code:
+  Pass `skip: []` and `use: []` to `api` like following code:
   ```ruby
-  open_api :index, 'desc', builder: :index, skip: [ :Token ]
+  api :index, 'desc', builder: :index, skip: [ :Token ]
   ```
   
   Look at this [file](documentation/examples/goods_doc.rb) to learn more.
@@ -612,11 +680,49 @@
   
   See this [file](documentation/examples/auto_gen_doc.rb#L51) for uasge information.
 
+### Trick6 - Combined Schema (oneOf / allOf / anyOf / not)
+
+  ```ruby
+  query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input'}]
+  
+  form '', data: {
+      :combination_in_form => { any_of: [ Integer, String ] }
+  }
+  
+  schema :PetSchema => [ not: [ Integer, Boolean ] ]
+  ```
+  
+  OAS: [link1](https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/),
+  [link2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schemaObject)
 
 ## Troubleshooting
 
 - **You wrote document of the current API, but not find in the generated json file?**  
   Check your routing settings.
+- **Undefine method `match?`**  
+  Monkey patches for `String` and `Symbol`:  
+  ```ruby
+  class String # Symbol
+    def match?(pattern); !match(pattern).nil? end
+  end
+  ```
+- **Report error when require `routes.rb`?***
+  1. Run `rails routes`.
+  2. Copy the output to a file, for example `config/routes.txt`.  
+     ignore the file `config/routes.txt`.
+  3. Put `c.rails_routes_file = 'config/routes.txt'` to your ZRO config.
+
+
+## About `OpenApi.docs` and `OpenApi.paths_index`
+
+  After `OpenApi.write_docs`, the above two module variables will be generated.
+  
+  `OpenApi.docs`: A Hash with API names as keys, and documents of each APIs as values.  
+  documents are instances of ActiveSupport::HashWithIndifferentAccess.
+  
+  `OpenApi.paths_index`: Inverted index of controller path to API name mappings.  
+  Like: `{ 'api/v1/examples' => :homepage_api }`  
+  It's useful when you want to look up a document based on a controller and do something.
 
 ## Development
 

@@ -38,7 +38,7 @@ module OpenApi
 
         param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
         # The definition of the same name parameter will be overwritten
-        index = self[:parameters].map { |p| p.processed[:name] if p.is_a? ParamObj }.index name
+        index = self[:parameters].map { |p| p.processed[:name] if p.is_a?(ParamObj) }.index name
         index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
       end
 
@@ -56,8 +56,12 @@ module OpenApi
         end unless param_type.to_s['!']
       end
 
-      def _param_agent name, type = nil, schema_hash = { }
+      def _param_agent name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
         (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
+        type = schema_hash[:type] if type.nil?
+
+        combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
+        schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
         param "#{@param_type}".delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
       end
 
@@ -106,9 +110,13 @@ module OpenApi
         body! media_type, desc, hash
       end
 
-      def security scheme_name, requirements = [ ]
-        self[:security] << { scheme_name => requirements }
+      def security_require scheme_name, scopes: [ ]
+        self[:security] << { scheme_name => scopes }
       end
+
+      alias security  security_require
+      alias auth      security_require
+      alias need_auth security_require
 
       def server url, desc
         self[:servers] << { url: url, description: desc }
@@ -143,6 +151,6 @@ module OpenApi
           self[:responses][code] = obj.process if obj.is_a?(ResponseObj)
         end
       end
-    end # ----------------------------------------- end of ApiInfoObj
+    end
   end
 end

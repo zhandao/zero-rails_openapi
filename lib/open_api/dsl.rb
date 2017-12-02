@@ -30,7 +30,7 @@ module OpenApi
         current_ctrl._process_objs
       end
 
-      def open_api action, summary = '', http: nil, builder: nil, skip: [ ], use: [ ], &block
+      def api action, summary = '', http: nil, builder: nil, skip: [ ], use: [ ], &block
         apis_tag if @_ctrl_infos.nil?
         # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{action}"

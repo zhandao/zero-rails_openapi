@@ -1,4 +1,5 @@
 require 'oas_objs/schema_obj'
+require 'oas_objs/combined_schema'
 require 'oas_objs/param_obj'
 require 'oas_objs/response_obj'
 require 'oas_objs/request_body_obj'

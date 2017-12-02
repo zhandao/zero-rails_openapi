@@ -77,12 +77,15 @@ module OpenApi
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
         if t.is_a? Hash
-          # For supporting writing:
+          # For supporting this:
           #   form 'desc', data: {
           #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
           # }
-          if t.key? :type
-            SchemaObj.new(t[:type], t).process_for @prop_name, desc_inside: true
+          if t.key?(:type)
+            SchemaObj.new(t[:type], t).process_for(@prop_name, desc_inside: true)
+          # For supporting combined schema in nested schema.
+          elsif (t.keys & %i[ one_of any_of all_of not ]).present?
+            CombinedSchema.new(t).process_for(@prop_name, desc_inside: true)
           else
             recursive_obj_type t
           end
@@ -104,7 +107,7 @@ module OpenApi
       end
 
       def recursive_obj_type(t) # DSL use { prop_name: prop_type } to represent object structure
-        return processed_type(t) if !t.is_a?(Hash) || t.key?(:type)
+        return processed_type(t) if !t.is_a?(Hash) || (t.keys & %i[ type one_of any_of all_of not ]).present?
 
         _schema = {
             type: 'object',
@@ -116,7 +119,7 @@ module OpenApi
           _schema[:required] << "#{prop_name}".delete('!') if prop_name['!']
           _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
         end
-        _schema.keep_if &value_present
+        _schema.keep_if(&value_present)
       end
 
       def recursive_array_type(t)

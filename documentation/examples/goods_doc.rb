@@ -1,5 +1,7 @@
 class V2::GoodsDoc < BaseDoc
-  open_api :index, 'GET list of goods.', builder: :index, # jbuilder templates is set in initializers/open_api.rb
+  SCHEMA_DRY = { a: 1, b: 2 }
+
+  api :index, 'GET list of goods.', builder: :index, # jbuilder templates is set in initializers/open_api.rb
            use: [ 'Token', :page, :rows ] do # use parameters write in AutoGenDoc#api_dry
            # skip: [ 'Token' ] do # you can also skip parameters
     desc 'listing goods',
@@ -13,7 +15,7 @@ class V2::GoodsDoc < BaseDoc
                'only offline': :offline,
             'expensive goods': :expensive,
                 'cheap goods': :cheap,
-    }
+    }, **SCHEMA_DRY # >>> Here is a little trick! <<<
     # Batch `query`
     do_query by: {
         :search_type => { type: String, enum: %w[ name creator category price ] },
@@ -26,7 +28,7 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  open_api :create, 'POST create a good', builder: :success_or_not, use: 'Token' do
+  api :create, 'POST create a good', builder: :success_or_not, use: 'Token' do
     form! 'for creating a good', data: {
                :name! => { type: String,  desc: 'good\'s name' },
         :category_id! => { type: Integer, desc: 'sub_category\'s id', npmt: true, range: { ge: 1 }, as: :cate  },
@@ -44,8 +46,8 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  open_api :show, 'GET the specified Good.', builder: :show, use: [ 'Token', :id ]
+  api :show, 'GET the specified Good.', builder: :show, use: [ 'Token', :id ]
 
 
-  open_api :destroy, 'DELETE the specified Good.', builder: :success_or_not, use: [ 'Token', :id ]
+  api :destroy, 'DELETE the specified Good.', builder: :success_or_not, use: [ 'Token', :id ]
 end

@@ -1,22 +1,23 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "User",
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "title": "Zero Rails APIs",
+    "description": "API documentation of Zero-Rails Application."
   },
   "servers": [
     {
       "url": "http://localhost:3000",
-      "description": "Optional server description, e.g. Main (production) server"
+      "description": "Main (production) server"
     },
     {
       "url": "http://localhost:3000",
-      "description": "Optional server description, e.g. Internal staging server for testing"
+      "description": "Internal staging server for testing"
     }
   ],
   "security": [
     {
-      "ApiKeyAuth": [
+      "Token": [
 
       ]
     }
@@ -644,9 +645,6 @@
                           "name": {
                             "type": "string"
                           },
-                          "category_id": {
-                            "type": "integer"
-                          },
                           "unit": {
                             "type": "string"
                           },
@@ -961,9 +959,6 @@
                           },
                           "name": {
                             "type": "string"
-                          },
-                          "category_id": {
-                            "type": "integer"
                           },
                           "unit": {
                             "type": "string"
@@ -3612,10 +3607,10 @@
   },
   "components": {
     "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "name": "server_token",
-        "in": "query"
+      "Token": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }

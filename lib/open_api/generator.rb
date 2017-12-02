@@ -7,7 +7,7 @@ module OpenApi
     end
 
     module ClassMethods
-      def generate_docs(api_name = nil)
+      def generate_docs(doc_name = nil)
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
           # Do Not `require`!
           #   It causes problems, such as making `skip_before_action` not working.
@@ -15,21 +15,20 @@ module OpenApi
         end
         # TODO: _doc should be configured
         Dir['./app/**/*_doc.rb'].each { |file| require file }
-        if api_name.present?
-          [{ api_name => generate_doc(api_name) }]
+        if doc_name.present?
+          [{ doc_name => generate_doc(doc_name) }]
         else
           Config.docs.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
         end
       end
 
-      def generate_doc(api_name)
-        settings = Config.docs[api_name]
+      def generate_doc(doc_name)
+        settings = Config.docs[doc_name]
         doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge(
-                # TODO: rename to just `security`
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
-                    securitySchemes: settings[:global_security_schemes],
-                    schemas: { }
+                    securitySchemes: settings[:security_schemes] || { },
+                    schemas: { }, parameters: { }, requestBodies: { }
                 }
               )
 
@@ -39,13 +38,13 @@ module OpenApi
           doc[:paths].merge! ctrl.instance_variable_get('@_api_infos') || { }
           doc[:tags] << ctrl_infos[:tag]
           doc[:components].merge! ctrl_infos[:components] || { }
-          OpenApi.paths_index[ctrl.instance_variable_get('@_ctrl_path')] = api_name
+          OpenApi.paths_index[ctrl.instance_variable_get('@_ctrl_path')] = doc_name
         end
         doc[:components].delete_if { |_, v| v.blank? }
         doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
         doc[:paths] = doc[:paths].sort.to_h
 
-        OpenApi.docs[api_name] ||= ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
+        OpenApi.docs[doc_name] ||= ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
       def write_docs(generate_files: true)
@@ -54,12 +53,11 @@ module OpenApi
         output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
         max_length = docs.keys.map(&:size).sort.last
-        puts '[ZRO] * * * * * *'
+        # puts '[ZRO] * * * * * *'
         docs.each do |doc_name, doc|
           puts "[ZRO] `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
-        # pp OpenApi.docs
       end
     end
 

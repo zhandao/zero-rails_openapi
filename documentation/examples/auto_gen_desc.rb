@@ -1,5 +1,5 @@
 class V1::GoodsDoc < BaseDoc
-  open_api :index, 'GET list of goods.' do
+  api :index, 'GET list of goods.' do
     desc 'listing goods',
          view!: 'search view, allows:<br/>',
                # '1/ all goods (default)：all<br/>' \

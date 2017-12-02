@@ -7,19 +7,20 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :schema
-      def initialize(name, param_type, type, required, schema_hash)
+
+      def initialize(name, param_type, type, required, schema)
         self.processed = {
             name: name,
             in: param_type,
             required: required.to_s.match?(/req/)
         }
-        self.schema = SchemaObj.new(type, schema_hash)
-        merge! schema_hash
+        self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
+        merge! schema
       end
 
       def process
         assign(desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.process_for self.processed[:name] }
+        processed.tap { |it| it[:schema] = schema.process_for(processed[:name]) }
       end
 
       def desc
