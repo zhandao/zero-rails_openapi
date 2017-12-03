@@ -9,10 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["zhandao"]
   spec.email         = ["x@skippingcat.com"]
 
-  spec.summary       = %q{Generate the OpenAPI Specification 3 documentation for Rails application.}
-  spec.description   = %q{Provide concise DSL for generating the OpenAPI Specification 3 (OAS3)
-                         documentation JSON file for Rails application,
-                         then you can use Swagger-UI 3.2.0+ to show the documentation.}
+  spec.summary       = %q{Concise DSL for generating OpenAPI3 documentation.}
+  spec.description   = %q{Concise DSL for generating OpenAPI Specification 3 (OAS3) JSON documentation for Rails application.}
   spec.homepage      = "https://github.com/zhandao/zero-rails_openapi"
   spec.license       = "MIT"
 

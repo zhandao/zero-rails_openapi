@@ -1,9 +1,8 @@
 class V2::GoodsDoc < BaseDoc
   SCHEMA_DRY = { a: 1, b: 2 }
 
-  api :index, 'GET list of goods.', builder: :index, # jbuilder templates is set in initializers/open_api.rb
-           use: [ 'Token', :page, :rows ] do # use parameters write in AutoGenDoc#api_dry
-           # skip: [ 'Token' ] do # you can also skip parameters
+  #                                 skip: [ 'Token' ] do # you can also skip parameters
+  api :index, 'GET list of goods.', use: [ 'Token', :page, :rows ] do # use parameters write in AutoGenDoc#api_dry
     desc 'listing goods',
          view!: 'search view, allows:<br/>',
          search_type!: 'search field, allows:<br/>'
@@ -28,7 +27,7 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  api :create, 'POST create a good', builder: :success_or_not, use: 'Token' do
+  api :create, 'POST create a good', use: 'Token' do
     form! 'for creating a good', data: {
                :name! => { type: String,  desc: 'good\'s name' },
         :category_id! => { type: Integer, desc: 'sub_category\'s id', npmt: true, range: { ge: 1 }, as: :cate  },
@@ -46,8 +45,8 @@ class V2::GoodsDoc < BaseDoc
   end
 
 
-  api :show, 'GET the specified Good.', builder: :show, use: [ 'Token', :id ]
+  api :show, 'GET the specified Good.', use: [ 'Token', :id ]
 
 
-  api :destroy, 'DELETE the specified Good.', builder: :success_or_not, use: [ 'Token', :id ]
+  api :destroy, 'DELETE the specified Good.', use: [ 'Token', :id ]
 end

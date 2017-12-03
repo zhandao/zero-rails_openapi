@@ -3,12 +3,12 @@
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
   
-  Provide concise DSL for generating the OpenAPI Specification 3 (**OAS3**, formerly Swagger3) documentation JSON file for Rails application, 
+  Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application, 
   then you can use Swagger UI 3.2.0+ to show the documentation.
 
 ## Contributing
 
-  **Hi, here is ZhanDao = ▽ =
+  **Hi, here is ZhanDao = ▽ =  
   I think it's a very useful tool when you want to write API document clearly.  
   I'm looking forward to your issue and PR, thanks!**
 
@@ -18,7 +18,7 @@
 - [Installation](#installation)
 - [Configure](#configure)
 - [Usage - DSL](#usage---dsl)
-  - [DSL methods inside `open_api` and `api_dry`'s block](#dsl-methods-inside-open_api-and-api_drys-block)
+  - [DSL methods inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
   - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source-ctrlinfoobj-)
 - [Usage - Generate JSON documentation file](#usage---generate-json-documentation-file)
 - [Usage - Use Swagger UI(very beautiful web page) to show your Documentation](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
@@ -26,11 +26,11 @@
     - [Write DSL somewhere else](#trick1---write-the-dsl-somewhere-else)
     - [Global DRYing](#trick2---global-drying)
     - [Auto generate description](#trick3---auto-generate-description)
-    - [Skip or Use parameters define in api_dry](#trick4---skip-or-use-parameters-define-in-api_dry)
+    - [Skip or Use parameters define in `api_dry`](#trick4---skip-or-use-parameters-define-in-api_dry)
     - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
-    - [Combined Schema (oneOf / allOf / anyOf / not)]()
+    - [Combined Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one-of--all-of--any-of--not)
 - [Troubleshooting](#troubleshooting)
-- [About `OpenApi.docs` and `OpenApi.paths_index`]()
+- [About `OpenApi.docs` and `OpenApi.paths_index`](#about-openapidocs-and-openapipaths_index)
 
 ## About OAS
 
@@ -218,15 +218,16 @@
   
   ```ruby
   # method signature
-  api(action, summary = '', builder: nil, skip: [ ], use: [ ], &block)
+  api(action, summary = '', skip: [ ], use: [ ], &block)
   # usage
-  api :index, '(SUMMARY) this api blah blah ...', builder: :index # block ...
+  api :index, '(SUMMARY) this api blah blah ...', # block ...
   ```
-  If you pass `builder`, and `generate_jbuilder_file` is set to `true` (in your initializer),
-  ZRO will generate JBuilder file by using specified template called `index`.  
-  About template settings, see: [open_api.rb](documentation/examples/open_api.rb)
   
   `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
+  
+  [Note] JBuilder file automatic generator has been removed,
+  If you need this function, please refer to [here](https://github.com/zhandao/zero-rails/tree/master/lib/generators/jubilder/dsl.rb) 
+  to implement a lib.
   
   ```ruby
   api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
@@ -354,7 +355,7 @@
   }
   ```
   
-  [This trick show you how to define combined schema (by using `one_of` ..)]()
+  [This trick show you how to define combined schema (by using `one_of` ..)](#trick6---combined-schema-one-of--all-of--any-of--not)
 
   [**>> More About `param` DSL <<**](documentation/parameter.md)
 
@@ -669,7 +670,7 @@
 
   Pass `skip: []` and `use: []` to `api` like following code:
   ```ruby
-  api :index, 'desc', builder: :index, skip: [ :Token ]
+  api :index, 'desc', skip: [ :Token ]
   ```
   
   Look at this [file](documentation/examples/goods_doc.rb) to learn more.
@@ -680,7 +681,7 @@
   
   See this [file](documentation/examples/auto_gen_doc.rb#L51) for uasge information.
 
-### Trick6 - Combined Schema (oneOf / allOf / anyOf / not)
+### Trick6 - Combined Schema (one_of / all_of / any_of / not)
 
   ```ruby
   query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input'}]
@@ -709,7 +710,7 @@
 - **Report error when require `routes.rb`?***
   1. Run `rails routes`.
   2. Copy the output to a file, for example `config/routes.txt`.  
-     ignore the file `config/routes.txt`.
+     Ignore the file `config/routes.txt`.
   3. Put `c.rails_routes_file = 'config/routes.txt'` to your ZRO config.
 
 

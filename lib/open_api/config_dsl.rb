@@ -9,8 +9,8 @@ module OpenApi
           open_api_docs[name] = { root_controller: root_controller }
         end
 
-        def info version:, title:, **addition
-          open_api_docs[@api][:info] = { version: version, title: title, **addition }
+        def info version:, title:, desc: '', **addition
+          open_api_docs[@api][:info] = { version: version, title: title, description:  desc, **addition }
         end
 
         def server url, desc: ''

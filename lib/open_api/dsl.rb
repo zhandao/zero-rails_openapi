@@ -30,13 +30,12 @@ module OpenApi
         current_ctrl._process_objs
       end
 
-      def api action, summary = '', http: nil, builder: nil, skip: [ ], use: [ ], &block
+      def api action, summary = '', http: nil, skip: [ ], use: [ ], &block
         apis_tag if @_ctrl_infos.nil?
         # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@_ctrl_path ||= controller_path}##{action}"
         routes_info = ctrl_routes_list&.select { |api| api[:action_path].match?(/^#{action_path}$/) }&.first
         pp "[ZRO Warning] Routing mapping failed: #{@_ctrl_path}##{action}" and return if routes_info.nil?
-        Generator.generate_builder_file(action_path, builder)
 
         api = ApiInfoObj.new(action_path, skip: Array(skip), use: Array(use))
                         .merge! description: '', summary: summary, operationId: action, tags: [@_apis_tag],
@@ -50,6 +49,7 @@ module OpenApi
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
         http_verbs = (http || routes_info[:http_verb]).split('|')
         http_verbs.each { |verb| path[verb] = api }
+        api
       end
 
       # method could be symbol array, like: %i[ .. ]

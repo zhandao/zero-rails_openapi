@@ -61,21 +61,6 @@ module OpenApi
       end
     end
 
-    def self.generate_builder_file(action_path, builder)
-      return unless Config.generate_jbuilder_file
-      return if builder.nil?
-
-      path, action = action_path.split('#')
-      dir_path = "app/views/#{path}"
-      FileUtils.mkdir_p dir_path
-      file_path = "#{dir_path}/#{action}.json.jbuilder"
-
-      if Config.overwrite_jbuilder_file || !File.exist?(file_path)
-        File.open(file_path, 'w') { |file| file.write Config.jbuilder_templates[builder] }
-        puts "[ZRO] JBuilder file has been generated: #{path}/#{action}"
-      end
-    end
-
     def self.routes_list
       routes =
         if (f = Config.rails_routes_file)

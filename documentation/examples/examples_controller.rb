@@ -3,6 +3,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
 
   components do
     schema :DogSchema => [ String, dft: 'doge' ]
+    schema :PetSchema => [ not: [ Integer, Boolean ] ]
     query! :UidQuery  => [ :uid, String, desc: 'user uid' ]
     path!  :IdPath    => [ :id, Integer, desc: 'product id' ]
     resp   :BadRqResp => [ 'bad request', :json ]
@@ -27,7 +28,20 @@ class Api::V1::ExamplesController < Api::V1::BaseController
     query  :email, String,  lth: :ge_3,     default: email  # is_a: :email
     file   :pdf, 'upload a file: the media type should be application/pdf'
 
+    query :test_type, type: String
+    query :combination, one_of: [ :DogSchema, String, { type: Integer, desc: 'integer input'}]
+    form '', data: {
+        :combination => { any_of: [ Integer, String ] }
+    }
+
     response :success, 'success response', :json, type: :DogSchema
+    merge_to_resp 200, by: {
+        data: {
+            type: [
+                String
+            ]
+        }
+    }
 
     security :ApiKeyAuth
   end
