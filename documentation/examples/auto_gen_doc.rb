@@ -10,7 +10,7 @@ module AutoGenDoc
     def inherited(subclass)
       super
       subclass.class_eval do
-        break unless self.name.match? /sController|sDoc/
+        break unless self.name.match?(/sController|sDoc/)
         ctrl_path self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
         open_api_dry
       end

@@ -2,11 +2,13 @@ require 'oas_objs/helpers'
 require 'open_api/config'
 require 'oas_objs/ref_obj'
 require 'oas_objs/example_obj'
+require 'oas_objs/schema_obj_helpers'
 
 module OpenApi
   module DSL
     # https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject
     class SchemaObj < Hash
+      include SchemaObjHelpers
       include Helpers
 
       attr_accessor :processed, :type
@@ -28,19 +30,20 @@ module OpenApi
         return processed if @preprocessed
 
         processed.merge! processed_type
-        reducx processed_enum_and_length,
-               processed_range,
-               processed_is_and_format(param_name),
-               {
-                   pattern:    _pattern&.inspect&.delete('/'),
-                   default:    _default.nil? ? nil : '_default',
-                   examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
-               },
-               { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }
-        then_merge!
+        reducx(
+            processed_enum_and_length,
+            processed_range,
+            processed_is_and_format(param_name),
+            {
+                pattern:    _pattern&.inspect&.delete('/'),
+                default:    _default.nil? ? nil : '_default',
+                examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
+            },
+            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }
+        ).then_merge!
         processed[:default] = _default unless _default.nil?
 
-        reducx(processed_desc options).then_merge!
+        reducx(processed_desc(options)).then_merge!
       end
 
       alias process process_for
@@ -53,44 +56,16 @@ module OpenApi
       end
 
       def processed_desc(options)
-        result = __desc ? self.__desc = process_desc : _desc
+        result = __desc ? self.__desc = auto_generate_desc : _desc
         options[:desc_inside] ? { description: result } : nil
-      end
-
-      # TODO: more info
-      # TODO: desc configure
-      def process_desc
-        if processed[:enum].present?
-          if @enum_info.present?
-            @enum_info.each_with_index do |(info, value), index|
-              __desc.concat "<br/>#{index + 1}/ #{info}: #{value}"
-            end
-          else
-            processed[:enum].each_with_index do |value, index|
-              __desc.concat "<br/>#{index + 1}/ #{value}"
-            end
-          end
-        end
-        __desc
       end
 
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
         if t.is_a? Hash
-          # For supporting this:
-          #   form 'desc', data: {
-          #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
-          # }
-          if t.key?(:type)
-            SchemaObj.new(t[:type], t).process_for(@prop_name, desc_inside: true)
-          # For supporting combined schema in nested schema.
-          elsif (t.keys & %i[ one_of any_of all_of not ]).present?
-            CombinedSchema.new(t).process_for(@prop_name, desc_inside: true)
-          else
-            recursive_obj_type t
-          end
+          processed_hash_type(t)
         elsif t.is_a? Array
-          recursive_array_type t
+          recursive_array_type(t)
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
         elsif t.in? %w[float double int32 int64] # to README: 这些值应该传 string 进来, symbol 只允许 $ref
@@ -106,53 +81,24 @@ module OpenApi
         end
       end
 
-      def recursive_obj_type(t) # DSL use { prop_name: prop_type } to represent object structure
-        return processed_type(t) if !t.is_a?(Hash) || (t.keys & %i[ type one_of any_of all_of not ]).present?
-
-        _schema = {
-            type: 'object',
-            properties: { },
-            required: [ ]
-        }
-        t.each do |prop_name, prop_type|
-          @prop_name = prop_name
-          _schema[:required] << "#{prop_name}".delete('!') if prop_name['!']
-          _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
-        end
-        _schema.keep_if(&value_present)
-      end
-
-      def recursive_array_type(t)
-        if t.is_a? Array
-          {
-              type: 'array',
-              # TODO: [[String], [Integer]] <= One Of? Object?(0=>[S], 1=>[I])
-              items: recursive_array_type(t.first)
-          }
+      def processed_hash_type(t)
+        # For supporting this:
+        #   form 'desc', data: {
+        #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
+        # }
+        if t.key?(:type)
+          SchemaObj.new(t[:type], t).process_for(@prop_name, desc_inside: true)
+          # For supporting combined schema in nested schema.
+        elsif (t.keys & %i[ one_of any_of all_of not ]).present?
+          CombinedSchema.new(t).process_for(@prop_name, desc_inside: true)
         else
-          processed_type t
+          recursive_obj_type(t)
         end
       end
 
       def processed_enum_and_length
-        # Support this writing for auto generating desc from enum.
-        #   enum: {
-        #     'all_data': :all,
-        #     'one_page': :one
-        # }
-        if _enum.is_a? Hash
-          @enum_info = _enum
-          self._enum = _enum.values
-        end
-
-        %i[_enum _length].each do |key|
-          value = self.send(key)
-          self[key] = value.to_a if value.present? && value.is_a?(Range)
-        end
-
-        # generate_enums_by_enum_array
-        values = _enum || _value
-        self._enum = Array(values) if truly_present?(values)
+        process_enum_info
+        process_enum_lth_range
 
         # generate length range fields by _lth array
         lth = _length || [ ]
@@ -180,16 +126,17 @@ module OpenApi
         recognize_is_options_in name
         { }.tap do |it|
           # `format` that generated in process_type() may be overwrote here.
-          it.merge!(format: _format || _is) if processed[:format].blank? || _format.present?
-          it.merge! is: _is
+          it[:format] = _format || _is if processed[:format].blank? || _format.present?
+          it[:is] = _is
         end
       end
 
       def recognize_is_options_in(name)
+        return unless _is.nil?
         # identify whether `is` patterns matched the name, if so, generate `is`.
         Config.is_options.each do |pattern|
-          self._is = pattern or break if name.match?(/#{pattern}/)
-        end if _is.nil?
+          (self._is = pattern) or break if name.match?(/#{pattern}/)
+        end
       end
 
 
@@ -211,10 +158,12 @@ module OpenApi
           _opt_if:  %i[ opt_if   opt_when                 ], # NOT OAS Spec, it's for zero-params_processor
       }.each do |key, aliases|
         define_method key do
+          return self[key] unless self[key].nil?
+          
           aliases.each do |alias_name|
             break if self[key] == false
             self[key] ||= self[alias_name]
-          end if self[key].nil?
+          end
           self[key]
         end
         define_method "#{key}=" do |value| self[key] = value end

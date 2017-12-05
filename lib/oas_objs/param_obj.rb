@@ -24,11 +24,8 @@ module OpenApi
       end
 
       def desc
-        if __desc.present?
-          schema.preprocess_with_desc __desc, self[:name]
-        else
-          _desc
-        end
+        return _desc unless __desc.present?
+        schema.preprocess_with_desc __desc, self[:name]
       end
 
 

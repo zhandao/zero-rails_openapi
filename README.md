@@ -2,6 +2,7 @@
 
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
+  [![Maintainability](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/maintainability)](https://codeclimate.com/github/zhandao/zero-rails_openapi/maintainability)
   
   Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application, 
   then you can use Swagger UI 3.2.0+ to show the documentation.
@@ -28,7 +29,7 @@
     - [Auto generate description](#trick3---auto-generate-description)
     - [Skip or Use parameters define in `api_dry`](#trick4---skip-or-use-parameters-define-in-api_dry)
     - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
-    - [Combined Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one-of--all-of--any-of--not)
+    - [Combined Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [Troubleshooting](#troubleshooting)
 - [About `OpenApi.docs` and `OpenApi.paths_index`](#about-openapidocs-and-openapipaths_index)
 

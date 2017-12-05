@@ -4,6 +4,7 @@ TODO = ▽ =
 
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
+  [![Maintainability](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/maintainability)](https://codeclimate.com/github/zhandao/zero-rails_openapi/maintainability)
   
   一套简洁的 DSL，用于为 Rails 应用生成 OpenAPI Specification 3 (**OAS3**, 旧称「Swagger3」) 标准的 JSON 文档。  
   （你还可以使用 Swagger-UI 3.2.0 以上版本来可视化所生成的文档。）

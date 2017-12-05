@@ -12,26 +12,30 @@ module OpenApi
         #   (3) jbuilder file: https://github.com/zhandao/zero-rails/blob/mster/app/views/api/v1/goods/index.json.jbuilder
         # In a word, BuilderSupport let you control the `output fields and nested association infos` very easily.
         if model.respond_to? :show_attrs
-          columns = model.column_names.map(&:to_sym)
-          model.show_attrs.map do |attr|
-            if columns.include?(attr)
-              index = columns.index(attr)
-              type = model.columns[index].sql_type_metadata.type.to_s.camelize
-              type = 'DateTime' if type == 'Datetime'
-              { attr => Object.const_get(type) }
-            elsif attr.match?(/_info/)
-              # TODO: 如何获知关系是 many？因为不能只判断结尾是否 ‘s’
-              assoc_model = Object.const_get(attr.to_s.split('_').first.singularize.camelize)
-              { attr => load_schema(assoc_model) }
-            end rescue next
-          end
+          _load_schema_based_on_show_attr(model)
         else
-          model.columns.map do |column|
-            type = column.sql_type_metadata.type.to_s.camelize
-            type = 'DateTime' if type == 'Datetime'
-            { column.name.to_sym => Object.const_get(type) }
-          end
+          model.columns.map { |column| _type_mapping(column) }
         end.compact.reduce({ }, :merge) rescue ''
+      end
+
+      def _type_mapping(column)
+        type = column.sql_type_metadata.type.to_s.camelize
+        type = 'DateTime' if type == 'Datetime'
+        { column.name.to_sym => Object.const_get(type) }
+      end
+
+      def _load_schema_based_on_show_attr(model)
+        columns = model.column_names.map(&:to_sym)
+        model.show_attrs.map do |attr|
+          if columns.include?(attr)
+            index = columns.index(attr)
+            _type_mapping(model.columns[index])
+          elsif attr.match?(/_info/)
+            # TODO: 如何获知关系是 many？因为不能只判断结尾是否 ‘s’
+            assoc_model = Object.const_get(attr.to_s.split('_').first.singularize.camelize)
+            { attr => load_schema(assoc_model) }
+          end rescue next
+        end
       end
 
       # Arrow Writing:
