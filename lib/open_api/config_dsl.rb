@@ -19,7 +19,7 @@ module OpenApi
 
         def security_scheme scheme_name, other_info# = { }
           other_info[:description] = other_info.delete(:desc) if other_info.key?(:desc)
-          (open_api_docs[@api][:security_schemes] ||= { })[scheme_name] = other_info
+          (open_api_docs[@api][:securitySchemes] ||= { })[scheme_name] = other_info
         end
 
         def base_auth scheme_name, other_info = { }
@@ -42,7 +42,7 @@ module OpenApi
         class << self
           alias global_security global_security_require
           alias global_auth     global_security_require
-          alias auth_scheme security_scheme
+          alias auth_scheme     security_scheme
         end
       end
     end

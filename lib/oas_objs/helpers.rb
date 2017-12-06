@@ -1,6 +1,5 @@
 module OpenApi
   module Helpers
-    # TODO: comment-block doc
     def truly_present?(obj)
       obj == false || obj.present?
     end

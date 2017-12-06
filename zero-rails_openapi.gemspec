@@ -27,4 +27,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "rails", ">= 3"
   spec.add_runtime_dependency "activesupport", ">= 3"
+
+  # spec.post_install_message = ""
 end

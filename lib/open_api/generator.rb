@@ -13,8 +13,7 @@ module OpenApi
           #   It causes problems, such as making `skip_before_action` not working.
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
         end
-        # TODO: _doc should be configured
-        Dir['./app/**/*_doc.rb'].each { |file| require file }
+        Dir[*Array(Config.doc_location)].each { |file| require file }
         if doc_name.present?
           [{ doc_name => generate_doc(doc_name) }]
         else
@@ -27,9 +26,8 @@ module OpenApi
         doc = { openapi: '3.0.0' }.merge(settings.slice :info, :servers).merge(
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
-                    securitySchemes: settings[:security_schemes] || { },
-                    schemas: { }, parameters: { }, requestBodies: { }
-                }
+                    securitySchemes: { }, schemas: { }, parameters: { }, requestBodies: { }
+                }.merge(settings[:components])
               )
 
         settings[:root_controller].descendants.each do |ctrl|
@@ -37,7 +35,7 @@ module OpenApi
           next if ctrl_infos.nil?
           doc[:paths].merge! ctrl.instance_variable_get('@_api_infos') || { }
           doc[:tags] << ctrl_infos[:tag]
-          doc[:components].merge! ctrl_infos[:components] || { }
+          doc[:components].merge!(ctrl_infos[:components] || { }) { |_key, l, r| l.merge(r) }
           OpenApi.paths_index[ctrl.instance_variable_get('@_ctrl_path')] = doc_name
         end
         doc[:components].delete_if { |_, v| v.blank? }

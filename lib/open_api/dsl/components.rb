@@ -2,17 +2,18 @@ require 'open_api/dsl/common_dsl'
 
 module OpenApi
   module DSL
-    class CtrlInfoObj < Hash
+    class Components < Hash
       include DSL::CommonDSL
       include DSL::Helpers
 
       def schema component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
         (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
         type = schema_hash[:type] if type.nil?
+        type = load_schema component_key if component_key.try(:superclass) == Config.active_record_base && type.nil?
 
         combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
         combined_schema = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
-        (self[:schemas] ||= { })[component_key] = combined_schema&.process || SchemaObj.new(type, schema_hash).process
+        (self[:schemas] ||= { })[component_key.to_s.to_sym] = combined_schema&.process || SchemaObj.new(type, schema_hash).process
       end
       arrow_enable :schema
 

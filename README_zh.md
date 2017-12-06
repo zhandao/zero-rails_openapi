@@ -1,5 +1,3 @@
-TODO = ▽ =
-
 # ZRO: Rails 应用 OpenApi3 JSON 文档生成器
 
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
@@ -14,8 +12,8 @@ TODO = ▽ =
   **这里是栈刀 = ▽ =  
   如果你在寻找能清晰书写 OAS API 文档的 DSL 工具，俺这个还挺不错的 ~  
   你还可以复用其所[产出](#about-openapidocs-and-openapipaths_index)来写一些扩展，比如参数自动校验什么的（我有写哦）。  
-  走过路过不妨来个 star？
-  另外，有什么想法敬请 PR，谢过！**
+  有什么想法敬请 PR，谢过！
+  另外，走过路过不妨来个 star？**
 
 ## Table of Contents
 
@@ -24,7 +22,7 @@ TODO = ▽ =
 - [配置](#configure)
 - [DSL 介绍及用例](#usage---dsl)
   - [用于 `api` 和 `api_dry` 块内的 DSL（描述 API 的参数、响应等）](#dsl-methods-inside-api-and-api_drys-block)
-  - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source-ctrlinfoobj-)
+  - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source)
 - [执行文档生成](#usage---generate-json-documentation-file)
 - [使用 Swagger-UI 可视化所生成的文档](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [技巧](#tricks)
@@ -33,23 +31,22 @@ TODO = ▽ =
     - [基于 enum 等信息自动生成参数描述](#trick3---auto-generate-description)
     - [跳过或使用 DRY 时（`api_dry`）所定义的参数](#trick4---skip-or-use-parameters-define-in-api_dry)
     - [基于 DB Schema 自动生成 response 的格式](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
-    - [定义组合的 Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one-of--all-of--any-of--not)
+    - [定义组合的 Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [问题集](#troubleshooting)
 - [有关 `OpenApi.docs` 和 `OpenApi.paths_index`](#about-openapidocs-and-openapipaths_index)
 
 ## About OAS
 
-  Everything about OAS3 is on [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md)
+  有关 OAS3 的所有内容请看 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md)
   
-  You can getting started from [swagger.io](https://swagger.io/docs/specification/basic-structure/)
+  你也可以看这份文档做初步的了解 [swagger.io](https://swagger.io/docs/specification/basic-structure/)
   
-  **I suggest you should understand OAS3's basic structure at least.** 
-  such as component (can help you reuse DSL code, when your apis are used with the 
-  same data structure).
+  **我建议你应该至少了解 OAS3 的基本结构**
+  比如说 component（组件）—— 这能帮助你进一步减少书写文档 DSL 的代码（如果其中有很多可复用的数据结构的话）。
 
 ## Installation
 
-  Add this line to your Rails's Gemfile:
+  选一行添加到 Gemfile:
   
   ```ruby
   gem 'zero-rails_openapi'
@@ -57,19 +54,15 @@ TODO = ▽ =
   gem 'zero-rails_openapi', github: 'zhandao/zero-rails_openapi'
   ```
   
-  And then execute:
+  命令行执行：
   
       $ bundle
   
-  Or install it yourself as:
-  
-      $ gem install zero-rails_openapi
-    
 ## Configure
 
-  Create an initializer, configure ZRO and define your APIs.
+  新建一个 initializer, 用来配置 ZRO 并定义你的文档。
   
-  This is the simplest configuration example:
+  这是一个简单的示例：
   
   ```ruby
   # config/initializers/open_api.rb
@@ -80,7 +73,8 @@ TODO = ▽ =
     c.file_output_path = 'public/open_api'
   
     c.open_api_docs = {
-        homepage_api: {
+        # 对文档 `homepage` 进行定义
+        homepage: {
             # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
             root_controller: Api::V1::BaseController,
   
@@ -100,10 +94,8 @@ TODO = ▽ =
     }
   end
   ```
-  The following global configuration and component of OAS are allow to be set in the initializer: 
-  Server Object / Security Scheme Object / Security Requirement Object ...
   
-  In addition to direct use of Hash, you can also use Config DSL to configure:
+  除了直接使用 Hash，你还可以使用 DSL 来定义文档的基本信息：
   
   ```ruby
   # config/initializers/open_api.rb
@@ -117,13 +109,13 @@ TODO = ▽ =
   end
   ```
   
-  For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
-  See all the settings you can configure: [config.rb](lib/open_api/config.rb)  
-  See all the Config DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
+  更多更详尽的配置和文档信息定义示例: [open_api.rb](documentation/examples/open_api.rb) 
+  所有你可以配置的项目: [config.rb](lib/open_api/config.rb)
+  所有你可以使用的文档信息 DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## Usage - DSL
 
-### First of all, include DSL to your base controller (which is for writing docs), for example:
+### 首先，`include OpenApi::DSL` 到你用来写文档的基类中，例如：
 
   ```ruby
   # app/controllers/api/api_controller.rb
@@ -132,9 +124,9 @@ TODO = ▽ =
   end
   ```
 
-### DSL Usage Example
+### DSL 使用实例
 
-  Here is the simplest usage:
+  这是一个最简单的实例：
   
   ```ruby
   class Api::V1::ExamplesController < Api::V1::BaseController
@@ -145,12 +137,12 @@ TODO = ▽ =
   end
   ```
   
-  For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
+  可以查看两份更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb), 以及
   [examples_controller.rb](documentation/examples/examples_controller.rb)
 
-### DSL methods of controller ([source code](lib/open_api/dsl.rb))
+### 作为类方法的 DSL ([source code](lib/open_api/dsl.rb))
 
-#### (1) `ctrl_path` (controller path) [optional]
+#### (1) `ctrl_path` (controller path) [无需调用，当且仅当你是在控制器中写文档时]
 
   ```ruby
   # method signature
@@ -158,10 +150,9 @@ TODO = ▽ =
   # usage
   ctrl_path 'api/v1/examples'
   ```
-  It is optional because `ctrl_path` defaults to `controller_path`.
+  其默认设定为 `controller_path`.
   
-  [Here's a trick](#trick1---write-the-dsl-somewhere-else): Using `ctrl_path`, you can write the DSL somewhere else 
-  to simplify the current controller.  
+  [这个技巧](#trick1---write-the-dsl-somewhere-else) 展示如何使用 `ctrl_path` 来让你将 DSL 写在他处（与控制器分离），来简化你的控制器。
 
 #### (2) `apis_tag` [optional]
 
@@ -540,27 +531,34 @@ TODO = ▽ =
   server 'http://localhost:3000', 'local'
   ```
   
-### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/ctrl_info_obj.rb):: CtrlInfoObj )
+### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
+    
+  Inside `components`'s block,
+  you can use the same DSL as [[DSL methods inside `api` and `api_dry`'s block]](#dsl-methods-inside-api-and-api_drys-block).
+  But there are two differences:  
   
-  These methods in the block describe reusable components that you wanna use to define
-  parameter, response, request body and schema.
-
+  (1) Each method needs to pass one more parameter `component_key`
+    (in the first parameter position),
+    this will be used as the reference name for the component.
+  
   ```ruby
   query! :UidQuery, :uid, String
   ```
   This writing is feasible but not recommended, 
-  because component's key and parameter's name looks like the same level.
+  because component's key and parameter's name seem easy to confuse.
   The recommended writing is:
-
+  
   ```ruby
   query! :UidQuery => [:uid, String]
   ```
   
+  (2) You can use `schema` to define a Schema Component.
+  
   ```ruby
   # method signature
-  schema(component_key, type, schema_hash)
+  schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
   # usage
   schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
   # advance usage
@@ -574,6 +572,10 @@ TODO = ▽ =
   ]
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
+  #
+  # pass a ActiveRecord class constant as `component_key`,
+  #   it will automatically read the db schema to generate the component.
+  schema User # easy! And the component_key will be :User
   ```
   [1] see: [Type](documentation/parameter.md#type-schema_type)
 
@@ -628,7 +630,8 @@ TODO = ▽ =
   end
   ```
   
-  Notes: convention is the file name ends with `_doc.rb`
+  Notes: file name ends in `_doc.rb` by default, but you can change via `Config.doc_location`
+    (it should be file paths, defaults to `./app/**/*_doc.rb`).
 
 ### Trick2 - Global DRYing
 

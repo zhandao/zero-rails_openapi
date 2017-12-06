@@ -1,8 +1,7 @@
 module OpenApi
   module DSL
     module SchemaObjHelpers
-      # TODO: more info
-      # TODO: desc configure
+      # TODO: more info and desc configure
       def auto_generate_desc
         if processed[:enum].present?
           if @enum_info.present?

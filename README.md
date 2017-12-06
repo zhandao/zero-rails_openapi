@@ -20,7 +20,7 @@
 - [Configure](#configure)
 - [Usage - DSL](#usage---dsl)
   - [DSL methods inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
-  - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source-ctrlinfoobj-)
+  - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
 - [Usage - Generate JSON documentation file](#usage---generate-json-documentation-file)
 - [Usage - Use Swagger UI(very beautiful web page) to show your Documentation](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [Tricks](#tricks)
@@ -39,7 +39,7 @@
   
   You can getting started from [swagger.io](https://swagger.io/docs/specification/basic-structure/)
   
-  **I suggest you should understand OAS3's basic structure at least.** 
+  **I suggest you should understand OAS3's basic structure at least.**
   such as component (can help you reuse DSL code, when your apis are used with the 
   same data structure).
 
@@ -63,9 +63,9 @@
     
 ## Configure
 
-  Create an initializer, configure ZRO and define your APIs.
+  Create an initializer, configure ZRO and define your OpenApi documents.
   
-  This is the simplest configuration example:
+  This is the simplest example:
   
   ```ruby
   # config/initializers/open_api.rb
@@ -76,7 +76,8 @@
     c.file_output_path = 'public/open_api'
   
     c.open_api_docs = {
-        homepage_api: {
+        # The definition of the document `homepage`.
+        homepage: {
             # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
             root_controller: Api::V1::BaseController,
   
@@ -96,10 +97,9 @@
     }
   end
   ```
-  The following global configuration and component of OAS are allow to be set in the initializer: 
-  Server Object / Security Scheme Object / Security Requirement Object ...
   
-  In addition to direct use of Hash, you can also use Config DSL to configure:
+  In addition to directly using Hash,
+  you can also use DSL to define the document information:
   
   ```ruby
   # config/initializers/open_api.rb
@@ -115,11 +115,11 @@
   
   For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
   See all the settings you can configure: [config.rb](lib/open_api/config.rb)  
-  See all the Config DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
+  See all the Document Definition DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## Usage - DSL
 
-### First of all, include DSL to your base controller (which is for writing docs), for example:
+### First of all, `include OpenApi::DSL` to your base class (which is for writing docs), for example:
 
   ```ruby
   # app/controllers/api/api_controller.rb
@@ -144,9 +144,9 @@
   For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
   [examples_controller.rb](documentation/examples/examples_controller.rb)
 
-### DSL methods of controller ([source code](lib/open_api/dsl.rb))
+### DSL as class methods ([source code](lib/open_api/dsl.rb))
 
-#### (1) `ctrl_path` (controller path) [optional]
+#### (1) `ctrl_path` (controller path) [optional if you're writing DSL in controller]
 
   ```ruby
   # method signature
@@ -537,27 +537,34 @@
   server 'http://localhost:3000', 'local'
   ```
   
-### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/ctrl_info_obj.rb):: CtrlInfoObj )
+### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
   
-  These methods in the block describe reusable components that you wanna use to define
-  parameter, response, request body and schema.
+  Inside `components`'s block,
+  you can use the same DSL as [[DSL methods inside `api` and `api_dry`'s block]](#dsl-methods-inside-api-and-api_drys-block).
+  But there are two differences:  
+  
+  (1) Each method needs to pass one more parameter `component_key`
+    (in the first parameter position),
+    this will be used as the reference name for the component.
 
   ```ruby
   query! :UidQuery, :uid, String
   ```
   This writing is feasible but not recommended, 
-  because component's key and parameter's name looks like the same level.
+  because component's key and parameter's name seem easy to confuse.
   The recommended writing is:
 
   ```ruby
   query! :UidQuery => [:uid, String]
   ```
   
+  (2) You can use `schema` to define a Schema Component.
+  
   ```ruby
   # method signature
-  schema(component_key, type, schema_hash)
+  schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
   # usage
   schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
   # advance usage
@@ -571,9 +578,13 @@
   ]
   # or (unrecommended)
   schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
+  #
+  # pass a ActiveRecord class constant as `component_key`,
+  #   it will automatically read the db schema to generate the component.
+  schema User # easy! And the component_key will be :User
   ```
   [1] see: [Type](documentation/parameter.md#type-schema_type)
-
+  
 ## Usage - Generate JSON Documentation File
 
   Use `OpenApi.write_docs`:
@@ -625,7 +636,8 @@
   end
   ```
   
-  Notes: convention is the file name ends with `_doc.rb`
+  Notes: file name ends in `_doc.rb` by default, but you can change via `Config.doc_location`
+  (it should be file paths, defaults to `./app/**/*_doc.rb`).
 
 ### Trick2 - Global DRYing
 

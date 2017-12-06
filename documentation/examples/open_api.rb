@@ -80,7 +80,7 @@ OpenApi::Config.tap do |c|
           #   The securitySchemes and security keywords are used to describe the authentication methods used in your API.
           #   https://swagger.io/docs/specification/authentication/
           # Security Scheme Object: An object to hold reusable Security Scheme Objects.
-          security_schemes: {
+          securitySchemes: {
               ApiKeyAuth: { type: 'apiKey', name: 'server_token', in: 'query' },
               Token: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
           },

@@ -101,7 +101,7 @@ module OpenApi
         body! :form, desc, hash
       end
 
-      # TODO: 这种情况下 form 和 file 无法共存，需要解决（通过 Discriminator?）
+      # TODO: 这种情况下 form 和 file 无法共存，需要解决（通过 combined?）
       def file media_type, desc = '', hash = { type: File }
         body media_type, desc, hash
       end

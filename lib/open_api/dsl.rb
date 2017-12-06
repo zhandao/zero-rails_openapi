@@ -1,5 +1,5 @@
 require 'open_api/dsl/api_info_obj'
-require 'open_api/dsl/ctrl_info_obj'
+require 'open_api/dsl/components'
 
 module OpenApi
   module DSL
@@ -25,7 +25,7 @@ module OpenApi
 
       def components &block
         apis_tag if @_ctrl_infos.nil?
-        current_ctrl = @_ctrl_infos[:components] = CtrlInfoObj.new
+        current_ctrl = @_ctrl_infos[:components] = Components.new
         current_ctrl.instance_eval(&block)
         current_ctrl._process_objs
       end
