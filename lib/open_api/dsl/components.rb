@@ -8,8 +8,8 @@ module OpenApi
 
       def schema component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
         (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
-        type = schema_hash[:type] if type.nil?
-        type = load_schema component_key if component_key.try(:superclass) == Config.active_record_base && type.nil?
+        type ||= schema_hash[:type]
+        type ||= load_schema component_key if component_key.try(:superclass) == Config.active_record_base.to_s.constantize
 
         combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
         combined_schema = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema

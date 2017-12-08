@@ -23,7 +23,7 @@ module OpenApi
     end
 
     cattr_accessor :active_record_base do
-      ApplicationRecord
+      'ApplicationRecord'
     end
 
     # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md

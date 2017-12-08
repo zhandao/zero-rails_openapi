@@ -27,7 +27,7 @@ module OpenApi
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
                     securitySchemes: { }, schemas: { }, parameters: { }, requestBodies: { }
-                }.merge(settings[:components])
+                }.merge(settings[:components] || { })
               )
 
         settings[:root_controller].descendants.each do |ctrl|
