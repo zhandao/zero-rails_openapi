@@ -23,7 +23,7 @@ module OpenApi
     end
 
     cattr_accessor :active_record_base do
-      'ApplicationRecord'
+      nil
     end
 
     # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
@@ -53,18 +53,6 @@ module OpenApi
 
     cattr_accessor :dft_file_format do
       'binary'
-    end
-
-    cattr_accessor :generate_jbuilder_file do
-      false
-    end
-
-    cattr_accessor :overwrite_jbuilder_file do
-      false
-    end
-
-    cattr_accessor :jbuilder_templates do
-      { }
     end
 
     def self.docs

@@ -51,20 +51,17 @@ module AutoGenDoc
           model = Object.const_get(action_path.split('#').first.split('/').last[0..-2].camelize) rescue nil
           type = action.in?(%w[ index show ]) ? Array[load_schema(model)] : String
           response '200', 'success', :json, type: {
-              code:      { type: Integer, dft: 200 },
-              msg:       { type: String,  dft: 'success' },
-              total:     { type: Integer },
-              timestamp: { type: Integer },
-              language:  { type: String, dft: 'Ruby' },
-              data:      { type: type }
+              code: { type: Integer, dft: 200 },
+               msg: { type: String,  dft: 'success' },
+              data: { type: type }
           }
 
 
           ### Automatically generate responses based on the agreed error class.
           #   The business error-class's implementation see:
-          #     https://github.com/zhandao/zero-rails/blob/master/lib/business_error/z_error.rb
+          #     https://github.com/zhandao/zero-rails/blob/master/lib/business_error/dsl.rb
           #   It's usage see:
-          #     https://github.com/zhandao/zero-rails/blob/master/app/controllers/api/v1/base_controller.rb
+          #     https://github.com/zhandao/zero-rails/blob/master/app/_docs/api_error.rb
           #   Then, the following code will auto generate error responses by
           #     extracting the specified error classes info, for example,
           #     in ExamplesError: `mattr_reader :name_not_found, 'can not find the name', 404`

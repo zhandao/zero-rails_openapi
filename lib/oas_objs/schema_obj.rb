@@ -11,9 +11,10 @@ module OpenApi
       include SchemaObjHelpers
       include Helpers
 
-      attr_accessor :processed, :type
+      attr_accessor :processed, :type, :preprocessed
 
       def initialize(type, schema_hash)
+        self.preprocessed = false
         self.processed = { }
         # [Note] Here is no limit to type, even if the input isn't up to OAS,
         #          like: double, float, hash.
@@ -51,7 +52,7 @@ module OpenApi
       def preprocess_with_desc desc, param_name = nil
         self.__desc = desc
         process_for param_name
-        @preprocessed = true
+        self.preprocessed = true
         __desc
       end
 
