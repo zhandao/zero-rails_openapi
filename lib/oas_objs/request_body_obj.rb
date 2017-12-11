@@ -8,15 +8,36 @@ module OpenApi
     class RequestBodyObj < Hash
       include Helpers
 
-      attr_accessor :processed, :media_type
-      def initialize(required, media_type, desc, hash)
-        self.media_type = MediaTypeObj.new(media_type, hash)
-        self.processed  = { required: required.to_s.match?(/req/), description: desc }
+      attr_accessor :processed, :media_types
+      def initialize(required, desc)
+        self.media_types = [ ]
+        self.processed   = { required: required.to_s.match?(/req/), description: desc }
+      end
+
+      def add(media_type, hash)
+        media_types << MediaTypeObj.new(media_type, hash)
+        self
       end
 
       def process
-        assign(media_type.process).to_processed 'content'
+        assign(media_types.map(&:process).reduce({ }, &fusion)).to_processed 'content'
         processed
+      end
+
+      def fusion
+        proc { |a, b| a.merge!(b, &_fusion) }
+      end
+
+      def _fusion
+        proc do |_common_key, x, y|
+          if x.is_a?(Hash) && y.is_a?(Hash)
+            x.merge(y, &_fusion)
+          elsif x.is_a?(Array) && y.is_a?(Array)
+            x.concat(y)
+          else
+            y
+          end
+        end
       end
     end
   end

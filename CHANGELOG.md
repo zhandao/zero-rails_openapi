@@ -1,5 +1,26 @@
 # Version Changelog
 
+## [1.4.2 & Unreleased] - 2017/12/11&12 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
+
+### Feature
+
+1. `example` method in `components` block.
+2. Request Body (also Response):
+    1. The same media-types will be fusion together.  
+       (This means you can write `form` separately.)
+    2. Different media-types will not be replaced, all will be in `content`.
+    3. Support flat statement `form`.
+
+### Fixed
+
+1. `generate_doc` raise 'should not nil when merge' if settings[:components] not set.
+2. `@preprocessed not initialize` warning.
+
+### Added
+
+1. Schema option `blankable`.
+2. Schema option alias `in` to `enum`.
+3. Schema option `pattern` could be `String` for supporting Time Format.
 
 ## [1.4.1] - 2017/12/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.0...v1.4.1)
 
@@ -52,7 +73,7 @@
 2. Support designated http method in `api`.
 3. The completion of the basic README.
 
-## [1.3.2 & 1.3.3] - 2017/11/10,21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.3.1...v1.3.3)
+## [1.3.2 & 1.3.3] - 2017/11/10&21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.3.1...v1.3.3)
 
 ### Feature
 

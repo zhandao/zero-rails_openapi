@@ -36,11 +36,11 @@ module OpenApi
             processed_range,
             processed_is_and_format(param_name),
             {
-                pattern:    _pattern&.inspect&.delete('/'),
+                pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
                 default:    _default.nil? ? nil : '_default',
                 examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
             },
-            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if }
+            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank }
         ).then_merge!
         processed[:default] = _default unless _default.nil?
 
@@ -69,7 +69,7 @@ module OpenApi
           recursive_array_type(t)
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
-        elsif t.in? %w[float double int32 int64] # to README: 这些值应该传 string 进来, symbol 只允许 $ref
+        elsif t.in? %w[float double int32 int64]
           { type: t.match?('int') ? 'integer' : 'number', format: t}
         elsif t.in? %w[binary base64]
           { type: 'string', format: t}
@@ -142,7 +142,7 @@ module OpenApi
 
 
       { # SELF_MAPPING
-          _enum:    %i[ enum     values  allowable_values ],
+          _enum:    %i[ enum in  values  allowable_values ],
           _value:   %i[ must_be  value   allowable_value  ],
           _range:   %i[ range    number_range             ],
           _length:  %i[ length   lth     size             ],
@@ -157,6 +157,7 @@ module OpenApi
           _npermit: %i[ npmt     not_permit   unpermit    ], # NOT OAS Spec, it's for zero-params_processor
           _req_if:  %i[ req_if   req_when                 ], # NOT OAS Spec, it's for zero-params_processor
           _opt_if:  %i[ opt_if   opt_when                 ], # NOT OAS Spec, it's for zero-params_processor
+          _blank:   %i[ blank    blankable                ], # NOT OAS Spec, it's for zero-params_processor
       }.each do |key, aliases|
         define_method key do
           return self[key] unless self[key].nil?

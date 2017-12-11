@@ -38,7 +38,9 @@ module OpenApi
       arrow_enable :_param_agent
 
       def request_body component_key, required, media_type, desc = '', schema_hash = { }
-        (self[:requestBodies] ||= { })[component_key] = RequestBodyObj.new(required, media_type, desc, schema_hash).process
+        cur = (self[:requestBodies] ||= { })[component_key]
+        cur = RequestBodyObj.new(required, desc) unless cur.is_a?(RequestBodyObj)
+        self[:requestBodies][component_key] = cur.add(media_type, schema_hash)
       end
 
       def _request_body_agent component_key, media_type, desc = '', schema_hash = { }
@@ -75,6 +77,10 @@ module OpenApi
       arrow_enable :api_key
 
       def _process_objs
+        self[:requestBodies]&.each do |key, obj|
+          self[:requestBodies][key] = obj.process
+        end
+
         self[:responses]&.each do |code, obj|
           self[:responses][code] = obj.process if obj.is_a?(ResponseObj)
         end

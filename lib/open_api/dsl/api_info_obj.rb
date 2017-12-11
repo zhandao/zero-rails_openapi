@@ -70,7 +70,8 @@ module OpenApi
       end
 
       def request_body required, media_type, desc = '', hash = { }
-        self[:requestBody] = RequestBodyObj.new(required, media_type, desc, hash).process
+        self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
+        self[:requestBody].add(media_type, hash)
       end
 
       def _request_body_agent media_type, desc = '', hash = { }
@@ -146,6 +147,8 @@ module OpenApi
         self[:parameters].clone.each do |p|
           self[:parameters][param_order.index(p[:name]) || -1] = p
         end if param_order.present?
+
+        self[:requestBody] = self[:requestBody].try :process
 
         self[:responses]&.each do |code, obj|
           self[:responses][code] = obj.process if obj.is_a?(ResponseObj)
