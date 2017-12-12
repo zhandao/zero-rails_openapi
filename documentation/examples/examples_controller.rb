@@ -30,20 +30,16 @@ class Api::V1::ExamplesController < Api::V1::BaseController
 
     query :test_type, type: String
     query :combination, one_of: [ :DogSchema, String, { type: Integer, desc: 'integer input'}]
-    form '', data: {
+    form data: {
         :combination => { any_of: [ Integer, String ] }
     }
 
-    response :success, 'success response', :json, type: :DogSchema
-    merge_to_resp 200, by: {
-        data: {
-            type: [
-                String
-            ]
-        }
-    }
+    response :success, 'success response', :json#, data: :Pet
+    security :Token
 
-    security :ApiKeyAuth
+    resp 200, '', :json, data: {
+        a: String
+    }
   end
 
 
@@ -54,7 +50,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
 
 
   api :create do
-    form 'for creating a user', data: {
+    form! data: {
             :name! => String, # <= schema_type is `String`
         :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
         # optional

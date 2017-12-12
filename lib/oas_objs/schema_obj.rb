@@ -30,14 +30,14 @@ module OpenApi
       def process_for(param_name = nil, options = { desc_inside: false })
         return processed if @preprocessed
 
-        processed.merge! processed_type
+        processed.merge!(processed_type)
         reducx(
             processed_enum_and_length,
             processed_range,
             processed_is_and_format(param_name),
             {
                 pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
-                default:    _default.nil? ? nil : '_default',
+                default:    nil,
                 examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
             },
             { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank }

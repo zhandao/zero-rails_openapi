@@ -38,8 +38,7 @@ module OpenApi
 
         param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
         # The definition of the same name parameter will be overwritten
-        index = self[:parameters].map { |p| p.processed[:name] if p.is_a?(ParamObj) }.index name
-        index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
+        fill_in_parameters(param_obj)
       end
 
       # For supporting this: (just like `form '', data: { }` usage)
@@ -69,22 +68,19 @@ module OpenApi
         self[:parameters].concat([component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process })
       end
 
-      def request_body required, media_type, desc = '', hash = { }
+      # options: `exp_by` and `examples`
+      def request_body required, media_type, data: { }, **options
+        desc = options.delete(:desc) || ''
         self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
-        self[:requestBody].add(media_type, hash)
+        self[:requestBody].add_or_fusion(media_type, options.merge(data: data))
       end
 
-      def _request_body_agent media_type, desc = '', hash = { }
-        request_body (@method_name['!'] ? :req : :opt), media_type, desc, hash
+      def _request_body_agent media_type, data: { }, **options
+        request_body (@method_name['!'] ? :req : :opt), media_type, data: data, **options
       end
 
       def body_ref component_key
         self[:requestBody] = RefObj.new(:requestBody, component_key).process
-      end
-
-      def merge_to_resp code, by:
-        _response = self[:responses].fetch(code)
-        self[:responses][code] = _response.override(by).process
       end
 
       def response_ref code_compkey_hash
@@ -93,22 +89,25 @@ module OpenApi
         end
       end
 
-      # TODO: 目前只能写一句 request body，包括 form 和 file， 需要同时支持一下扁平化
-      def form desc = '', hash = { }
-        body :form, desc, hash
+      def form data:, **options
+        body :form, data: data, **options
       end
 
-      def form! desc = '', hash = { }
-        body! :form, desc, hash
+      def form! data:, **options
+        body! :form, data: data, **options
       end
 
-      # TODO: 这种情况下 form 和 file 无法共存，需要解决（通过 combined?）
-      def file media_type, desc = '', hash = { type: File }
-        body media_type, desc, hash
+      def data name, type = nil, schema_hash = { }
+        schema_hash[:type] = type if type.present?
+        form data: { name => schema_hash }
       end
 
-      def file! media_type, desc = '', hash = { type: File }
-        body! media_type, desc, hash
+      def file media_type, data: { type: File }, **options
+        body media_type, data: data, **options
+      end
+
+      def file! media_type, data: { type: File }, **options
+        body! media_type, data: data, **options
       end
 
       def security_require scheme_name, scopes: [ ]
@@ -130,7 +129,7 @@ module OpenApi
       end
 
       def param_examples exp_by = :all, examples_hash
-        _process_objs
+        process_objs
         exp_by = self[:parameters].map { |p| p[:name] } if exp_by == :all
         self[:examples] = ExampleObj.new(examples_hash, exp_by).process
       end
@@ -138,7 +137,7 @@ module OpenApi
       alias examples param_examples
 
 
-      def _process_objs
+      def process_objs
         self[:parameters]&.each_with_index do |p, index|
           self[:parameters][index] = p.process if p.is_a?(ParamObj)
         end

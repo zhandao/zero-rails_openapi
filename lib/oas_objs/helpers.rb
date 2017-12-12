@@ -1,5 +1,21 @@
 module OpenApi
   module Helpers
+    def fusion
+      proc { |a, b| a.merge!(b, &_fusion) }
+    end
+
+    def _fusion
+      proc do |_common_key, x, y|
+        if x.is_a?(Hash) && y.is_a?(Hash)
+          x.merge(y, &_fusion)
+        elsif x.is_a?(Array) && y.is_a?(Array)
+          x.concat(y)
+        else
+          y
+        end
+      end
+    end
+
     def truly_present?(obj)
       obj == false || obj.present?
     end
@@ -14,7 +30,7 @@ module OpenApi
       self
     end
 
-    # reduceee.then_merge! => for Hash
+    # reducx.then_merge! => for Hash
     def reducx(*values)
       @assign = values.compact.reduce({ }, :merge).keep_if &value_present
       self

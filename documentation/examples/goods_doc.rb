@@ -28,7 +28,7 @@ class V2::GoodsDoc < BaseDoc
 
 
   api :create, 'POST create a good', use: 'Token' do
-    form! 'for creating a good', data: {
+    form! data: {
                :name! => { type: String,  desc: 'good\'s name' },
         :category_id! => { type: Integer, desc: 'sub_category\'s id', npmt: true, range: { ge: 1 }, as: :cate  },
               :price! => { type: Float,   desc: 'good\'s price', range: { ge: 0 } },

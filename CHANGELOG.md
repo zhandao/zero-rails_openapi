@@ -1,6 +1,6 @@
 # Version Changelog
 
-## [1.4.2 & Unreleased] - 2017/12/11&12 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
+## [1.4.2 & 1.4.3] - 2017/12/11&13 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
 
 ### Feature
 
@@ -8,8 +8,8 @@
 2. Request Body (also Response):
     1. The same media-types will be fusion together.  
        (This means you can write `form` separately.)
-    2. Different media-types will not be replaced, all will be in `content`.
-    3. Support flat statement `form`.
+    2. Different media-types will not be replaced, all will be merged in `content`.
+    3. Support flat statement form-data by `data`.
 
 ### Fixed
 
@@ -21,6 +21,12 @@
 1. Schema option `blankable`.
 2. Schema option alias `in` to `enum`.
 3. Schema option `pattern` could be `String` for supporting Time Format.
+
+### Changed
+
+1. `form` mandatory requirements pass `data: { }`.
+2. Remove `request_body`'s parameter `desc` to `**options`.
+3. Remove aliases of `response`.
 
 ## [1.4.1] - 2017/12/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.0...v1.4.1)
 

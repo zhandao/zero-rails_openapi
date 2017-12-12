@@ -24,8 +24,8 @@
 - [DSL 介绍及用例](#usage---dsl)
   - [用于 `api` 和 `api_dry` 块内的 DSL（描述 API 的参数、响应等）](#dsl-methods-inside-api-and-api_drys-block)
   - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source)
-- [执行文档生成](#usage---generate-json-documentation-file)
-- [使用 Swagger-UI 可视化所生成的文档](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+- [执行文档生成](#run---generate-json-documentation-file)
+- [使用 Swagger-UI 可视化所生成的文档](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [技巧](#tricks)
     - [将 DSL 写于他处，与控制器分离](#trick1---write-the-dsl-somewhere-else)
     - [全局 DRY](#trick2---global-drying)
@@ -580,7 +580,7 @@
   ```
   [1] see: [Type](documentation/parameter.md#type-schema_type)
 
-## Usage - Generate JSON Documentation File
+## Run! - Generate JSON Documentation File
 
   Use `OpenApi.write_docs`:
   
@@ -594,7 +594,7 @@
   
   Then the JSON files will be written to the directories you set. (Each API a file.)
 
-## Usage - Use Swagger UI(very beautiful web page) to show your Documentation
+## Use Swagger UI(very beautiful web page) to show your Documentation
 
   Download [Swagger UI](https://github.com/swagger-api/swagger-ui) (version >= 2.3.0 support the OAS3) 
   to your project,  

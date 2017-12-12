@@ -25,23 +25,13 @@ module OpenApi
       end
 
       # `code`: when defining components, `code` means `component_key`
-      def response code, desc, media_type = nil, hash = { }
-        (self[:responses] ||= { })[code] = ResponseObj.new(desc, media_type, hash)
+      def response code, desc, media_type = nil, data: { }, type: nil
+        self[:responses][code] = ResponseObj.new(desc) unless (self[:responses] ||= { })[code].is_a?(ResponseObj)
+        self[:responses][code].add_or_fusion(media_type, { data: type || data })
       end
 
-      def default_response desc, media_type = nil, hash = { }
-        response :default, desc, media_type, hash
-      end
-
-      { # alias_methods mapping
-          response:         %i[ error_response  resp                      ],
-          default_response: %i[ dft_resp        dft_response              ],
-          error_response:   %i[ other_response  oth_resp  error  err_resp ],
-      }.each do |original_name, aliases|
-        aliases.each do |alias_name|
-          alias_method alias_name, original_name
-        end
-      end
+      alias_method :resp,  :response
+      alias_method :error, :response
     end
   end
 end

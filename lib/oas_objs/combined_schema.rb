@@ -14,12 +14,12 @@ module OpenApi
       end
 
       def process_for(param_name = nil, options = { desc_inside: false })
-        processed.tap do |it|
-          it[@mode] = @schemas.map do |schema|
-            type = schema.is_a?(Hash) ? schema[:type] : schema
-            schema = { } unless schema.is_a?(Hash)
-            SchemaObj.new(type, schema).process_for(param_name, options) end
+        processed[@mode] = @schemas.map do |schema|
+          type = schema.is_a?(Hash) ? schema[:type] : schema
+          schema = { } unless schema.is_a?(Hash)
+          SchemaObj.new(type, schema).process_for(param_name, options)
         end
+        processed
       end
 
       alias process process_for

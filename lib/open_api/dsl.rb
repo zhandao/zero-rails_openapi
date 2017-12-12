@@ -27,7 +27,7 @@ module OpenApi
         apis_tag if @_ctrl_infos.nil?
         current_ctrl = @_ctrl_infos[:components] = Components.new
         current_ctrl.instance_eval(&block)
-        current_ctrl._process_objs
+        current_ctrl.process_objs
       end
 
       def api action, summary = '', http: nil, skip: [ ], use: [ ], &block
@@ -43,7 +43,7 @@ module OpenApi
         [action, :all].each { |blk_key| @_api_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.instance_eval(&block) if block_given?
-        api._process_objs
+        api.process_objs
         api.delete_if { |_, v| v.blank? }
 
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }

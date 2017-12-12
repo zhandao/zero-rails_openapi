@@ -22,8 +22,8 @@
 - [Usage - DSL](#usage---dsl)
   - [DSL methods inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
   - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
-- [Usage - Generate JSON documentation file](#usage---generate-json-documentation-file)
-- [Usage - Use Swagger UI(very beautiful web page) to show your Documentation](#usage---use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
+- [Run! - Generate JSON documentation file](#run---generate-json-documentation-file)
+- [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [Tricks](#tricks)
     - [Write DSL somewhere else](#trick1---write-the-dsl-somewhere-else)
     - [Global DRYing](#trick2---global-drying)
@@ -370,16 +370,18 @@
                 #   it links sepcified RefObjs (by component keys) to current body.
   body, body!   # alias of request_body
   form, form!   # define a multipart/form-data body
+  data          # define [a] property in the form-data body
   file, file!   # define a File media-type body
   ```
-  
+  Bang methods(!) means the specified media-type body is required.
+
   ```ruby
   # method signature
-  request_body(is_required, media_type, desc = '', schema_hash = { })
+  request_body(required, media_type, data: { }, **options)
   # usage
-  request_body :opt, :form, '', type: { id!: Integer, name: String }
-  # or
-  request_body :opt, :form, '', data: { id!: Integer, name: String }
+  # (1) `data` contains all the attributes required by this request body.
+  # (2) `param_name!` means it is required, otherwise without '!' means optional.
+  request_body :opt, :form, data: { id!: Integer, name: { type: String, desc: 'name' } }, desc: 'form-data'
 
 
   # method signature
@@ -389,23 +391,23 @@
 
 
   # method signature
-  body!(media_type, desc = '', schema_hash = { })
+  body!(media_type, data: { }, **options)
   # usage
   body :json
   
   
   # method implement
-  def form desc = '', schema_hash = { }
-    body :form, desc, schema_hash
+  def form data:, **options
+    body :form, data: data, **options
   end
   # usage
-  form! 'register', data: {
+  form! data: {
           name: String,
           password: String,
           password_confirmation: String
       }
   # advance usage
-  form 'for creating a user', data: {
+  form data: {
               :name! => { type: String, desc: 'user name' },
           :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
           # optional
@@ -414,62 +416,77 @@
          examples: {         #    ↓        ↓
              :right_input => [ 'user1', '123456' ],
              :wrong_input => [ 'user2', 'abc'    ]
-         }
-
+         },
+      desc: 'for creating a user'
+  
+  
+  # method implement
+  def data name, type = nil, schema_hash = { }
+    schema_hash[:type] = type if type.present?
+    form data: { name => schema_hash }
+  end
+  # usage: please look at the 4th point below
 
   # about `file`
-  def file! media_type, desc = '', schema_hash = { type: File }
-    body! media_type, desc, schema_hash
+  def file! media_type, data: { type: File }, **options
+    body! media_type, data: data, **options
   end
   ```
   
-  1. **Notice:** Each API should only declare a request body
-     That is, all of the above methods you can only choose one of them.  
-     (But **multiple media types** will be supported in the future).
-  2. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
-  3. `schema_hash`: as above (see param).  
-     **One thing that should be noted is: when use Hash writing, `scham_type` is writed in schema_hash using key :type.**
-  4. `exp_by` and `examples`: for the above example, the following has the same effect:
+  1. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
+  2. `schema_hash`: as above (see param).  
+  3. `exp_by` and `examples`: for the above example, the following has the same effect:
      ```
      examples: {
          :right_input => { name: 'user1', password: '123456' },
          :wrong_input => { name: 'user2', password: 'abc' }
      }
      ```
+  4. *[IMPORTANT]* Each request bodies you declared will **FUSION** together. <a name="fusion"></a>  
+     (1) Media-Types will be merged to `requestBody["content"]`
+     ```ruby
+     form 'desc', data: { }
+     body :json, 'desc', data: { }
+     # will generate: "content": { "multipart/form-data": { }, "application/json": { } }
+     ```
+     (2) The same media-types will fusion, but not merge:  
+         (So that you can write `form` separately, and make `data` method possible.)
+     ```ruby
+     data :param_a!, String
+     data :param_b,  Integer
+     # or same as:
+     form '', data: { :param_a! => String }
+     form '', data: { :param_b  => Integer }
+     # will generate: { "param_a": { "type": "string" }, "param_b": { "type": "integer" } } (call it X)
+     # therefore:
+     #   "content": { "multipart/form-data": 
+     #     { "schema": { "type": "object", "properties": { X }, "required": [ "param_a" ] } 
+     #   }
+     ```
   
 #### (5) `response` family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
   
   Define the responses for the API (action).
   ```
-  response or resp
+  response      # aliases: `resp` and `error`
   response_ref
-  default_response or dft_resp
-  error_response, other_response, oth_resp, error, err_resp # response's aliases, should be used in the error response context.
-  merge_to_resp
   ```
   
   ```ruby
   # method signature
-  response(response_code, desc, media_type = nil, schema_hash = { })
+  response(code, desc, media_type = nil, data: { }, type: nil)
   # usage
   response 200, 'query result', :pdf, type: File
+  # same as:
+  response 200, 'query result', :pdf, data: File
 
   # method signature
   response_ref(code_compkey_hash)
   # usage
   response_ref 700 => :AResp, 800 => :BResp
-
-  # method signature
-  merge_to_resp(code, by:)
-  # usage
-  merge_to_resp 200, by: {
-      data: {
-          type: String
-      }
-  }
   ```
   
-  **practice:** Combined with wrong class, automatically generate error responses. [AutoGenDoc](documentation/examples/auto_gen_doc.rb#L63)  
+  **practice:** Automatically generate responses based on the agreed error class. [AutoGenDoc](documentation/examples/auto_gen_doc.rb#L63)  
   
 #### (6) Authentication and Authorization
   
@@ -541,11 +558,11 @@
 ### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))
 
   (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
-  
+
   Inside `components`'s block,
   you can use the same DSL as [[DSL methods inside `api` and `api_dry`'s block]](#dsl-methods-inside-api-and-api_drys-block).
   But there are two differences:  
-  
+
   (1) Each method needs to pass one more parameter `component_key`
     (in the first parameter position),
     this will be used as the reference name for the component.
@@ -560,9 +577,9 @@
   ```ruby
   query! :UidQuery => [:uid, String]
   ```
-  
+
   (2) You can use `schema` to define a Schema Component.
-  
+
   ```ruby
   # method signature
   schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
@@ -585,8 +602,8 @@
   schema User # easy! And the component_key will be :User
   ```
   [1] see: [Type](documentation/parameter.md#type-schema_type)
-  
-## Usage - Generate JSON Documentation File
+
+## Run! - Generate JSON Documentation File
 
   Use `OpenApi.write_docs`:
   
@@ -600,7 +617,7 @@
   
   Then the JSON files will be written to the directories you set. (Each API a file.)
 
-## Usage - Use Swagger UI(very beautiful web page) to show your Documentation
+## Use Swagger UI(very beautiful web page) to show your Documentation
 
   Download [Swagger UI](https://github.com/swagger-api/swagger-ui) (version >= 2.3.0 support the OAS3) 
   to your project,  

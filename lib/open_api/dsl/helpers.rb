@@ -38,6 +38,12 @@ module OpenApi
         end
       end
 
+      def fill_in_parameters(param_obj)
+        name = param_obj.processed[:name]
+        index = self[:parameters].map { |p| p.processed[:name] if p.is_a?(ParamObj) }.index(name)
+        index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
+      end
+
       # Arrow Writing:
       #   response :RespComponent => [ '200', 'success', :json ]
       # It is equivalent to:

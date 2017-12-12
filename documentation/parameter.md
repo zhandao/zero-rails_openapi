@@ -62,6 +62,7 @@ You can set the schema by following keys (all are optional), the words in parent
     for example the parameter name "user_email" will generate "is: email". Default `is` options are:  
     [email phone password uuid uri url time date], to overwrite it you can set it in initializer `c.is_options = %w[]`.
     5. If type is Object, for describing each property's schema, the only way is use ref type, like: `{ id: :Id, name: :Name }`
-  - **pattern (regexp, pr, reg)**
+  - **pattern (regexp, pr, reg)**  
+  Regexp or Time Format
   - **default (dft, default_value)**
   - **as** # TODO

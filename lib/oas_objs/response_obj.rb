@@ -7,17 +7,19 @@ module OpenApi
     class ResponseObj < Hash
       include Helpers
 
-      attr_accessor :processed, :code, :media_type
-      def initialize(desc, media_type, hash)
-        @hash = hash
-        @mt = media_type
-        self.code       = code.to_s
-        self.media_type = MediaTypeObj.new(media_type, hash)
-        self.processed  = { description: desc }
+      attr_accessor :processed, :media_types
+      def initialize(desc)
+        self.media_types = [ ]
+        self.processed   = { description: desc }
+      end
+
+      def add_or_fusion(media_type, hash)
+        media_types << MediaTypeObj.new(media_type, hash)
+        self
       end
 
       def process
-        assign(media_type.process).to_processed 'content'
+        assign(media_types.map(&:process).reduce({ }, &fusion)).to_processed 'content'
         processed
       end
 
