@@ -8,17 +8,15 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(doc_name = nil)
+        pp '[ZRO] '
+
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
           # Do Not `require`!
           #   It causes problems, such as making `skip_before_action` not working.
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
         end
         Dir[*Array(Config.doc_location)].each { |file| require file }
-        if doc_name.present?
-          [{ doc_name => generate_doc(doc_name) }]
-        else
-          Config.docs.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
-        end
+        (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge)
       end
 
       def generate_doc(doc_name)

@@ -1,0 +1,2 @@
+class GoodsDoc < ApiDoc
+end

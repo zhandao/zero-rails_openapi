@@ -1,4 +1,4 @@
-class V2::GoodsDoc < BaseDoc
+class V2::GoodsDoc < ApiDoc
   SCHEMA_DRY = { a: 1, b: 2 }
 
   #                                 skip: [ 'Token' ] do # you can also skip parameters

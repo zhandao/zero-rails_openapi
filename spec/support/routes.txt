@@ -1,0 +1,8 @@
+                        Prefix Verb        URI Pattern                       Controller#Action
+     change_onsale_api_v1_good POST|PATCH goods/:id/change_onsale(.:format) api/v1/goods#change_online
+                  api_v1_goods GET        goods(.:format)                   api/v1/goods#index
+                               POST       goods(.:format)                   api/v1/goods#create
+                   api_v1_good GET        goods/:id(.:format)               api/v1/goods#show
+                               PATCH      goods/:id(.:format)               api/v1/goods#update
+                               PUT        goods/:id(.:format)               api/v1/goods#update
+                               DELETE     goods/:id(.:format)               api/v1/goods#destroy
