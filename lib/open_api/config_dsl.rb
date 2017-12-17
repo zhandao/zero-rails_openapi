@@ -10,7 +10,7 @@ module OpenApi
         end
 
         def info version:, title:, desc: '', **addition
-          open_api_docs[@api][:info] = { version: version, title: title, description:  desc, **addition }
+          open_api_docs[@api][:info] = { version: version, title: title, description: desc, **addition }
         end
 
         def server url, desc: ''
@@ -30,7 +30,7 @@ module OpenApi
           security_scheme scheme_name, { type: 'http', scheme: 'bearer', bearerFormat: format }.merge(other_info)
         end
 
-        def api_key scheme_name, field:, in:, **other_info
+        def api_key scheme_name, field:, in: 'header', **other_info
           _in = binding.local_variable_get(:in)
           security_scheme scheme_name, { type: 'apiKey', name: field, in: _in }.merge(other_info)
         end

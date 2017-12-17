@@ -8,17 +8,15 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(doc_name = nil)
+        pp '[ZRO] No documents have been configured!' and return if Config.docs.keys.blank?
+
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
           # Do Not `require`!
           #   It causes problems, such as making `skip_before_action` not working.
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
         end
         Dir[*Array(Config.doc_location)].each { |file| require file }
-        if doc_name.present?
-          [{ doc_name => generate_doc(doc_name) }]
-        else
-          Config.docs.keys.map { |api_key| { api_key => generate_doc(api_key) } }.reduce({ }, :merge)
-        end
+        (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge)
       end
 
       def generate_doc(doc_name)
@@ -42,7 +40,7 @@ module OpenApi
         doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
         doc[:paths] = doc[:paths].sort.to_h
 
-        OpenApi.docs[doc_name] ||= ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
+        OpenApi.docs[doc_name] = ActiveSupport::HashWithIndifferentAccess.new(doc.delete_if { |_, v| v.blank? })
       end
 
       def write_docs(generate_files: true)
@@ -64,12 +62,14 @@ module OpenApi
         if (f = Config.rails_routes_file)
           File.read(f)
         else
+          # :nocov:
           # ref https://github.com/rails/rails/blob/master/railties/lib/rails/tasks/routes.rake
           require './config/routes'
           all_routes = Rails.application.routes.routes
           require 'action_dispatch/routing/inspector'
           inspector = ActionDispatch::Routing::RoutesInspector.new(all_routes)
           inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil)
+          # :nocov:
         end
 
       @routes_list ||= routes.split("\n").drop(1).map do |line|

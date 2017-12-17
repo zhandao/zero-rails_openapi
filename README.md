@@ -3,6 +3,7 @@
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
   [![Maintainability](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/maintainability)](https://codeclimate.com/github/zhandao/zero-rails_openapi/maintainability)
+  [![Test Coverage](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/test_coverage)](https://codeclimate.com/github/zhandao/zero-rails_openapi/test_coverage)
   [![Gitter Chat](https://badges.gitter.im/zero-rails_openapi/Lobby.svg)](https://gitter.im/zero-rails_openapi/Lobby)
   
   Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application, 
@@ -271,7 +272,7 @@
        email: 'desc of the parameter :email'
   ```
 
-  You can of course describe the input in it's DSL method (like `query! :done ...`, [this line](https://github.com/zhandao/zero-rails_openapi#-dsl-usage-example)), 
+  You can of course describe the input in it's DSL method (like `query! :done ...`, [this line](https://github.com/zhandao/zero-rails_openapi#dsl-usage-example)), 
   but that will make it long and ugly. We recommend that unite descriptions in this place.
   
   In addition, when you want to dry the same parameters (each with a different description), it will be of great use.
@@ -445,8 +446,8 @@
   4. *[IMPORTANT]* Each request bodies you declared will **FUSION** together. <a name="fusion"></a>  
      (1) Media-Types will be merged to `requestBody["content"]`
      ```ruby
-     form 'desc', data: { }
-     body :json, 'desc', data: { }
+     form data: { }, desc: 'desc'
+     body :json, data: { }, desc: 'desc'
      # will generate: "content": { "multipart/form-data": { }, "application/json": { } }
      ```
      (2) The same media-types will fusion, but not merge:  
@@ -476,6 +477,7 @@
   # method signature
   response(code, desc, media_type = nil, data: { }, type: nil)
   # usage
+  resp 200, 'json response', :json, data: { name: 'test' }
   response 200, 'query result', :pdf, type: File
   # same as:
   response 200, 'query result', :pdf, data: File
