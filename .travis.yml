@@ -1,5 +1,16 @@
 sudo: false
 language: ruby
 rvm:
-  - 2.4.1
+  - 2.4.0
 before_install: gem install bundler -v 1.16.0.pre.2
+env:
+  global:
+    - CC_TEST_REPORTER_ID=fd0a238819079b92c19e99f5f4d6dcc8a5b5b2baf087fceb3723837604b5b0e9
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+script:
+  - bundle exec rspec
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

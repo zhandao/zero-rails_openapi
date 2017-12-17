@@ -11,7 +11,7 @@ OpenApi::Config.tap do |c|
 
   c.file_output_path = 'spec/support'
 
-  c.doc_location = [ 'spec/support/*_doc.rb' ]
+  # c.doc_location = [ 'spec/support/*_doc.rb' ]
 
   c.rails_routes_file = 'spec/support/routes.txt'
 end

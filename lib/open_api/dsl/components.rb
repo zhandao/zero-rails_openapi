@@ -7,13 +7,13 @@ module OpenApi
       include DSL::Helpers
 
       def schema component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
-        (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
-        type ||= schema_hash[:type]
-        type ||= load_schema component_key if component_key.try(:superclass) == Config.active_record_base || ApplicationRecord
-
         combined_schema = (_not = binding.local_variable_get(:not)) || one_of || all_of || any_of
+        schema_hash[:type] ||= type
+        schema_hash = load_schema component_key if component_key.try(:superclass) == (Config.active_record_base || ApplicationRecord)
+        pp "[ZRO] Syntax Error: component schema `#{component_key}` has no type!" and return if schema_hash[:type].nil? && combined_schema.nil?
+
         combined_schema = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
-        (self[:schemas] ||= { })[component_key.to_s.to_sym] = combined_schema&.process || SchemaObj.new(type, schema_hash).process
+        (self[:schemas] ||= { })[component_key.to_s.to_sym] = combined_schema&.process || SchemaObj.new(schema_hash, { }).process
       end
       arrow_enable :schema
 
@@ -27,8 +27,9 @@ module OpenApi
       end
 
       def _param_agent component_key, name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
-        (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
-        type = schema_hash[:type] if type.nil?
+        combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
+        schema_hash[:type] ||= type
+        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if schema_hash[:type].nil? && combined_schema.nil?
 
         combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
         schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
@@ -71,7 +72,7 @@ module OpenApi
       end
       arrow_enable :bearer_auth
 
-      def api_key scheme_name, field:, in:, **other_info
+      def api_key scheme_name, field:, in: 'header', **other_info
         _in = binding.local_variable_get(:in)
         security_scheme scheme_name, { type: 'apiKey', name: field, in: _in }.merge(other_info)
       end

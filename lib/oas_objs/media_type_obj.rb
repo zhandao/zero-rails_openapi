@@ -29,6 +29,7 @@ module OpenApi
       # https://en.wikipedia.org/wiki/Media_type
       # https://zh.wikipedia.org/wiki/%E4%BA%92%E8%81%94%E7%BD%91%E5%AA%92%E4%BD%93%E7%B1%BB%E5%9E%8B
       # https://www.iana.org/assignments/media-types/media-types.xhtml
+      # :nocov:
       def media_type_mapping(media_type)
         return media_type if media_type.is_a? String
         case media_type
@@ -60,6 +61,7 @@ module OpenApi
         else             nil
         end
       end
+      # :nocov:
     end
   end
 end

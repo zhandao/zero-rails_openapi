@@ -3,6 +3,7 @@
   [![Gem Version](https://badge.fury.io/rb/zero-rails_openapi.svg)](https://badge.fury.io/rb/zero-rails_openapi)
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
   [![Maintainability](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/maintainability)](https://codeclimate.com/github/zhandao/zero-rails_openapi/maintainability)
+  [![Test Coverage](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/test_coverage)](https://codeclimate.com/github/zhandao/zero-rails_openapi/test_coverage)
   [![Gitter Chat](https://badges.gitter.im/zero-rails_openapi/Lobby.svg)](https://gitter.im/zero-rails_openapi/Lobby)
   
   一套简洁的 DSL，用于为 Rails 应用生成 OpenAPI Specification 3 (**OAS3**, 旧称「Swagger3」) 标准的 JSON 文档。  

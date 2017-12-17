@@ -19,9 +19,9 @@ module OpenApi
         self[:deprecated] = true
       end
 
-      alias this_api_is_expired!     this_api_is_invalid!
-      alias this_api_is_unused!      this_api_is_invalid!
-      alias this_api_is_under_repair this_api_is_invalid!
+      alias this_api_is_expired!      this_api_is_invalid!
+      alias this_api_is_unused!       this_api_is_invalid!
+      alias this_api_is_under_repair! this_api_is_invalid!
 
       def desc desc, param_descs = { }
         self.param_descs = param_descs
@@ -33,12 +33,21 @@ module OpenApi
         return if param_use.present? && param_use.exclude?(name)
 
         _t = nil
-        schema_hash[:desc]  = _t if (_t = param_descs[name]).present?
-        schema_hash[:desc!] = _t if (_t = param_descs["#{name}!".to_sym]).present?
+        schema_hash[:desc]  ||= _t if (_t = param_descs[name]).present?
+        schema_hash[:desc!] ||= _t if (_t = param_descs["#{name}!".to_sym]).present?
 
         param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
         # The definition of the same name parameter will be overwritten
         fill_in_parameters(param_obj)
+      end
+
+      def _param_agent name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
+        combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
+        schema_hash[:type] ||= type
+        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if schema_hash[:type].nil? && combined_schema.nil?
+
+        schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
+        param "#{@param_type}".delete('!'), name, schema_hash[:type], (@param_type['!'] ? :req : :opt), schema_hash
       end
 
       # For supporting this: (just like `form '', data: { }` usage)
@@ -53,15 +62,6 @@ module OpenApi
             key.to_s['!'] ? send("#{param_type}!", *args) : send(param_type, *args)
           end
         end unless param_type.to_s['!']
-      end
-
-      def _param_agent name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
-        (schema_hash = type) and (type = type.delete(:type)) if type.is_a?(Hash) && type.key?(:type)
-        type = schema_hash[:type] if type.nil?
-
-        combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
-        schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
-        param "#{@param_type}".delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
       end
 
       def param_ref component_key, *keys

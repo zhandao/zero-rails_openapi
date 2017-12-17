@@ -1,5 +1,26 @@
 # Version Changelog
 
+## [Unreleased]
+
+### Fixed:
+
+1. `desc` will override dry's.
+2. `type: something` is passed to `schema_hash`,  but not `type`.
+
+### Added:
+
+1. Use `simplecov`.
+2. CodeClimate test hook.
+3. Test support.
+4. Designed a RSpec macther `have_keys`.
+5. Designed a set of RSpec DSL for testing.
+6. rspecs: config, generator, components, and api_info_obj(unfinished).
+
+### Changed:
+
+1. `instance_eval` => `instance_exec` in dsl.rb.
+2. Guard Clause for `generate_docs` and where schema could be defined.
+
 ## [1.4.2 & 1.4.3] - 2017/12/11&13 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
 
 ### Feature

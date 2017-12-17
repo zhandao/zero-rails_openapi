@@ -5,6 +5,7 @@ module OpenApi
         base.extend ClassMethods
       end
 
+      # :nocov:
       def load_schema(model)
         # About `show_attrs`, see:
         #   (1) BuilderSupport module: https://github.com/zhandao/zero-rails/blob/master/app/models/concerns/builder_support.rb
@@ -37,6 +38,7 @@ module OpenApi
           end rescue next
         end
       end
+      # :nocov:
 
       def fill_in_parameters(param_obj)
         name = param_obj.processed[:name]

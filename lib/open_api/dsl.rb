@@ -26,7 +26,7 @@ module OpenApi
       def components &block
         apis_tag if @_ctrl_infos.nil?
         current_ctrl = @_ctrl_infos[:components] = Components.new
-        current_ctrl.instance_eval(&block)
+        current_ctrl.instance_exec(&block)
         current_ctrl.process_objs
       end
 
@@ -42,7 +42,7 @@ module OpenApi
                                 parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @_api_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use = [ ] # `skip` and `use` only affect `api_dry`'s blocks
-        api.instance_eval(&block) if block_given?
+        api.instance_exec(&block) if block_given?
         api.process_objs
         api.delete_if { |_, v| v.blank? }
 
