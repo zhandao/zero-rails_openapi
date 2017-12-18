@@ -46,6 +46,16 @@ end
 
 RSpec::Matchers.alias_matcher :have_key, :have_keys
 
+
+RSpec::Matchers.define :have_size do |expected|
+  match do |actual|
+    actual.size == expected
+  end
+
+  failure_message { |actual| " expected: #{actual}\nhave size: #{expected}" }
+  description { "have #{expected} items" }
+end
+
 def correct(addition_desc = '', &block)
   context "when it is called correctly#{': ' << addition_desc if addition_desc.present?}", &block
 end

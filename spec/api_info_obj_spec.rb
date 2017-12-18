@@ -235,7 +235,81 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
 
     desc :security_require, subject: :security do
-      #
+      mk -> { auth :Token }, has_size!: 1
+      it { expect(item_0).to eq Token: [ ] }
+    end
+
+
+    desc :server, subject: :servers, stru: %i[ url description ] do
+      mk -> { server 'http://localhost:3000', desc: 'Internal staging server for testing' },
+         all_have_keys: its_structure, has_size: 1
+    end
+
+
+    desc :order, subject: :parameters do
+      context 'when using in .api' do
+        mk -> do
+          query :page, String
+          path  :id, Integer
+          order :id, :page
+        end, has_size!: 2
+        it { expect(item_0).to include name: :id }
+        it { expect(item_1).to include name: :page }
+      end
+
+      context 'when using in .api_dry' do
+        before_do! do
+          api_dry do
+            header :token, String
+            path   :id, Integer
+            order :id, :name, :age, :token, :remarks
+          end
+
+          api :action do
+            query :remarks, String
+            query :name, String
+            query :age, String
+          end
+        end
+
+        focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
+        expect_it { have_size 5 }
+        expect_its(0) { include name: :id }
+        expect_its(4) { include name: :remarks }
+
+        after_do { undo_dry }
+      end
+    end
+
+
+    desc :param_examples, subject: :examples do
+      context 'when calling it normally' do
+        mk -> do
+          examples %i[ id name ], {
+              :right_input => [ 1, 'user'],
+              :wrong_input => [ -1, ''   ]
+          }
+        end, has_size!: 2
+        it { expect(item_0).to eq right_input: { value: { id: 1, name: 'user' } } }
+      end
+
+      context 'when passing default :all to exp_by' do
+        correct 'have defined specified parameters' do
+          mk -> do
+            query :id, String
+            query :name, String
+            examples :all, { right_input: [ 1, 'user', 'extra value'] }
+          end, has_size!: 1
+          it { expect(item_0).to eq right_input: { value: { id: 1, name: 'user' } } }
+        end
+
+        wrong 'have not defined specified parameters' do
+          mk -> do
+            examples :all, { right_input: [ 1, 'user'] }
+          end, has_size!: 1
+          it { expect(item_0).to eq right_input: { value: [ 1, 'user'] } }
+        end
+      end
     end
   end
 end

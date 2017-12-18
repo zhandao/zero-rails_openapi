@@ -99,7 +99,7 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
   it_blks << [eq, ->(excepted) { is_expected.to eq excepted }] unless eq.nil?
   it_blks << [has_keys, ->(excepted) { is_expected.to have_keys excepted }] if has_keys
   it_blks << [doc_will_has_keys, ->(excepted) { expect(doc).to have_keys excepted }] if doc_will_has_keys
-  it_blks << [has_size, ->(excepted) { expect(subject.size).to eq excepted }] if (has_size ||= other[:has_size!])
+  it_blks << [has_size, ->(excepted) { expect(subject).to have_size excepted }] if (has_size ||= other[:has_size!])
   desc ||= '---> after specified dsl' if it_blks.size.zero? && it.nil?
 
   sbj = nil
@@ -114,14 +114,14 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
 
   if (t = other.values_at(*alias_of_have_keys.grep(/!/)).compact.first).present?
     (t.try(:keys) || Array(t)).each do |key|
-      let(key.to_s.underscore) { Temp.expect_it = key.to_s.underscore; sbj[key] }
+      let(key.to_s.underscore) { sbj[key] }
     end
   end
 
   if (take || size = other[:has_size!]).present?
     items = take ? Array(take) : (0..size-1).to_a
     items.each do |i|
-      let("item_#{i}") { Temp.expect_it = "item_#{i}"; sbj[i] }
+      let("item_#{i}") { sbj[i] }
     end
   end
 end
@@ -139,7 +139,7 @@ alias _it then_it
 def focus_on(key, *path, desc: nil, mode: nil)
   Temp.expect_key = key
   example "---> focus on: #{key}#{path.map { |p| '[:'+ p.to_s + ']' }.join}#{', ' + desc if desc}" do
-    send(key.to_s.underscore)
+    Temp.expect_it = key.to_s.underscore
     path = Temp.expect_path + path if mode == :step_into
     Temp.expect_path = path
     expect(true).to be_truthy

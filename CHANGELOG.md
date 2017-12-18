@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2017/12/? - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+
 ### Fixed:
 
 1. `desc` will override dry's.
@@ -22,6 +24,7 @@
 
 1. `instance_eval` => `instance_exec` in dsl.rb.
 2. Guard Clause for `generate_docs` and where schema could be defined.
+3. Change signature of `server` in `api`.
 
 ## [1.4.2 & 1.4.3] - 2017/12/11&13 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
 

@@ -552,9 +552,9 @@
   
   ```ruby
   # method signature
-  server(url, desc)
+  server(url, desc: '')
   # usage
-  server 'http://localhost:3000', 'local'
+  server 'http://localhost:3000', desc: 'local'
   ```
   
 ### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))

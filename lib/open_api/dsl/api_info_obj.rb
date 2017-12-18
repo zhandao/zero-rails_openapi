@@ -122,12 +122,13 @@ module OpenApi
       alias auth      security_require
       alias need_auth security_require
 
-      def server url, desc
+      def server url, desc: ''
         self[:servers] << { url: url, description: desc }
       end
 
       def order *param_names
         self.param_order = param_names
+        # use when api_dry
         self.param_use = param_order if param_use.blank?
         self.param_skip = param_use - param_order
       end
@@ -139,7 +140,6 @@ module OpenApi
       end
 
       alias examples param_examples
-
 
       def process_objs
         self[:parameters]&.each_with_index do |p, index|
