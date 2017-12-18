@@ -6,6 +6,8 @@
 
 1. `desc` will override dry's.
 2. `type: something` is passed to `schema_hash`,  but not `type`.
+3. Should not `skip` the params inside block.
+4. `body_ref` invalid.
 
 ### Added:
 

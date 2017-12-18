@@ -44,12 +44,10 @@ RSpec::Matchers.define :have_keys do |*expected|
   end
 end
 
-def correct(&block)
-  context 'when it is called correctly', &block
-end
+RSpec::Matchers.alias_matcher :have_key, :have_keys
 
-def normally(&block)
-  context 'when it is called normally', &block
+def correct(addition_desc = '', &block)
+  context "when it is called correctly#{': ' << addition_desc if addition_desc.present?}", &block
 end
 
 def wrong(addition_desc = '', &block)
