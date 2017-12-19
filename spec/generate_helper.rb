@@ -66,10 +66,12 @@ def desc(object, subject: nil, stru: nil, group: :describe, &block)
   send group, group == :describe ? "##{object}" : object do
     let(:doc) do
       val = OpenApi.docs[:zro]&.deep_symbolize_keys
-      if subject_key_path
+      if try(:subject_key_path)
         subject_key_path.map { |p| val = val[p] }.last
-      else
+      elsif try(:default_in)
         val[default_in.first]
+      else
+        val
       end
     end
 
@@ -109,7 +111,7 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
     it_blks.each do |(excepted, it_blk)|
       instance_exec(excepted, &it_blk)
     end
-    instance_exec(&it) if it
+    is_expected.to instance_exec(&it) if it
   end
 
   if (t = other.values_at(*alias_of_have_keys.grep(/!/)).compact.first).present?
@@ -157,7 +159,8 @@ def expect_it(*args, eq: nil, have_keys: nil, has_keys: nil, has_key: nil, desc:
   it_block = ->(obj, expectation, excepted) { expect(obj).to instance_exec(excepted, &expectation) }
   excepted = has_keys || eq
 
-  it desc || desc0 do
+  _desc = "it's #{key} should #{has_keys ? 'have keys' : 'eq'}: #{excepted.inspect}" if key && excepted
+  it desc || desc0 || _desc do
     obj = send(Temp.expect_it)
     Temp.expect_path.each { |p| obj = obj[p] }
     obj = key ? obj[key] : obj

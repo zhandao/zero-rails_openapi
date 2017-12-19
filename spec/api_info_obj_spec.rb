@@ -15,7 +15,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
     mk -> { this_api_is_under_repair! 'reason' }, be: true
 
     context 'when doing nothing' do
-      mk -> { }, then_it { is_expected.to be_nil }
+      mk -> { }, then_it { be_nil }
     end
   end
 
@@ -52,7 +52,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
       } end
 
       make -> { api :action, use: [ ]      }, 'should use all', has_size: 2
-      make -> { api :action, use: [:none]  }, then_it('should only use :none') { is_expected.to be_nil }
+      make -> { api :action, use: [:none]  }, then_it('should only use :none') { be_nil }
       make -> { api :action, use: [:page]  }, has_size: 1
       make -> { api :action, skip: [ ]     }, 'should skip nothing', has_size: 2
       make -> { api :action, skip: [:page] }, has_size: 1
@@ -94,7 +94,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         describe '#do_*:' do
-          mk -> { do_query by: { } }, then_it { is_expected.to be_nil }
+          mk -> { do_query by: { } }, then_it { be_nil }
 
           mk -> { do_header by: { key: Integer, token!: String } }, has_size!: 2
           it { expect(item_0).to include name: :key, required: false }
@@ -119,7 +119,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
       end
 
       wrong 'no type and not combined schema' do
-        mk -> { query :wrong }, then_it { is_expected.to be_nil }
+        mk -> { query :wrong }, then_it { be_nil }
       end
     end
 
@@ -134,7 +134,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         it { expect(content).to have_keys 'application/json': [ schema: %i[ type properties ] ] }
 
         context 'when calling the bang agent' do
-          mk -> { body! :json }, then_it { is_expected.to include required: true }
+          mk -> { body! :json }, then_it { include required: true }
         end
 
         context 'when re-calling through different media-type' do
@@ -159,14 +159,14 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           it { expect(content).to have_keys 'multipart/form-data': [ schema: %i[ type properties ] ] }
 
           context 'when calling the bang method' do
-            mk -> { form! data: { } }, then_it { is_expected.to include required: true }
+            mk -> { form! data: { } }, then_it { include required: true }
           end
 
           describe '#data' do
             mk -> { data :uid, String }, should_be_its_structure!
             it { expect(required).to be_falsey }
             focus_on :content, :'multipart/form-data', :schema, :properties, :uid
-            expect_it eq: { type: 'string' }
+            expect_its :type, eq: 'string'
 
             context 'when calling it multiple times' do
               mk -> do
@@ -188,7 +188,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           expect_it eq: OpenApi::Config.dft_file_format
 
           context 'when calling the bang method' do
-            mk -> { file! :doc }, then_it { is_expected.to include required: true }
+            mk -> { file! :doc }, then_it { include required: true }
           end
         end
       end
@@ -199,7 +199,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         #   body :BodyB => [:ppt ]
         # } end
         mk -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'should be the last ref',
-           _it { is_expected.to include :$ref => '#components/requestBodies/BodyB' }
+           _it { include :$ref => '#components/requestBodies/BodyB' }
       end
     end
 
@@ -270,14 +270,14 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
             query :name, String
             query :age, String
           end
+
+          undo_dry
         end
 
         focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
         expect_it { have_size 5 }
         expect_its(0) { include name: :id }
         expect_its(4) { include name: :remarks }
-
-        after_do { undo_dry }
       end
     end
 
@@ -308,6 +308,8 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
             examples :all, { right_input: [ 1, 'user'] }
           end, has_size!: 1
           it { expect(item_0).to eq right_input: { value: [ 1, 'user'] } }
+
+          after_do { @_api_infos = { } }
         end
       end
     end

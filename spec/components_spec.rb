@@ -3,7 +3,6 @@ require 'generate_helper'
 
 RSpec.describe OpenApi::DSL::Components do
   let(:default_in) { [:components] }
-  let(:subject_key_path) { nil }
 
   desc :schema, subject: :schemas do
     correct do
@@ -20,7 +19,7 @@ RSpec.describe OpenApi::DSL::Components do
     end
 
     wrong 'no type and not combined schema' do
-      mk -> { schema :SchemaW }, then_it { is_expected.to be_nil }
+      mk -> { schema :SchemaW }, then_it { be_nil }
     end
   end
 
@@ -59,7 +58,7 @@ RSpec.describe OpenApi::DSL::Components do
       end
 
       wrong 'no type and not combined schema' do
-        mk -> { query! :QueryW, :wrong }, then_it { is_expected.to be_nil }
+        mk -> { query! :QueryW, :wrong }, then_it { be_nil }
       end
     end
   end
