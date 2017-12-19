@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'generate_helper'
+require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::Components do
   let(:default_in) { [:components] }

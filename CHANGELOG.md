@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
-## [1.5.0] - 2017/12/? - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+## [1.5.0 - 100% Test Coverage] - 2017/12/? - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+
+### Completed the test code (200 examples), and make it 100% coverage.
 
 ### Fixed:
 
@@ -15,10 +17,9 @@
 
 1. Use `simplecov`.
 2. CodeClimate test hook.
-3. Test support.
-4. Designed a RSpec macther `have_keys`.
-5. Designed a set of RSpec DSL for testing.
-6. rspecs: config, generator, components, and api_info_obj(unfinished).
+3. Test's support.
+4. Designed RSpec matchers `have_keys` and `have_size`.
+5. Designed a set of RSpec's DSL (DSSL) for testing.
 
 ### Changed:
 

@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'generate_helper'
+require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::ApiInfoObj do
   let(:default_in) { [:api, :action, 'test'] }
@@ -308,8 +308,6 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
             examples :all, { right_input: [ 1, 'user'] }
           end, has_size!: 1
           it { expect(item_0).to eq right_input: { value: [ 1, 'user'] } }
-
-          after_do { @_api_infos = { } }
         end
       end
     end

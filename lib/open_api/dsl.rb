@@ -48,8 +48,7 @@ module OpenApi
         api.delete_if { |_, v| v.blank? }
 
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
-        http_verbs = (http || routes_info[:http_verb]).split('|')
-        http_verbs.each { |verb| path[verb] = api }
+        (http || routes_info[:http_verb]).split('|').each { |verb| path[verb] = api }
         api
       end
 

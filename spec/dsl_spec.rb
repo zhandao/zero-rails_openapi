@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'generate_helper'
+require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL do
   desc :ctrl_path, subject: :paths do
@@ -26,8 +26,6 @@ RSpec.describe OpenApi::DSL do
 
     focus_on :paths, :'goods/action', :get, :tags, 0
     expect_it eq: :Other
-
-    after_do { @_api_infos = { } }
   end
 
 
@@ -36,6 +34,38 @@ RSpec.describe OpenApi::DSL do
       make -> { api :no_routing_action }, 'should refuse to be generated', _it { be_nil }
     end
 
+    context 'when this action can be accessed through multiple HTTP methods (set through `match`, like `GET|POST`)' do
+      make -> { api :change_onsale }, 'should match and generate both HTTP methods',
+           has_keys: { 'goods/{id}/change_onsale': %i[ post patch ] }
+    end
 
+    context 'when this action can be accessed through multiple HTTP methods (not set through `match`)' do
+      make -> { api :change_onsale }, 'should match the first HTTP method',
+           has_keys: { 'goods/{id}/change_onsale': [:patch] }
+    end
+  end
+
+
+  desc :api_dry, subject: :paths do
+    context 'when using the default :all parameter' do
+      make -> do
+        api_dry { resp :success, 'success response' }
+        api :create
+        api :index
+      end, 'should make all actions have a :success response',
+           has_keys: { goods: [ get: [responses: [:success]], post: [responses: [:success]] ] }
+    end
+
+    context 'when the action is specified' do
+      make -> do
+        api_dry(:index) { resp :success, 'success response' }
+        api :create
+        api :index
+      end, has_keys!: :goods
+      focus_on :goods, :get
+      expect_its :responses, has_keys: :success
+      focus_on :goods, :post
+      expect_its(:responses) { be_nil }
+    end
   end
 end

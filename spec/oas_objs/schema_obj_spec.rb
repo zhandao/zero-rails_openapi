@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'generate_helper'
+require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::SchemaObj do
   let(:default_in) { [:api, :action, 'test'] }
