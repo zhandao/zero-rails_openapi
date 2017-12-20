@@ -17,29 +17,20 @@ module OpenApi
         __desc
       end
 
-      def recursive_obj_type(t) # ZRO use { prop_name: prop_type } to represent object structure
-        return processed_type(t) if !t.is_a?(Hash) || (t.keys & %i[ type one_of any_of all_of not ]).present?
-
-        _schema = {
-            type: 'object',
-            properties: { },
-            required: [ ]
-        }
+      def recursive_obj_type(t)
+        obj_type = { type: 'object', properties: { }, required: [ ] }
         t.each do |prop_name, prop_type|
-          @prop_name = prop_name
-          _schema[:required] << "#{prop_name}".delete('!') if prop_name['!']
-          _schema[:properties]["#{prop_name}".delete('!').to_sym] = recursive_obj_type prop_type
+          obj_type[:required] << prop_name.to_s.delete('!') if prop_name['!']
+          obj_type[:properties][prop_name.to_s.delete('!').to_sym] = processed_type(prop_type)
         end
-        _schema.keep_if(&value_present)
+        obj_type.keep_if(&value_present)
       end
 
       def recursive_array_type(t)
-        return processed_type(t) unless t.is_a? Array
-
+        t = t.size == 1 ? t.first : { one_of: t }
         {
             type: 'array',
-            # TODO: [[String], [Integer]] <= One Of? Object?(0=>[S], 1=>[I])
-            items: recursive_array_type(t.first)
+            items: processed_type(t)
         }
       end
 

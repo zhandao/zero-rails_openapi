@@ -47,10 +47,6 @@ module OpenApi
       }
     end
 
-    cattr_accessor :is_options do
-      %w[ email phone mobile password uuid uri url time date ]
-    end
-
     cattr_accessor :dft_file_format do
       'binary'
     end

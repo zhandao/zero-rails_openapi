@@ -13,16 +13,14 @@ module OpenApi
         @schemas = combined_schema.values.first
       end
 
-      def process_for(param_name = nil, options = { desc_inside: false })
+      def process(options = { inside_desc: false })
         processed[@mode] = @schemas.map do |schema|
           type = schema.is_a?(Hash) ? schema[:type] : schema
           schema = { } unless schema.is_a?(Hash)
-          SchemaObj.new(type, schema).process_for(param_name, options)
+          SchemaObj.new(type, schema).process(options)
         end
         processed
       end
-
-      alias process process_for
     end
   end
 end

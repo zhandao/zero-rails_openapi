@@ -26,15 +26,14 @@ module OpenApi
         merge! schema_hash
       end
 
-
-      def process_for(param_name = nil, options = { desc_inside: false })
-        return processed if @preprocessed
+      def process(options = { inside_desc: false })
+        return processed if preprocessed
 
         processed.merge!(processed_type)
         reducx(
             processed_enum_and_length,
             processed_range,
-            processed_is_and_format(param_name),
+            processed_is_and_format,
             {
                 pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
                 default:    nil,
@@ -47,22 +46,20 @@ module OpenApi
         reducx(processed_desc(options)).then_merge!
       end
 
-      alias process process_for
-
-      def preprocess_with_desc desc, param_name = nil
+      def preprocess_with_desc desc
         self.__desc = desc
-        process_for param_name
+        process
         self.preprocessed = true
         __desc
       end
 
       def processed_desc(options)
         result = __desc ? self.__desc = auto_generate_desc : _desc
-        options[:desc_inside] ? { description: result } : nil
+        options[:inside_desc] ? { description: result } : nil
       end
 
       def processed_type(type = self.type)
-        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.underscore
+        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
         if t.is_a? Hash
           processed_hash_type(t)
         elsif t.is_a? Array
@@ -84,14 +81,15 @@ module OpenApi
 
       def processed_hash_type(t)
         # For supporting this:
-        #   form 'desc', data: {
+        #   form 'desc', type: {
         #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
-        # }
+        # }, should have description within schema
         if t.key?(:type)
-          SchemaObj.new(t[:type], t).process_for(@prop_name, desc_inside: true)
-          # For supporting combined schema in nested schema.
+          SchemaObj.new(t[:type], t).process(inside_desc: true)
+
+        # For supporting combined schema in nested schema.
         elsif (t.keys & %i[ one_of any_of all_of not ]).present?
-          CombinedSchema.new(t).process_for(@prop_name, desc_inside: true)
+          CombinedSchema.new(t).process(inside_desc: true)
         else
           recursive_obj_type(t)
         end
@@ -122,21 +120,11 @@ module OpenApi
         }.keep_if &value_present
       end
 
-      def processed_is_and_format(name)
-        return if name.nil?
-        recognize_is_options_in name
+      def processed_is_and_format
         { }.tap do |it|
           # `format` that generated in process_type() may be overwrote here.
           it[:format] = _format || _is if processed[:format].blank? || _format.present?
           it[:is] = _is
-        end
-      end
-
-      def recognize_is_options_in(name)
-        return unless _is.nil?
-        # identify whether `is` patterns matched the name, if so, generate `is`.
-        Config.is_options.each do |pattern|
-          (self._is = pattern) or break if name.match?(/#{pattern}/)
         end
       end
 
