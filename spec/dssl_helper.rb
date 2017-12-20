@@ -93,7 +93,7 @@ def ctx(desc, subject: nil, stru: nil, &block)
 end
 
 def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has_keys: nil, has_size: nil, take: nil,
-       doc_will_has_keys: nil, **other
+       doc_will_has_keys: nil, raise: nil, **other
   alias_of_have_keys = %i[ have_key have_key! have_keys have_keys! all_have_keys all_have_keys!
                            has_key has_key! has_keys! will_have_keys will_have_keys! ]
   has_keys ||= other.values_at(*alias_of_have_keys).compact.first
@@ -109,11 +109,12 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
   sbj = nil
   it desc0 || desc do
     send(scope, &dsl_block)
-    sbj = subject
     it_blks.each do |(excepted, it_blk)|
       instance_exec(excepted, &it_blk)
     end
     is_expected.to instance_exec(&it) if it
+    expect { subject }.to raise_error *Array(raise) if raise
+    sbj = subject rescue nil
   end
 
   if (t = other.values_at(*alias_of_have_keys.grep(/!/)).compact.first).present?
@@ -129,6 +130,8 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
     end
   end
 end
+
+alias api mk
 
 def make dsl_block, desc = nil, it: nil, eq: nil, has_keys: nil, doc_will_has_keys: nil, **other
   mk dsl_block, desc, scope: :it_do!, it: it, eq: eq, has_keys: has_keys, doc_will_has_keys: doc_will_has_keys, **other

@@ -6,22 +6,22 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
   let(:subject_key_path) { %i[ paths goods/action get ] }
 
   ctx 'when doing nothing' do
-    mk -> { }, eq: { summary: 'test', operationId: :action, tags: ['Goods'] }
+    api -> { }, eq: { summary: 'test', operationId: :action, tags: ['Goods'] }
   end
 
 
   desc :this_api_is_invalid!, subject: :deprecated do
-    mk -> { this_api_is_invalid! }, be: true
-    mk -> { this_api_is_under_repair! 'reason' }, be: true
+    api -> { this_api_is_invalid! }, be: true
+    api -> { this_api_is_under_repair! 'reason' }, be: true
 
     context 'when doing nothing' do
-      mk -> { }, then_it { be_nil }
+      api -> { }, then_it { be_nil }
     end
   end
 
 
   desc :desc do
-    mk -> { desc 'description for api #action.' }, has_key: :description
+    api -> { desc 'description for api #action.' }, has_key: :description
 
     context "when uniting parameters' description" do
       let(:params) { subject[:parameters] }
@@ -40,7 +40,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
 
   desc :param, subject: :parameters, stru: %i[ name in required schema ] do
-    mk -> do
+    api -> do
       param :query, :page, Integer, :req
       param :query, :per, Integer, :opt
     end, all_should_be_its_structure
@@ -67,7 +67,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
     describe '#_param_agent: [ header header! path path! query query! cookie cookie! ]' do
       correct do
-        mk -> { query :page ,Integer }, has_size!: 1
+        api -> { query :page ,Integer }, has_size!: 1
         focus_on :item_0
         expect_its :name, eq: :page
         expect_its :in, eq: 'query'
@@ -75,33 +75,33 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         expect_its :schema, eq: { type: 'integer' }
 
         context 'when calling a bang agent' do
-          mk -> { header! :token, String }, take: 0
+          api -> { header! :token, String }, take: 0
           focus_on :item_0, :required
           expect_it eq: true
         end
 
         context 'when defining combined schema' do
-          mk -> { cookie :a, not: [String] }, take: 0
+          api -> { cookie :a, not: [String] }, take: 0
           focus_on :item_0, :schema
           expect_it has_key: :not
         end
 
         context 'when re-calling through the same name' do
-          mk -> { query! :same_name, String; query :same_name, Integer }, 'should override the older', take: 0
+          api -> { query! :same_name, String; query :same_name, Integer }, 'should override the older', take: 0
           it { expect(item_0).to include required: false }
           focus_on :item_0, :schema, :type
           expect_it eq: 'integer'
         end
 
         describe '#do_*:' do
-          mk -> { do_query by: { } }, then_it { be_nil }
+          api -> { do_query by: { } }, then_it { be_nil }
 
-          mk -> { do_header by: { key: Integer, token!: String } }, has_size!: 2
+          api -> { do_header by: { key: Integer, token!: String } }, has_size!: 2
           it { expect(item_0).to include name: :key, required: false }
           it { expect(item_1).to include name: :token, required: true }
 
           context 'when calling bang method' do
-            mk -> { do_path! by: { id: Integer, name: String } }, '---> should have 2 required items:', has_size!: 2
+            api -> { do_path! by: { id: Integer, name: String } }, '---> should have 2 required items:', has_size!: 2
             it { expect(item_0).to include name: :id, required: true}
             it { expect(item_1).to include name: :name, required: true}
           end
@@ -112,38 +112,38 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           #   query :QueryPage, :page, Integer
           #   path :PathId, :id, Integer
           # } end
-          mk -> { param_ref :QueryPage, :PathId, :NotExistCom }, has_size: 3, take: 2,
-             desc: '---> should have 3 ref, and the last:'
+          api -> { param_ref :QueryPage, :PathId, :NotExistCom }, has_size: 3, take: 2,
+              desc: '---> should have 3 ref, and the last:'
           it { expect(item_2[:$ref]).to eq '#components/parameters/NotExistCom' }
         end
       end
 
       wrong 'no type and not combined schema' do
-        mk -> { query :wrong }, then_it { be_nil }
+        api -> { query :wrong }, then_it { be_nil }
       end
     end
 
 
     desc :request_body, subject: :requestBody, stru: %i[ required description content ]  do
-      mk -> { request_body :req, :json }, should_be_its_structure
+      api -> { request_body :req, :json }, should_be_its_structure
 
       describe '#_request_body_agent: [ body body! ]' do
-        mk -> { body :json, data: { name: 'test' } }, should_be_its_structure!
+        api -> { body :json, data: { name: 'test' } }, should_be_its_structure!
         it { expect(required).to be_falsey }
         it { expect(description).to eq '' }
         it { expect(content).to have_keys 'application/json': [ schema: %i[ type properties ] ] }
 
         context 'when calling the bang agent' do
-          mk -> { body! :json }, then_it { include required: true }
+          api -> { body! :json }, then_it { include required: true }
         end
 
         context 'when re-calling through different media-type' do
-          mk -> { body :json; body :xml }, 'should merge together', has_key!: :content
+          api -> { body :json; body :xml }, 'should merge together', has_key!: :content
           it { expect(content.size).to eq 2 }
         end
 
         context 'when re-calling through the same media-type' do
-          mk -> do
+          api -> do
             body  :json, data: { :param_a! => String }
             body! :json, data: { :param_b => Integer }
           end, have_key!: %i[ required content ]
@@ -154,22 +154,22 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         describe '#form and #form!' do
-          mk -> { form data: { name: 'test' } }, should_be_its_structure!
+          api -> { form data: { name: 'test' } }, should_be_its_structure!
           it { expect(required).to be_falsey }
           it { expect(content).to have_keys 'multipart/form-data': [ schema: %i[ type properties ] ] }
 
           context 'when calling the bang method' do
-            mk -> { form! data: { } }, then_it { include required: true }
+            api -> { form! data: { } }, then_it { include required: true }
           end
 
           describe '#data' do
-            mk -> { data :uid, String }, should_be_its_structure!
+            api -> { data :uid, String }, should_be_its_structure!
             it { expect(required).to be_falsey }
             focus_on :content, :'multipart/form-data', :schema, :properties, :uid
             expect_its :type, eq: 'string'
 
             context 'when calling it multiple times' do
-              mk -> do
+              api -> do
                 data :uid, String
                 data :name, String
               end, should_be_its_structure!
@@ -180,7 +180,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         describe '#file and #file!' do
-          mk -> { file :ppt }, should_be_its_structure!
+          api -> { file :ppt }, should_be_its_structure!
           focus_on :content
           expect_it has_key: :'application/vnd.ms-powerpoint'
 
@@ -188,7 +188,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           expect_it eq: OpenApi::Config.dft_file_format
 
           context 'when calling the bang method' do
-            mk -> { file! :doc }, then_it { include required: true }
+            api -> { file! :doc }, then_it { include required: true }
           end
         end
       end
@@ -198,14 +198,14 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         #   body :BodyA => [:xml ]
         #   body :BodyB => [:ppt ]
         # } end
-        mk -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'should be the last ref',
-           _it { include :$ref => '#components/requestBodies/BodyB' }
+        api -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'should be the last ref',
+            _it { include :$ref => '#components/requestBodies/BodyB' }
       end
     end
 
 
     desc :response, subject: :responses do
-      mk -> do
+      api -> do
         response :unauthorized, 'invalid token', :json
         response :bad_request, 'parameter validation failed'
       end, has_keys!: %i[ unauthorized bad_request ]
@@ -214,7 +214,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
       expect_its :content, has_keys: :'application/json'
 
       context 'when re-calling through the same code and media-type' do
-        mk -> do
+        api -> do
           response :success, 'success desc1', :json, data: { name: String }
           response :success, 'success desc2', :json, data: { age: Integer }
         end, has_key!: :success
@@ -226,7 +226,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
       describe '#response_ref' do
         correct 'passing a code-to-refkey mapping hash' do
-          mk -> { response_ref unauthorized: :UnauthorizedResp, bad_request: :BadRequestResp },
+          api -> { response_ref unauthorized: :UnauthorizedResp, bad_request: :BadRequestResp },
               has_keys!: %i[ unauthorized bad_request ]
           it { expect(bad_request).to include :$ref => '#components/responses/BadRequestResp' }
         end
@@ -235,20 +235,20 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
 
     desc :security_require, subject: :security do
-      mk -> { auth :Token }, has_size!: 1
+      api -> { auth :Token }, has_size!: 1
       it { expect(item_0).to eq Token: [ ] }
     end
 
 
     desc :server, subject: :servers, stru: %i[ url description ] do
-      mk -> { server 'http://localhost:3000', desc: 'Internal staging server for testing' },
-         all_have_keys: its_structure, has_size: 1
+      api -> { server 'http://localhost:3000', desc: 'Internal staging server for testing' },
+          all_have_keys: its_structure, has_size: 1
     end
 
 
     desc :order, subject: :parameters do
       context 'when using in .api' do
-        mk -> do
+        api -> do
           query :page, String
           path  :id, Integer
           order :id, :page
@@ -284,7 +284,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
     desc :param_examples, subject: :examples do
       context 'when calling it normally' do
-        mk -> do
+        api -> do
           examples %i[ id name ], {
               :right_input => [ 1, 'user'],
               :wrong_input => [ -1, ''   ]
@@ -293,9 +293,9 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         it { expect(item_0).to eq right_input: { value: { id: 1, name: 'user' } } }
       end
 
-      context 'when passing default :all to exp_by' do
+      context 'when passing default :all to exp_  by' do
         correct 'have defined specified parameters' do
-          mk -> do
+          api -> do
             query :id, String
             query :name, String
             examples :all, { right_input: [ 1, 'user', 'extra value'] }
@@ -304,7 +304,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         wrong 'have not defined specified parameters' do
-          mk -> do
+          api -> do
             examples :all, { right_input: [ 1, 'user'] }
           end, has_size!: 1
           it { expect(item_0).to eq right_input: { value: [ 1, 'user'] } }

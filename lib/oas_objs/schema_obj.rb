@@ -62,17 +62,17 @@ module OpenApi
       end
 
       def processed_type(type = self.type)
-        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
+        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.underscore
         if t.is_a? Hash
           processed_hash_type(t)
         elsif t.is_a? Array
           recursive_array_type(t)
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
-        elsif t.in? %w[float double int32 int64]
-          { type: t.match?('int') ? 'integer' : 'number', format: t}
-        elsif t.in? %w[binary base64]
-          { type: 'string', format: t}
+        elsif t.in? %w[ float double int32 int64 ]
+          { type: t.match?('int') ? 'integer' : 'number', format: t }
+        elsif t.in? %w[ binary base64 ]
+          { type: 'string', format: t }
         elsif t.eql? 'file'
           { type: 'string', format: Config.dft_file_format }
         elsif t.eql? 'datetime'
