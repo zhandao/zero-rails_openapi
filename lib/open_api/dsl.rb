@@ -43,6 +43,7 @@ module OpenApi
         [action, :all].each { |blk_key| @_api_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use  = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.param_skip = [ ]
+        api.param_use = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.instance_exec(&block) if block_given?
         api.process_objs
         api.delete_if { |_, v| v.blank? }
