@@ -98,13 +98,14 @@ module OpenApi
         process_range_enum_and_lth
 
         # generate length range fields by _lth array
-        lth = _length || [ ]
-        if lth.is_a?(Array)
+        if (lth = _length || [ ]).is_a?(Array)
           min, max = [lth.first&.to_i, lth.last&.to_i]
-        else
-          max = lth.to_s.split('_').last.to_i if lth['ge']
-          min = lth.to_s.split('_').last.to_i if lth['le']
+        elsif lth['ge']
+          max = lth.to_s.split('_').last.to_i
+        elsif lth['le']
+          min = lth.to_s.split('_').last.to_i
         end
+
         if processed[:type] == 'array'
           { minItems: min, maxItems: max }
         else
