@@ -1,3 +1,3 @@
 module OpenApi
-  VERSION = '1.4.3'
+  VERSION = '1.5.1'
 end
