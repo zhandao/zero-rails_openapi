@@ -26,6 +26,7 @@ module OpenApi
         (self[:parameters] ||= { })[component_key] = ParamObj.new(name, param_type, type, required, schema_hash).process
       end
 
+      # [ header header! path path! query query! cookie cookie! ]
       def _param_agent component_key, name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
         combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
         schema_hash[:type] ||= type
@@ -45,6 +46,7 @@ module OpenApi
         self[:requestBodies][component_key] = cur.add_or_fusion(media_type, options.merge(data: data))
       end
 
+      # [ body body! ]
       def _request_body_agent component_key, media_type, data: { }, **options
         request_body component_key,
                      (@method_name['!'] ? :req : :opt), media_type, data: data, **options

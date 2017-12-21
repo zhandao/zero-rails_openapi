@@ -16,6 +16,10 @@
   你还可以复用其所[产出](#about-openapidocs-and-openapipaths_index)来写一些扩展，比如参数自动校验什么的（我有写哦）。  
   有什么想法敬请 PR，谢过！
   另外，走过路过不妨来个 star？**
+  
+  另外，如果对其行为表现有任何疑惑，敬请先阅读测试代码，这其中已然表明清楚我的大多数考量。  
+  值得一读的测试：[api DSL](spec/api_info_obj_spec.rb) 以及 [schema Obj](spec/oas_objs/schema_obj_spec.rb)。
+
 
 ## Table of Contents
 

@@ -41,25 +41,22 @@ module OpenApi
                         .merge! description: '', summary: summary, operationId: action, tags: [@_apis_tag],
                                 parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @_api_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
+        api.param_use  = [ ] # `skip` and `use` only affect `api_dry`'s blocks
+        api.param_skip = [ ]
         api.param_use = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.instance_exec(&block) if block_given?
         api.process_objs
         api.delete_if { |_, v| v.blank? }
 
         path = (@_api_infos ||= { })[routes_info[:path]] ||= { }
-        http_verbs = (http || routes_info[:http_verb]).split('|')
-        http_verbs.each { |verb| path[verb] = api }
+        (http || routes_info[:http_verb]).split('|').each { |verb| path[verb] = api }
         api
       end
 
       # method could be symbol array, like: %i[ .. ]
       def api_dry action = :all, desc = '', &block
         @_api_dry_blocks ||= { }
-        if action.is_a? Array
-          action.each { |m| (@_api_dry_blocks[m.to_sym] ||= [ ]) << block }
-        else
-          (@_api_dry_blocks[action.to_sym] ||= [ ]) << block
-        end
+        Array(action).each { |a| (@_api_dry_blocks[a.to_sym] ||= [ ]) << block }
       end
 
       def ctrl_routes_list

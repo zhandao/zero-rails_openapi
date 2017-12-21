@@ -38,18 +38,8 @@ module OpenApi
 
     def to_processed(who)
       return processed unless truly_present?(@assign)
-
-      if who.is_a?(Symbol)
-        send("#{who}=", @assign)
-      else
-        processed[who.to_sym] = @assign
-      end
-
+      processed[who.to_sym] = @assign
       processed
-    end
-
-    def to(who)
-      self[who.to_sym] = @assign if truly_present?(@assign)
     end
 
     def then_merge! # to_processed

@@ -14,6 +14,9 @@
   **Hi, here is ZhanDao = ▽ =  
   I think it's a very useful tool when you want to write API document clearly.  
   I'm looking forward to your issue and PR, thanks!**
+  
+  And, if you have any questions, please read the test code first.  
+  such as [api DSL](spec/api_info_obj_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
 
 ## Table of Contents
 
@@ -552,9 +555,9 @@
   
   ```ruby
   # method signature
-  server(url, desc)
+  server(url, desc: '')
   # usage
-  server 'http://localhost:3000', 'local'
+  server 'http://localhost:3000', desc: 'local'
   ```
   
 ### DSL methods inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))
@@ -689,7 +692,7 @@
   
   You can also use Hash to define `enum`:
   ```ruby
-  query :view, String, desc: 'allows values<br/>', enum: {
+  query :view, String, desc: 'allows values<br/>', enum!: {
           'all goods (default)': :all,
                   'only online': :online,
                  'only offline': :offline,
@@ -717,7 +720,7 @@
 ### Trick6 - Combined Schema (one_of / all_of / any_of / not)
 
   ```ruby
-  query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input'}]
+  query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input' } ]
   
   form '', data: {
       :combination_in_form => { any_of: [ Integer, String ] }

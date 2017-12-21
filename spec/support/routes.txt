@@ -1,6 +1,7 @@
                         Prefix Verb URI Pattern                       Controller#Action
+               examples GET         examples/index(.:format)          examples#index
            action_goods GET         goods/action(.:format)            goods#action
-     change_onsale_good POST|PATCH  goods/:id/change_onsale(.:format) goods#change_online
+     change_onsale_good POST|PATCH  goods/:id/change_onsale(.:format) goods#change_onsale
                   goods GET         goods(.:format)                   goods#index
                         POST        goods(.:format)                   goods#create
                    good GET         goods/:id(.:format)               goods#show

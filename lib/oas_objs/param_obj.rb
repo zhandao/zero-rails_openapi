@@ -20,12 +20,12 @@ module OpenApi
 
       def process
         assign(desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.process_for(processed[:name]) }
+        processed.tap { |it| it[:schema] = schema.process }
       end
 
       def desc
         return _desc unless __desc.present?
-        schema.preprocess_with_desc __desc, self[:name]
+        schema.preprocess_with_desc __desc
       end
 
 

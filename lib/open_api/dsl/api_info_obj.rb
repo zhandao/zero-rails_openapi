@@ -41,13 +41,14 @@ module OpenApi
         fill_in_parameters(param_obj)
       end
 
+      # [ header header! path path! query query! cookie cookie! ]
       def _param_agent name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
         combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
-        schema_hash[:type] ||= type
-        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if schema_hash[:type].nil? && combined_schema.nil?
+        type = schema_hash[:type] ||= type
+        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if type.nil? && combined_schema.nil?
 
         schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
-        param "#{@param_type}".delete('!'), name, schema_hash[:type], (@param_type['!'] ? :req : :opt), schema_hash
+        param @param_type.to_s.delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
       end
 
       # For supporting this: (just like `form '', data: { }` usage)
@@ -58,10 +59,12 @@ module OpenApi
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
         define_method "do_#{param_type}" do |by:|
           by.each do |key, value|
-            args = [ key.dup.to_s.delete('!').to_sym, value.delete(:type), value ]
-            key.to_s['!'] ? send("#{param_type}!", *args) : send(param_type, *args)
+            action = param_type.to_s.delete('!')
+            type, value = value.is_a?(Hash) ? [value[:type], value] : [value, { }]
+            args = [ key.to_s.delete('!').to_sym, type, value ]
+            param_type['!'] || key['!'] ? send("#{action}!", *args) : send(action, *args)
           end
-        end unless param_type.to_s['!']
+        end
       end
 
       def param_ref component_key, *keys
@@ -75,18 +78,13 @@ module OpenApi
         self[:requestBody].add_or_fusion(media_type, options.merge(data: data))
       end
 
+      # [ body body! ]
       def _request_body_agent media_type, data: { }, **options
         request_body (@method_name['!'] ? :req : :opt), media_type, data: data, **options
       end
 
       def body_ref component_key
-        self[:requestBody] = RefObj.new(:requestBody, component_key).process
-      end
-
-      def response_ref code_compkey_hash
-        code_compkey_hash.each do |code, component_key|
-          self[:responses][code] = RefObj.new(:response, component_key).process
-        end
+        self[:requestBody] = RefObj.new(:requestBody, component_key)
       end
 
       def form data:, **options
@@ -110,6 +108,12 @@ module OpenApi
         body! media_type, data: data, **options
       end
 
+      def response_ref code_compkey_hash
+        code_compkey_hash.each do |code, component_key|
+          self[:responses][code] = RefObj.new(:response, component_key).process
+        end
+      end
+
       def security_require scheme_name, scopes: [ ]
         self[:security] << { scheme_name => scopes }
       end
@@ -118,12 +122,13 @@ module OpenApi
       alias auth      security_require
       alias need_auth security_require
 
-      def server url, desc
+      def server url, desc: ''
         self[:servers] << { url: url, description: desc }
       end
 
       def order *param_names
         self.param_order = param_names
+        # use when api_dry
         self.param_use = param_order if param_use.blank?
         self.param_skip = param_use - param_order
       end
@@ -135,7 +140,6 @@ module OpenApi
       end
 
       alias examples param_examples
-
 
       def process_objs
         self[:parameters]&.each_with_index do |p, index|

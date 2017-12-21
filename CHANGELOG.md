@@ -2,24 +2,40 @@
 
 ## [Unreleased]
 
+## [1.5.0 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+
+### Completed the test code (250+ examples), and make it 100% coverage.
+
+### Feature
+
+1. `type: [String, Integer ..]` will generate an array, which's items
+   would be a oneOf combined schema.
+
 ### Fixed:
 
 1. `desc` will override dry's.
 2. `type: something` is passed to `schema_hash`,  but not `type`.
+3. Should not `skip` the params inside block.
+4. `body_ref` invalid.
+5. schema `length`'s order is reversed.
+6. Example Obj ref.
 
 ### Added:
 
 1. Use `simplecov`.
 2. CodeClimate test hook.
-3. Test support.
-4. Designed a RSpec macther `have_keys`.
-5. Designed a set of RSpec DSL for testing.
-6. rspecs: config, generator, components, and api_info_obj(unfinished).
+3. Test's support.
+4. Designed RSpec matchers `have_keys` and `have_size`.
+5. Designed a set of RSpec's DSL (DSSL) for testing.
 
 ### Changed:
 
-1. `instance_eval` => `instance_exec` in dsl.rb.
-2. Guard Clause for `generate_docs` and where schema could be defined.
+1. WILL NOT do `recognize_is_options_in`.
+2. `instance_eval` => `instance_exec` in dsl.rb.
+3. Guard Clause for `generate_docs` and where schema could be defined.
+4. Change signature of `server` in `api`.
+5. Simplify `recursive`s.
+6. `enum: { 'desc' => :enum1 }` => `enum!: { 'desc' => :enum1 }`
 
 ## [1.4.2 & 1.4.3] - 2017/12/11&13 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
 

@@ -13,7 +13,9 @@ module OpenApi
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
           # Do Not `require`!
           #   It causes problems, such as making `skip_before_action` not working.
+          # :nocov:
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
+          # :nocov:
         end
         Dir[*Array(Config.doc_location)].each { |file| require file }
         (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge)
@@ -46,6 +48,7 @@ module OpenApi
       def write_docs(generate_files: true)
         docs = generate_docs
         return unless generate_files
+        # :nocov:
         output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
         max_length = docs.keys.map(&:size).sort.last
@@ -54,6 +57,7 @@ module OpenApi
           puts "[ZRO] `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
+        # :nocov:
       end
     end
 

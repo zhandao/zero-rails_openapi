@@ -26,39 +26,34 @@ module OpenApi
         merge! schema_hash
       end
 
-
-      def process_for(param_name = nil, options = { desc_inside: false })
-        return processed if @preprocessed
+      def process(options = { inside_desc: false })
+        return processed if preprocessed
 
         processed.merge!(processed_type)
         reducx(
             processed_enum_and_length,
             processed_range,
-            processed_is_and_format(param_name),
+            processed_is_and_format,
             {
                 pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
-                default:    nil,
+                default:    _default,
                 examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
             },
-            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank }
+            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank },
         ).then_merge!
-        processed[:default] = _default unless _default.nil?
-
-        reducx(processed_desc(options)).then_merge!
+        reducx(processed_desc(options)).then_merge! # TODO
       end
 
-      alias process process_for
-
-      def preprocess_with_desc desc, param_name = nil
+      def preprocess_with_desc desc
         self.__desc = desc
-        process_for param_name
+        process
         self.preprocessed = true
         __desc
       end
 
       def processed_desc(options)
-        result = __desc ? self.__desc = auto_generate_desc : _desc
-        options[:desc_inside] ? { description: result } : nil
+        result = __desc ? auto_generate_desc : _desc
+        options[:inside_desc] ? { description: result } : nil
       end
 
       def processed_type(type = self.type)
@@ -66,16 +61,16 @@ module OpenApi
         if t.is_a? Hash
           processed_hash_type(t)
         elsif t.is_a? Array
-          recursive_array_type(t)
+          processed_array_type(t)
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
-        elsif t.in? %w[float double int32 int64]
-          { type: t.match?('int') ? 'integer' : 'number', format: t}
-        elsif t.in? %w[binary base64]
-          { type: 'string', format: t}
-        elsif t.eql? 'file'
+        elsif t.in? %w[ float double int32 int64 ]
+          { type: t.match?('int') ? 'integer' : 'number', format: t }
+        elsif t.in? %w[ binary base64 ]
+          { type: 'string', format: t }
+        elsif t == 'file'
           { type: 'string', format: Config.dft_file_format }
-        elsif t.eql? 'datetime'
+        elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
         else # other string
           { type: t }
@@ -84,32 +79,38 @@ module OpenApi
 
       def processed_hash_type(t)
         # For supporting this:
-        #   form 'desc', data: {
+        #   form 'desc', type: {
         #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
-        # }
+        # }, should have description within schema
         if t.key?(:type)
-          SchemaObj.new(t[:type], t).process_for(@prop_name, desc_inside: true)
-          # For supporting combined schema in nested schema.
+          SchemaObj.new(t[:type], t).process(inside_desc: true)
+
+        # For supporting combined schema in nested schema.
         elsif (t.keys & %i[ one_of any_of all_of not ]).present?
-          CombinedSchema.new(t).process_for(@prop_name, desc_inside: true)
+          CombinedSchema.new(t).process(inside_desc: true)
         else
-          recursive_obj_type(t)
+          processed_obj_type(t)
         end
       end
 
       def processed_enum_and_length
         process_enum_info
-        process_enum_lth_range
+        process_range_enum_and_lth
 
         # generate length range fields by _lth array
-        lth = _length || [ ]
-        max = lth.is_a?(Array) ? lth.first : ("#{lth}".match?('ge') ? "#{lth}".split('_').last.to_i : nil)
-        min = lth.is_a?(Array) ? lth.last : ("#{lth}".match?('le') ? "#{lth}".split('_').last.to_i : nil)
+        if (lth = _length || [ ]).is_a?(Array)
+          min, max = [lth.first&.to_i, lth.last&.to_i]
+        elsif lth['ge']
+          max = lth.to_s.split('_').last.to_i
+        elsif lth['le']
+          min = lth.to_s.split('_').last.to_i
+        end
+
         if processed[:type] == 'array'
-          { minItems: max, maxItems: min }
+          { minItems: min, maxItems: max }
         else
-          { minLength: max, maxLength: min }
-        end.merge!(enum: _enum).keep_if &value_present
+          { minLength: min, maxLength: max }
+        end.merge(enum: _enum).keep_if &value_present
       end
 
       def processed_range
@@ -122,22 +123,11 @@ module OpenApi
         }.keep_if &value_present
       end
 
-      def processed_is_and_format(name)
-        return if name.nil?
-        recognize_is_options_in name
-        { }.tap do |it|
-          # `format` that generated in process_type() may be overwrote here.
-          it[:format] = _format || _is if processed[:format].blank? || _format.present?
-          it[:is] = _is
-        end
-      end
-
-      def recognize_is_options_in(name)
-        return unless _is.nil?
-        # identify whether `is` patterns matched the name, if so, generate `is`.
-        Config.is_options.each do |pattern|
-          (self._is = pattern) or break if name.match?(/#{pattern}/)
-        end
+      def processed_is_and_format
+        result = { is: _is }
+        # `format` that generated in process_type() may be overwrote here.
+        result[:format] = _format || _is if processed[:format].blank? || _format.present?
+        result
       end
 
 

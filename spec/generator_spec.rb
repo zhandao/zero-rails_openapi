@@ -7,13 +7,13 @@ RSpec.describe OpenApi::Generator do
     it { is_expected.to have_keys 'goods' }
 
     let(:goods_routes) { subject['goods'] }
-    it { expect(goods_routes).to include(http_verb: 'post|patch', path: 'goods/{id}/change_onsale', action_path: 'goods#change_online') }
+    it { expect(goods_routes).to include(http_verb: 'post|patch', path: 'goods/{id}/change_onsale', action_path: 'goods#change_onsale') }
   end
 
   describe '.get_actions_by_ctrl_path' do
     correct do
       let(:goods) { subject.get_actions_by_ctrl_path('goods') }
-      it { expect(goods).to eq %w[ action change_online index create show update update destroy ] }
+      it { expect(goods).to eq %w[ action change_onsale index create show update update destroy ] }
     end
 
     wrong do
@@ -24,8 +24,8 @@ RSpec.describe OpenApi::Generator do
 
   describe '.find_path_httpverb_by' do
     correct do
-      let(:change_online) { subject.find_path_httpverb_by('goods', 'change_online') }
-      it { expect(change_online).to eq [ 'goods/{id}/change_onsale', 'post' ] }
+      let(:change_onsale) { subject.find_path_httpverb_by('goods', 'change_onsale') }
+      it { expect(change_onsale).to eq [ 'goods/{id}/change_onsale', 'post' ] }
     end
 
     wrong do
