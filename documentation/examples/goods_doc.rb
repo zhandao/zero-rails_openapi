@@ -8,7 +8,7 @@ class V2::GoodsDoc < ApiDoc
          search_type!: 'search field, allows:<br/>'
 
     # Single `query`
-    query :view, String, enum: {
+    query :view, String, enum!: {
         'all goods (default)': :all,
                 'only online': :online,
                'only offline': :offline,

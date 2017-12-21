@@ -93,7 +93,7 @@ def ctx(desc, subject: nil, stru: nil, &block)
 end
 
 def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has_keys: nil, has_size: nil, take: nil,
-       doc_will_has_keys: nil, raise: nil, **other
+       doc_will_has_keys: nil, include: nil, raise: nil, **other
   alias_of_have_keys = %i[ have_key have_key! have_keys have_keys! all_have_keys all_have_keys!
                            has_key has_key! has_keys! will_have_keys will_have_keys! ]
   has_keys ||= other.values_at(*alias_of_have_keys).compact.first
@@ -102,6 +102,7 @@ def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, it: nil, eq: nil, has
   it_blks = [ ]
   it_blks << [eq, ->(excepted) { is_expected.to eq excepted }] unless eq.nil?
   it_blks << [has_keys, ->(excepted) { is_expected.to have_keys excepted }] if has_keys
+  it_blks << [include, ->(excepted) { is_expected.to include excepted }] if include
   it_blks << [doc_will_has_keys, ->(excepted) { expect(doc).to have_keys excepted }] if doc_will_has_keys
   it_blks << [has_size, ->(excepted) { expect(subject).to have_size excepted }] if (has_size ||= other[:has_size!])
   desc ||= '---> after specified dsl' if it_blks.size.zero? && it.nil?

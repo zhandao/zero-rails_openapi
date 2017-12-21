@@ -2,9 +2,9 @@
 
 ## [Unreleased]
 
-## [1.5.0 - 100% Test Coverage] - 2017/12/? - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+## [1.5.0 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
 
-### Completed the test code (200 examples), and make it 100% coverage.
+### Completed the test code (250+ examples), and make it 100% coverage.
 
 ### Feature
 
@@ -17,6 +17,8 @@
 2. `type: something` is passed to `schema_hash`,  but not `type`.
 3. Should not `skip` the params inside block.
 4. `body_ref` invalid.
+5. schema `length`'s order is reversed.
+6. Example Obj ref.
 
 ### Added:
 
@@ -28,11 +30,12 @@
 
 ### Changed:
 
-1. Will NOT do `recognize_is_options_in`.
+1. WILL NOT do `recognize_is_options_in`.
 2. `instance_eval` => `instance_exec` in dsl.rb.
 3. Guard Clause for `generate_docs` and where schema could be defined.
 4. Change signature of `server` in `api`.
 5. Simplify `recursive`s.
+6. `enum: { 'desc' => :enum1 }` => `enum!: { 'desc' => :enum1 }`
 
 ## [1.4.2 & 1.4.3] - 2017/12/11&13 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.1...v1.4.3)
 

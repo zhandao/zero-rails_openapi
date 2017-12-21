@@ -22,12 +22,6 @@ module OpenApi
         assign(media_types.map(&:process).reduce({ }, &fusion)).to_processed 'content'
         processed
       end
-
-      def override(type_hash)
-        @hash[:type].merge!(type_hash)
-        self.media_type = MediaTypeObj.new(@mt, @hash)
-        self
-      end
     end
   end
 end

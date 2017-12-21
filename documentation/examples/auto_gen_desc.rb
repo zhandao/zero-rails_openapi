@@ -12,7 +12,7 @@ class V1::GoodsDoc < BaseDoc
 
     # Instead of:
     # query :view,        String, enum: %w[ all online offline expensive cheap ]
-    query :view, String, enum: {
+    query :view, String, enum!: {
         'all goods (default)': :all,
                 'only online': :online,
                'only offline': :offline,

@@ -7,14 +7,14 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
   ctx 'when not pass schema type as Hash type' do
     api -> { query :id, Integer }, eq: { type: 'integer' }
-    api -> { query :people, { name: String }, desc: '' }, then_it { include type: 'object' }
+    api -> { query :people, { name: String }, desc: '' }, include: { type: 'object' }
     api -> { query :people, { name: String } }, 'will not have key :schema cause cannot recognize schema type',
         raise: [NoMethodError, "undefined method `[]' for nil:NilClass"]
   end
 
   ctx 'when pass schema type as Hash type' do
     api -> { query :id, type: Integer }, eq: { type: 'integer' }
-    api -> { query :people, type: { name: String } }, then_it { include type: 'object' }
+    api -> { query :people, type: { name: String } }, include: { type: 'object' }
   end
 
   desc :processed_type do
@@ -109,6 +109,97 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
 
   desc :processed_enum_and_length do
-    #
+    context 'when length is an array' do
+      api -> { query :info, String, lth: [min = 1, max = 10] }, has_key!: %i[ minLength maxLength ]
+      it { expect(min_length).to eq 1 }
+      it { expect(max_length).to eq 10 }
+    end
+
+    context 'when length is a string' do
+      api -> { query :info, String, lth: 'ge_10' }, has_key!: %i[ maxLength ]
+      it { expect(max_length).to eq 10 }
+      it { is_expected.not_to have_keys :minLength }
+    end
+
+    context 'when setting the size for the Array type' do
+      api -> { query :info, [ ], size: [min = 10, max = 20] }, has_key!: %i[ minItems maxItems ]
+      it { expect(min_items).to eq 10 }
+      it { expect(max_items).to eq 20 }
+    end
+
+    context 'when enum is or not an array' do
+      api -> { query :info, String, enum: ['a'] }, include: { enum: ['a'] }
+      api -> { query :info, String, enum: 'a' }, include: { enum: ['a'] }
+    end
+
+    context 'when using must_be (value)' do
+      api -> { query :info, String, must_be: 'a' }, 'should be also enum', include: { enum: ['a'] }
+    end
+
+    context 'when passing Range to lth' do
+      api -> { query :info, String, lth: (1.4..5.5) }, has_key!: %i[ minLength maxLength ]
+      it { expect(min_length).to eq 1 }
+      it { expect(max_length).to eq 5 }
+    end
+
+    context 'when passing Range to enum' do
+      api -> { query :info, String, enum: (1.2..3.4) }, has_key!: :enum
+      it { expect(enum).to have_size ('1.2'..'3.4').to_a.size }
+    end
+
+    let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro], &:[])[0][:description] }
+
+    context 'when passing Array to enum!' do
+      api -> { query :info, String, enum!: %w[ a b ], desc!: 'info: ' }, has_key!: :enum
+      it { expect(description).to eq 'info: <br/>1/ a<br/>2/ b' }
+
+      context 'when not passing desc!' do
+        api -> { query :info, String, enum!: %w[ a b ] }, has_key!: :enum
+        it('parameter should not have desc') { expect(description).to eq nil }
+      end
+    end
+
+    context 'when passing Hash to enum!' do
+      api -> { query :info, String, enum!: { 'desc1': :a, 'desc2': :b }, desc!: 'info: ' }, has_key!: :enum
+      it { expect(description).to eq 'info: <br/>1/ desc1: a<br/>2/ desc2: b' }
+    end
+  end
+
+
+  desc :processed_range do
+    correct do
+      api -> { query :info, Integer, range: { ge: 1, lt: 5 } }, include: { minimum: 1, maximum: 5, exclusiveMaximum: true }
+    end
+  end
+
+
+  desc :processed_is_and_format do
+    correct do
+      api -> { query :email, Integer, is: :email }, include: { is: :email, format: :email }
+    end
+  end
+
+
+  desc :process do
+    describe ':pattern' do
+      api -> { query :info, String, pattern: /\A[^@\s]+@[^@\s]+\z/ }, has_key!: :pattern
+      it { expect(Regexp.new(pattern)).to eq /\A[^@\s]+@[^@\s]+\z/ }
+
+      context 'when pattern is not regexp, but is a time format String' do
+        api -> { query :info, DateTime, pattern: 'YY-MM-DD'}, has_key!: :pattern
+        it { expect(pattern).to eq 'YY-MM-DD' }
+      end
+    end
+
+    describe ':default' do
+      api -> { query :info, String, dft: 'default' }, include: { default: 'default' }
+    end
+
+    describe ':examples' do
+      api -> { query :info, { name: String, age: Integer }, examples: { input1: ['a', 1], input2: ['b, 2'] }, exp_by: %i[ name age ] },
+          has_key!: :examples
+      focus_on :examples
+      expect_its 0, eq: { input1: { value: { name: 'a', age: 1 } } }
+    end
   end
 end

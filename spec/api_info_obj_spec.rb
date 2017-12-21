@@ -134,7 +134,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         it { expect(content).to have_keys 'application/json': [ schema: %i[ type properties ] ] }
 
         context 'when calling the bang agent' do
-          api -> { body! :json }, then_it { include required: true }
+          api -> { body! :json }, include: { required: true }
         end
 
         context 'when re-calling through different media-type' do
@@ -145,12 +145,13 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         context 'when re-calling through the same media-type' do
           api -> do
             body  :json, data: { :param_a! => String }
-            body! :json, data: { :param_b => Integer }
+            body! :json, data: { :param_b  => Integer }
+            body! :json, data: { :param_c! => Integer }
           end, have_key!: %i[ required content ]
           it { expect(required).to be_falsey }
           focus_on :content, :'application/json', :schema
-          expect_its :required, eq: ['param_a']
-          expect_its :properties, 'should fusion together', has_keys: %i[ param_a param_b ]
+          expect_its :required, eq: %w[ param_a param_c ]
+          expect_its :properties, 'should fusion together', has_keys: %i[ param_a param_b param_c ]
         end
 
         describe '#form and #form!' do
@@ -159,7 +160,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           it { expect(content).to have_keys 'multipart/form-data': [ schema: %i[ type properties ] ] }
 
           context 'when calling the bang method' do
-            api -> { form! data: { } }, then_it { include required: true }
+            api -> { form! data: { } }, include: { required: true }
           end
 
           describe '#data' do
@@ -188,7 +189,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           expect_it eq: OpenApi::Config.dft_file_format
 
           context 'when calling the bang method' do
-            api -> { file! :doc }, then_it { include required: true }
+            api -> { file! :doc }, include: { required: true }
           end
         end
       end
@@ -199,7 +200,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         #   body :BodyB => [:ppt ]
         # } end
         api -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'should be the last ref',
-            _it { include :$ref => '#components/requestBodies/BodyB' }
+            include: { :$ref => '#components/requestBodies/BodyB' }
       end
     end
 
@@ -287,10 +288,12 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         api -> do
           examples %i[ id name ], {
               :right_input => [ 1, 'user'],
-              :wrong_input => [ -1, ''   ]
+              :wrong_input => [ -1, ''   ],
+              :example_ref => :'$InputExample'
           }
-        end, has_size!: 2
+        end, has_size!: 3
         it { expect(item_0).to eq right_input: { value: { id: 1, name: 'user' } } }
+        it { expect(item_2).to eq example_ref: { :$ref => '#components/InputExamples/example' } }
       end
 
       context 'when passing default :all to exp_  by' do

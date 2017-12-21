@@ -55,11 +55,7 @@ module OpenApi
       # method could be symbol array, like: %i[ .. ]
       def api_dry action = :all, desc = '', &block
         @_api_dry_blocks ||= { }
-        if action.is_a? Array
-          action.each { |m| (@_api_dry_blocks[m.to_sym] ||= [ ]) << block }
-        else
-          (@_api_dry_blocks[action.to_sym] ||= [ ]) << block
-        end
+        Array(action).each { |a| (@_api_dry_blocks[a.to_sym] ||= [ ]) << block }
       end
 
       def ctrl_routes_list

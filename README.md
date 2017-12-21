@@ -692,7 +692,7 @@
   
   You can also use Hash to define `enum`:
   ```ruby
-  query :view, String, desc: 'allows values<br/>', enum: {
+  query :view, String, desc: 'allows values<br/>', enum!: {
           'all goods (default)': :all,
                   'only online': :online,
                  'only offline': :offline,
