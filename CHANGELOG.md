@@ -9,6 +9,7 @@
 ## Changed
 
 1. Modify the description of the test case (remove `should`).
+2. `deep_merge!` instead of `_fusion`.
 
 ## [1.5.1 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
 
