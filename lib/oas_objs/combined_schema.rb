@@ -24,3 +24,19 @@ module OpenApi
     end
   end
 end
+
+__END__
+
+Inside schema:
+
+"oneOf": [
+  {
+    "$ref": "#components/schemas/DogSchema"
+  },
+  {
+    "type": "string"
+  },
+  {
+    "type": "integer"
+  }
+]

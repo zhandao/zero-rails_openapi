@@ -86,7 +86,7 @@ RSpec.describe OpenApi::DSL::Components do
           body :BodyD => [:xml ]
           body :BodyE => [:xml ]
           body :BodyF => [:ppt ]
-        end, 'should merge together', has_keys: %i[ BodyD BodyE BodyF ]
+        end, 'merge together', has_keys: %i[ BodyD BodyE BodyF ]
       end
 
       context 'when re-calling through the same component_key' do
@@ -97,7 +97,7 @@ RSpec.describe OpenApi::DSL::Components do
         it { expect(same_body[:required]).to be_falsey }
         focus_on :SameBody, :content, :'application/json', :schema
         expect_its :required, eq: ['param_a']
-        expect_its :properties, 'should fusion together', has_keys: %i[ param_a param_b ]
+        expect_its :properties, 'fusion together', has_keys: %i[ param_a param_b ]
       end
     end
   end

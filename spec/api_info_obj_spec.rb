@@ -43,7 +43,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
     api -> do
       param :query, :page, Integer, :req
       param :query, :per, Integer, :opt
-    end, all_should_be_its_structure
+    end, all_have_its_structure
 
     context 'when passing `use` and `skip` to control parameters from `api_dry`' do
       before_do do api_dry {
@@ -51,16 +51,16 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         param :query, :per, Integer, :opt
       } end
 
-      make -> { api :action, use: [ ]      }, 'should use all', has_size: 2
-      make -> { api :action, use: [:none]  }, then_it('should only use :none') { be_nil }
+      make -> { api :action, use: [ ]      }, 'uses all', has_size: 2
+      make -> { api :action, use: [:none]  }, then_it('only uses :none') { be_nil }
       make -> { api :action, use: [:page]  }, has_size: 1
-      make -> { api :action, skip: [ ]     }, 'should skip nothing', has_size: 2
+      make -> { api :action, skip: [ ]     }, 'skips nothing', has_size: 2
       make -> { api :action, skip: [:page] }, has_size: 1
 
       make -> { api :action, use: [:nothing] { param :query, :page, Integer, :req } },
-           "shouldn't skip the params inside block", has_size: 1
+           'not skip the params inside block', has_size: 1
       make -> { api :action, skip: [:per] { param :query, :per, Integer, :req } },
-           "shouldn't skip the params inside block", has_size: 2
+           'not skip the params inside block', has_size: 2
 
       after_do { undo_dry }
     end
@@ -87,7 +87,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         context 'when re-calling through the same name' do
-          api -> { query! :same_name, String; query :same_name, Integer }, 'should override the older', take: 0
+          api -> { query! :same_name, String; query :same_name, Integer }, 'overrides the older', take: 0
           it { expect(item_0).to include required: false }
           focus_on :item_0, :schema, :type
           expect_it eq: 'integer'
@@ -101,9 +101,15 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           it { expect(item_1).to include name: :token, required: true }
 
           context 'when calling bang method' do
-            api -> { do_path! by: { id: Integer, name: String } }, '---> should have 2 required items:', has_size!: 2
+            api -> { do_path! by: { id: Integer, name: String } }, '---> has 2 required items:', has_size!: 2
             it { expect(item_0).to include name: :id, required: true}
             it { expect(item_1).to include name: :name, required: true}
+          end
+
+          context 'when passing common schema' do
+            api -> { do_query by: { id: Integer, name: String }, pmt: true }, '---> has 2 required items:', has_size!: 2
+            it { expect(item_0[:schema]).to include permit: true }
+            it { expect(item_1[:schema]).to include permit: true }
           end
         end
 
@@ -113,7 +119,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           #   path :PathId, :id, Integer
           # } end
           api -> { param_ref :QueryPage, :PathId, :NotExistCom }, has_size: 3, take: 2,
-              desc: '---> should have 3 ref, and the last:'
+              desc: '---> has 3 ref, and the last:'
           it { expect(item_2[:$ref]).to eq '#components/parameters/NotExistCom' }
         end
       end
@@ -125,10 +131,10 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
 
 
     desc :request_body, subject: :requestBody, stru: %i[ required description content ]  do
-      api -> { request_body :req, :json }, should_be_its_structure
+      api -> { request_body :req, :json }, has_its_structure
 
       describe '#_request_body_agent: [ body body! ]' do
-        api -> { body :json, data: { name: 'test' } }, should_be_its_structure!
+        api -> { body :json, data: { name: 'test' } }, has_its_structure!
         it { expect(required).to be_falsey }
         it { expect(description).to eq '' }
         it { expect(content).to have_keys 'application/json': [ schema: %i[ type properties ] ] }
@@ -138,7 +144,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         end
 
         context 'when re-calling through different media-type' do
-          api -> { body :json; body :xml }, 'should merge together', has_key!: :content
+          api -> { body :json; body :xml }, 'merge together', has_key!: :content
           it { expect(content.size).to eq 2 }
         end
 
@@ -151,11 +157,11 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           it { expect(required).to be_falsey }
           focus_on :content, :'application/json', :schema
           expect_its :required, eq: %w[ param_a param_c ]
-          expect_its :properties, 'should fusion together', has_keys: %i[ param_a param_b param_c ]
+          expect_its :properties, 'fusion together', has_keys: %i[ param_a param_b param_c ]
         end
 
         describe '#form and #form!' do
-          api -> { form data: { name: 'test' } }, should_be_its_structure!
+          api -> { form data: { name: 'test' } }, has_its_structure!
           it { expect(required).to be_falsey }
           it { expect(content).to have_keys 'multipart/form-data': [ schema: %i[ type properties ] ] }
 
@@ -164,7 +170,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           end
 
           describe '#data' do
-            api -> { data :uid, String }, should_be_its_structure!
+            api -> { data :uid, String }, has_its_structure!
             it { expect(required).to be_falsey }
             focus_on :content, :'multipart/form-data', :schema, :properties, :uid
             expect_its :type, eq: 'string'
@@ -173,15 +179,15 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
               api -> do
                 data :uid, String
                 data :name, String
-              end, should_be_its_structure!
-              focus_on :content, :'multipart/form-data', :schema, :properties, desc: 'should fusion in form-data:'
+              end, has_its_structure!
+              focus_on :content, :'multipart/form-data', :schema, :properties, desc: 'fusion in form-data:'
               expect_it has_keys: %i[ uid name ]
             end
           end
         end
 
         describe '#file and #file!' do
-          api -> { file :ppt }, should_be_its_structure!
+          api -> { file :ppt }, has_its_structure!
           focus_on :content
           expect_it has_key: :'application/vnd.ms-powerpoint'
 
@@ -199,7 +205,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
         #   body :BodyA => [:xml ]
         #   body :BodyB => [:ppt ]
         # } end
-        api -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'should be the last ref',
+        api -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'is the last ref',
             include: { :$ref => '#components/requestBodies/BodyB' }
       end
     end
@@ -220,8 +226,8 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           response :success, 'success desc2', :json, data: { age: Integer }
         end, has_key!: :success
         focus_on :success
-        expect_its :description, eq: 'success desc1', desc: 'should not cover the older'
-        step_into :content, :'application/json', :schema, :properties, desc: 'should fusion together:'
+        expect_its :description, eq: 'success desc1', desc: 'not cover the older'
+        step_into :content, :'application/json', :schema, :properties, desc: 'fusion together:'
         expect_it has_keys: %i[ name age ]
       end
 

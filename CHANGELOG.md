@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## Added
+
+1. `do_*` can be passed common schema after (or before) `by:`.
+
+## Changed
+
+1. Modify the description of the test case (remove `should`).
+
 ## [1.5.1 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
 
 ### Completed the test code (250+ examples), and make it 100% coverage.

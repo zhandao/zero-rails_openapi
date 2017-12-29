@@ -135,7 +135,7 @@
   这是一个最简单的实例：
   
   ```ruby
-  class Api::V1::ExamplesController < Api::V1::BaseController
+  class Api::ExamplesController < ApiController
     api :index, 'GET list' do
       query :page, Integer#, desc: 'page, greater than 1', range: { ge: 1 }, dft: 1
       query :rows, Integer#, desc: 'per page', range: { ge: 1 }, default: 10
