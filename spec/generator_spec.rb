@@ -10,14 +10,14 @@ RSpec.describe OpenApi::Generator do
     it { expect(goods_routes).to include(http_verb: 'post|patch', path: 'goods/{id}/change_onsale', action_path: 'goods#change_onsale') }
   end
 
-  describe '.get_actions_by_ctrl_path' do
+  describe '.get_actions_by_route_base' do
     correct do
-      let(:goods) { subject.get_actions_by_ctrl_path('goods') }
+      let(:goods) { subject.get_actions_by_route_base('goods') }
       it { expect(goods).to eq %w[ action change_onsale index create show update update destroy ] }
     end
 
     wrong do
-      let(:wrong_path) { subject.get_actions_by_ctrl_path('wrong_path') }
+      let(:wrong_path) { subject.get_actions_by_route_base('wrong_path') }
       it { expect(wrong_path).to be_nil }
     end
   end

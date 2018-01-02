@@ -74,7 +74,7 @@ RSpec.describe OpenApi::DSL::Components do
       expect_its :description, eq: ''
       expect_its :content, has_keys: { 'application/json': [ schema: %i[ type properties ] ] }
 
-      mk -> { body :BodyB => [:json] }, has_keys!: { BodyB: its_structure }
+      mk -> { body :BodyB => [ :json ] }, has_keys!: { BodyB: its_structure }
 
       context 'when calling the bang agent' do
         mk -> { body! :BodyC => [ :json ] }, has_key!: :BodyC
@@ -83,21 +83,21 @@ RSpec.describe OpenApi::DSL::Components do
 
       context 'when re-calling through different component_keys' do
         mk -> do
-          body :BodyD => [:xml ]
-          body :BodyE => [:xml ]
-          body :BodyF => [:ppt ]
-        end, 'should merge together', has_keys: %i[ BodyD BodyE BodyF ]
+          body :BodyD => [ :xml ]
+          body :BodyE => [ :xml ]
+          body :BodyF => [ :ppt ]
+        end, 'merge together', has_keys: %i[ BodyD BodyE BodyF ]
       end
 
       context 'when re-calling through the same component_key' do
         mk -> do
-          body  :SameBody => [:json, data: { :param_a! => String } ]
-          body! :SameBody => [:json, data: { :param_b => Integer } ]
+          body  :SameBody => [ :json, data: { :param_a! => String } ]
+          body! :SameBody => [ :json, data: { :param_b => Integer } ]
         end, have_keys!: { SameBody: its_structure }
         it { expect(same_body[:required]).to be_falsey }
         focus_on :SameBody, :content, :'application/json', :schema
         expect_its :required, eq: ['param_a']
-        expect_its :properties, 'should fusion together', has_keys: %i[ param_a param_b ]
+        expect_its :properties, 'fusion together', has_keys: %i[ param_a param_b ]
       end
     end
   end
@@ -109,7 +109,7 @@ RSpec.describe OpenApi::DSL::Components do
       response :RespZ, 'parameter validation failed'
     end, doc_will_has_keys: { responses: %i[ RespA RespZ ] }
 
-    mk -> { resp :RespA => ['desc', :json] }, has_keys!: { RespA: its_structure }
+    mk -> { resp :RespA => [ 'desc', :json ] }, has_keys!: { RespA: its_structure }
     focus_on :RespA
     expect_its :description, eq: 'desc'
     expect_its :content, has_keys: :'application/json'

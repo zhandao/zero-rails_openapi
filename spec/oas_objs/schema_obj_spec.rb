@@ -30,7 +30,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       end
 
       context 'when be file' do
-        api -> { query :info, 'file' }, eq: { type: 'string', format: OpenApi::Config.dft_file_format }
+        api -> { query :info, 'file' }, eq: { type: 'string', format: OpenApi::Config.file_format }
       end
 
       context 'when be datetime' do
@@ -44,7 +44,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     context 'when be a Symbol' do
-      api -> { query :info, :QueryPage }, 'should be a parameter ref', eq: { :$ref => '#components/schemas/QueryPage' }
+      api -> { query :info, :QueryPage }, 'is a parameter ref', eq: { :$ref => '#components/schemas/QueryPage' }
     end
 
     context 'when be a Array' do
@@ -58,12 +58,12 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
         context 'with CombinedSchema' do
           api -> { query :info, [all_of: [String, Integer]] }, has_keys!: %i[ type items ]
-          it('should be an array, which\'s items is combined') { expect(items).to have_keys :allOf }
+          it('is an array, which\'s items is combined') { expect(items).to have_keys :allOf }
         end
 
         wrong 'without CombinedSchema' do
           api -> { query :info, [String, Integer] }, has_keys!: %i[ type items ]
-          it('should be also an array, which\'s items is combined `oneOf`') { expect(items).to have_keys :oneOf }
+          it('is also an array, which\'s items is combined `oneOf`') { expect(items).to have_keys :oneOf }
         end
       end
     end
@@ -71,13 +71,13 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     context 'when be a Hash' do
       context 'normal' do
         api -> { query :info, type: { name: String, age: Integer } }, has_keys!: %i[ type properties ]
-        it('should be a object type') { expect(type).to eq 'object' }
+        it('is a object type') { expect(type).to eq 'object' }
         it { expect(properties).to have_keys %i[ name age ] }
       end
 
       context "when property's name match !" do
         api -> { query :info, type: { name!: String, age: Integer } }, has_keys!: %i[ type required properties ]
-        it('should make prop `name` required') { expect(required).to eq ['name'] }
+        it('makes prop `name` required') { expect(required).to eq ['name'] }
         it { expect(properties).to have_keys %i[ name age ] }
       end
 
@@ -91,14 +91,14 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
       context 'with key :type' do
         # OR: query :info, type: { type: String, desc: 'info' }
-        api -> { query :info, { type: String, desc: 'info' }, desc: 'api desc' }, 'should have description within schema',
+        api -> { query :info, { type: String, desc: 'info' }, desc: 'api desc' }, 'has description within schema',
             has_key!: :description
         it { expect(description).to eq 'info' } # not_to eq 'api desc'
       end
 
       context 'when having keys in [ one_of any_of all_of not ]' do
         api -> { query :combination, one_of: [ :GoodSchema, String, { type: Integer, enum: [1, 2] } ] },
-            'should be a combined schema', has_key!: :oneOf
+            'is a combined schema', has_key!: :oneOf
         focus_on :one_of
         expect_it { have_size 3 }
         expect_its 0, eq: { :$ref => '#components/schemas/GoodSchema' }
@@ -116,9 +116,8 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     context 'when length is a string' do
-      api -> { query :info, String, lth: 'ge_10' }, has_key!: %i[ maxLength ]
-      it { expect(max_length).to eq 10 }
-      it { is_expected.not_to have_keys :minLength }
+      api -> { query :info, String, lth: 'ge_10' }, _it { include maxLength: 10 }
+      api -> { query :info, String, lth: 'le_10' }, _it { include minLength: 10 }
     end
 
     context 'when setting the size for the Array type' do
@@ -133,7 +132,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     context 'when using must_be (value)' do
-      api -> { query :info, String, must_be: 'a' }, 'should be also enum', include: { enum: ['a'] }
+      api -> { query :info, String, must_be: 'a' }, 'is also enum', include: { enum: ['a'] }
     end
 
     context 'when passing Range to lth' do
@@ -155,7 +154,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
       context 'when not passing desc!' do
         api -> { query :info, String, enum!: %w[ a b ] }, has_key!: :enum
-        it('parameter should not have desc') { expect(description).to eq nil }
+        it('parameter has not desc') { expect(description).to eq nil }
       end
     end
 

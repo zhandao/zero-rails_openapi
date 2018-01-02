@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-## [1.5.1 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.0)
+## [1.5.2] - 2018/1/2 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.1...v1.5.2)
+
+## Added
+
+1. `do_*` can be passed common schema after (or before) `by:`.
+2. when this action can be accessed through multiple HTTP methods (but not set through `match`),
+   it also matches and generate both HTTP methods.
+
+## Changed
+
+1. `root_controller` => `base_doc_class`.
+2. `ctrl_path` => `ctrl_base`.
+3. `apis_tag` => `doc_tag`.
+4. `@_ctrl_infos` => `@doc_info`, `@_api_infos` => `@api_info`, `@_apis_dry_blocks` => `@zro_dry_blocks`.
+5. `OpenApi.paths_index` => `OpenApi.routes_index`.
+6. `get_actions_by_ctrl_path` => `get_actions_by_route_base`.
+7. `Config.dft_file_format` => `Config.file_format`.
+8. Modify the description of the test case (remove `should`).
+9. `deep_merge!` instead of `_fusion`.
+10. `ApiInfoObj` => `ApiInfo`.
+
+## [1.5.1 - 100% Test Coverage] - 2017/12/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.4.3...v1.5.1)
 
 ### Completed the test code (250+ examples), and make it 100% coverage.
 

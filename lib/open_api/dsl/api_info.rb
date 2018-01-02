@@ -2,7 +2,7 @@ require 'open_api/dsl/common_dsl'
 
 module OpenApi
   module DSL
-    class ApiInfoObj < Hash
+    class ApiInfo < Hash
       include DSL::CommonDSL
       include DSL::Helpers
 
@@ -57,12 +57,12 @@ module OpenApi
       #         :export! => { type: Boolean }
       #   }
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
-        define_method "do_#{param_type}" do |by:|
-          by.each do |key, value|
+        define_method "do_#{param_type}" do |by:, **common_schema|
+          by.each do |p_name, schema|
             action = param_type.to_s.delete('!')
-            type, value = value.is_a?(Hash) ? [value[:type], value] : [value, { }]
-            args = [ key.to_s.delete('!').to_sym, type, value ]
-            param_type['!'] || key['!'] ? send("#{action}!", *args) : send(action, *args)
+            type, schema = schema.is_a?(Hash) ? [schema[:type], schema] : [schema, { }]
+            args = [ p_name.to_s.delete('!').to_sym, type, schema.reverse_merge!(common_schema) ]
+            param_type['!'] || p_name['!'] ? send("#{action}!", *args) : send(action, *args)
           end
         end
       end
@@ -75,7 +75,7 @@ module OpenApi
       def request_body required, media_type, data: { }, **options
         desc = options.delete(:desc) || ''
         self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
-        self[:requestBody].add_or_fusion(media_type, options.merge(data: data))
+        self[:requestBody].add_or_fusion(media_type, { data: data , **options })
       end
 
       # [ body body! ]

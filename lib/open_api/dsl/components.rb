@@ -43,7 +43,7 @@ module OpenApi
         desc = options.delete(:desc) || ''
         cur = (self[:requestBodies] ||= { })[component_key]
         cur = RequestBodyObj.new(required, desc) unless cur.is_a?(RequestBodyObj)
-        self[:requestBodies][component_key] = cur.add_or_fusion(media_type, options.merge(data: data))
+        self[:requestBodies][component_key] = cur.add_or_fusion(media_type, { data: data, **options })
       end
 
       # [ body body! ]
@@ -65,18 +65,18 @@ module OpenApi
       alias auth_scheme security_scheme
 
       def base_auth scheme_name, other_info = { }
-        security_scheme scheme_name, { type: 'http', scheme: 'basic' }.merge(other_info)
+        security_scheme scheme_name, { type: 'http', scheme: 'basic', **other_info }
       end
       arrow_enable :base_auth
 
       def bearer_auth scheme_name, format = 'JWT', other_info = { }
-        security_scheme scheme_name, { type: 'http', scheme: 'bearer', bearerFormat: format }.merge(other_info)
+        security_scheme scheme_name, { type: 'http', scheme: 'bearer', bearerFormat: format, **other_info }
       end
       arrow_enable :bearer_auth
 
       def api_key scheme_name, field:, in: 'header', **other_info
         _in = binding.local_variable_get(:in)
-        security_scheme scheme_name, { type: 'apiKey', name: field, in: _in }.merge(other_info)
+        security_scheme scheme_name, { type: 'apiKey', name: field, in: _in, **other_info }
       end
       arrow_enable :api_key
 

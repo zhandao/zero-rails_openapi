@@ -20,7 +20,7 @@ int32, float, date ...
 All the types you can use as following:
   - **String, 'binary', 'base64'**
   - **Integer, Long, 'int32', 'int64', Float, Double**
-  - **File** (it will be converted to `{ type: 'string', format: Config.dft_file_format }`)
+  - **File** (it will be converted to `{ type: 'string', format: Config.file_format }`)
   - **Date, DateTime**
   - **Boolean**
   - **Array**: `Array[String]` or `[String]`

@@ -32,8 +32,8 @@ module OpenApi
       {
       #     # [REQUIRED] At least one doc.
       #     zero_rails: {
-      #         # [REQUIRED] ZRO will scan all the descendants of the root_controller, and then generate their docs.
-      #         root_controller: ApplicationController,
+      #         # [REQUIRED] ZRO will scan all the descendants of the base_doc_class, and then generate their docs.
+      #         base_doc_class: ApplicationController,
       #
       #         # [REQUIRED] Info Object: The info section contains API information
       #         info: {
@@ -47,7 +47,7 @@ module OpenApi
       }
     end
 
-    cattr_accessor :dft_file_format do
+    cattr_accessor :file_format do
       'binary'
     end
 

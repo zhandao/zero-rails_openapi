@@ -36,14 +36,14 @@ alias dsl! before_dsl!
 def it_do!(&block)
   GoodsDoc.class_exec(&block)
   OpenApi.write_docs generate_files: false
-  GoodsDoc.class_eval { undo_dry; @_api_infos = { } }
+  GoodsDoc.class_eval { undo_dry; @api_info = { } }
 end
 
 # put DSL block into the specified method(setting by default_in) when `it`
 def it_dsl!(&block)
   GoodsDoc.class_exec(*default_in) { |method, *args| send(method, *args, &block) }
   OpenApi.write_docs generate_files: false
-  GoodsDoc.class_eval { undo_dry; @_api_infos = { } }
+  GoodsDoc.class_eval { undo_dry; @api_info = { } }
 end
 
 def its_structure(val = nil)
@@ -51,15 +51,15 @@ def its_structure(val = nil)
   Temp.stru.clone
 end
 
-def should_be_its_structure
+def has_its_structure
   { has_keys: its_structure }
 end
 
-def should_be_its_structure!
+def has_its_structure!
   { has_keys!: its_structure }
 end
 
-alias all_should_be_its_structure should_be_its_structure
+alias all_have_its_structure has_its_structure
 
 def desc(object, subject: nil, stru: nil, group: :describe, &block)
   key = binding.local_variable_get(:subject)
@@ -165,7 +165,7 @@ def expect_it(*args, eq: nil, have_keys: nil, has_keys: nil, has_key: nil, desc:
   it_block = ->(obj, expectation, excepted) { expect(obj).to instance_exec(excepted, &expectation) }
   excepted = has_keys || eq
 
-  _desc = "it's #{key} should #{has_keys ? 'have keys' : 'eq'}: #{excepted.inspect}" if key && excepted
+  _desc = "it's #{key} is expected to #{has_keys ? 'have keys' : 'eq'}: #{excepted.inspect}" if key && excepted
   it desc || desc0 || _desc do
     obj = send(Temp.expect_it)
     Temp.expect_path.each { |p| obj = obj[p] }
