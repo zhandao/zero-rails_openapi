@@ -6,7 +6,7 @@ require 'open_api/dsl'
 module OpenApi
   include Generator
 
-  cattr_accessor :paths_index do
+  cattr_accessor :routes_index do
     { }
   end
 

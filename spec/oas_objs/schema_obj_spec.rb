@@ -30,7 +30,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       end
 
       context 'when be file' do
-        api -> { query :info, 'file' }, eq: { type: 'string', format: OpenApi::Config.dft_file_format }
+        api -> { query :info, 'file' }, eq: { type: 'string', format: OpenApi::Config.file_format }
       end
 
       context 'when be datetime' do

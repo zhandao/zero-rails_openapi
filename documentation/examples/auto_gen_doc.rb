@@ -11,7 +11,7 @@ module AutoGenDoc
       super
       subclass.class_eval do
         break unless self.name.match?(/sController|sDoc/)
-        ctrl_path self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
+        route_base self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
         open_api_dry
       end
     end
@@ -19,8 +19,8 @@ module AutoGenDoc
     private
 
     def open_api_dry
-      ctrl_path = try(:controller_path) || instance_variable_get('@_ctrl_path')
-      ::OpenApi::Generator.get_actions_by_ctrl_path(ctrl_path)&.each do |action|
+      route_base = try(:controller_path) || instance_variable_get('@route_base')
+      ::OpenApi::Generator.get_actions_by_route_base(route_base)&.each do |action|
         api_dry action do
           header! 'Token', String, desc: 'user token'
 

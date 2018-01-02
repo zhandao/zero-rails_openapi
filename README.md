@@ -36,7 +36,7 @@
     - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
     - [Combined Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [Troubleshooting](#troubleshooting)
-- [About `OpenApi.docs` and `OpenApi.paths_index`](#about-openapidocs-and-openapipaths_index)
+- [About `OpenApi.docs` and `OpenApi.routes_index`](#about-openapidocs-and-openapiroutes_index)
 
 ## About OAS
 
@@ -83,8 +83,8 @@
     c.open_api_docs = {
         # The definition of the document `homepage`.
         homepage: {
-            # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
-            root_controller: Api::V1::BaseController,
+            # [REQUIRED] ZRO will scan all the descendants of base_doc_class, then generate their docs.
+            base_doc_class: Api::V1::BaseController,
   
             # [REQUIRED] OAS Info Object: The section contains API information.
             info: {
@@ -112,7 +112,7 @@
   
   OpenApi::Config.tap do |c|
     c.instance_eval do
-      open_api :homepage_api, root_controller: ApiDoc
+      open_api :homepage_api, base_doc_class: ApiDoc
       info version: '1.0.0', title: 'Homepage APIs'
     end
   end
@@ -151,26 +151,26 @@
 
 ### DSL as class methods ([source code](lib/open_api/dsl.rb))
 
-#### (1) `ctrl_path` (controller path) [optional if you're writing DSL in controller]
+#### (1) `route_base` [optional if you're writing DSL in controller]
 
   ```ruby
   # method signature
-  ctrl_path(path)
+  route_base(path)
   # usage
-  ctrl_path 'api/v1/examples'
+  route_base 'api/v1/examples'
   ```
-  It is optional because `ctrl_path` defaults to `controller_path`.
+  It is optional because `route_base` defaults to `controller_path`.
   
-  [Here's a trick](#trick1---write-the-dsl-somewhere-else): Using `ctrl_path`, you can write the DSL somewhere else 
+  [Here's a trick](#trick1---write-the-dsl-somewhere-else): Using `route_base`, you can write the DSL somewhere else 
   to simplify the current controller.  
 
-#### (2) `apis_tag` [optional]
+#### (2) `doc_tag` [optional]
 
   ```ruby
   # method signature
-  apis_tag(name: nil, desc: '', external_doc_url: '')
+  doc_tag(name: nil, desc: '', external_doc_url: nil)
   # usage
-  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  doc_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
   ```
   This method allows you to set the Tag (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
   
@@ -640,7 +640,7 @@
   ```ruby
   # config/initializers/open_api.rb
   # in your configuration
-  root_controller: ApiDoc
+  base_doc_class: ApiDoc
   
   # app/api_doc/api_doc.rb
   require 'open_api/dsl'
@@ -651,7 +651,7 @@
   
   # app/api_doc/v1/examples_doc.rb
   class V1::ExamplesDoc < ApiDoc
-    ctrl_path 'api/v1/examples'
+    route_base 'api/v1/examples'
     
     api :index do
       # ...
@@ -750,14 +750,14 @@
   3. Put `c.rails_routes_file = 'config/routes.txt'` to your ZRO config.
 
 
-## About `OpenApi.docs` and `OpenApi.paths_index`
+## About `OpenApi.docs` and `OpenApi.routes_index`
 
   After `OpenApi.write_docs`, the above two module variables will be generated.
   
   `OpenApi.docs`: A Hash with API names as keys, and documents of each APIs as values.  
   documents are instances of ActiveSupport::HashWithIndifferentAccess.
   
-  `OpenApi.paths_index`: Inverted index of controller path to API name mappings.  
+  `OpenApi.routes_index`: Inverted index of controller path to API name mappings.  
   Like: `{ 'api/v1/examples' => :homepage_api }`  
   It's useful when you want to look up a document based on a controller and do something.
 

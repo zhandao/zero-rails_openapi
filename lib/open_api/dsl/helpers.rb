@@ -16,7 +16,7 @@ module OpenApi
           _load_schema_based_on_show_attr(model)
         else
           model.columns.map { |column| _type_mapping(column) }
-        end.compact.reduce({ }, :merge) rescue ''
+        end.compact.reduce({ }, :merge!) rescue ''
       end
 
       def _type_mapping(column)

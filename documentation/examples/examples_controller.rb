@@ -1,5 +1,5 @@
 class Api::V1::ExamplesController < Api::V1::BaseController
-  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  doc_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
 
   components do
     schema :DogSchema => [ String, dft: 'doge' ]

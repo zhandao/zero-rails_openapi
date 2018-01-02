@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'dssl_helper'
 
-RSpec.describe OpenApi::DSL::ApiInfoObj do
+RSpec.describe OpenApi::DSL::ApiInfo do
   let(:default_in) { [:api, :action, 'test'] }
   let(:subject_key_path) { %i[ paths goods/action get ] }
 
@@ -192,7 +192,7 @@ RSpec.describe OpenApi::DSL::ApiInfoObj do
           expect_it has_key: :'application/vnd.ms-powerpoint'
 
           step_into :'application/vnd.ms-powerpoint', :schema, :format
-          expect_it eq: OpenApi::Config.dft_file_format
+          expect_it eq: OpenApi::Config.file_format
 
           context 'when calling the bang method' do
             api -> { file! :doc }, include: { required: true }

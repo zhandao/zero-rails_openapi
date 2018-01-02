@@ -2,7 +2,7 @@ require 'open_api/dsl/common_dsl'
 
 module OpenApi
   module DSL
-    class ApiInfoObj < Hash
+    class ApiInfo < Hash
       include DSL::CommonDSL
       include DSL::Helpers
 
@@ -75,7 +75,7 @@ module OpenApi
       def request_body required, media_type, data: { }, **options
         desc = options.delete(:desc) || ''
         self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
-        self[:requestBody].add_or_fusion(media_type, options.merge(data: data))
+        self[:requestBody].add_or_fusion(media_type, { data: data , **options })
       end
 
       # [ body body! ]

@@ -20,7 +20,7 @@ module OpenApi
 
     # reducx.then_merge! => for Hash
     def reducx(*values)
-      @assign = values.compact.reduce({ }, :merge).keep_if &value_present
+      @assign = values.compact.reduce({ }, :merge!).keep_if &value_present
       self
     end
 

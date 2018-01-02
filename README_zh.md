@@ -13,7 +13,7 @@
 
   **这里是栈刀 = ▽ =  
   如果你在寻找能清晰书写 OAS API 文档的 DSL 工具，俺这个还挺不错的 ~  
-  你还可以复用其所[产出](#about-openapidocs-and-openapipaths_index)来写一些扩展，比如参数自动校验什么的（我有写哦）。  
+  你还可以复用其所[产出](#about-openapidocs-and-openapiroutes_index)来写一些扩展，比如参数自动校验什么的（我有写哦）。  
   有什么想法敬请 PR，谢过！
   另外，走过路过不妨来个 star？**
   
@@ -39,7 +39,7 @@
     - [基于 DB Schema 自动生成 response 的格式](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
     - [定义组合的 Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [问题集](#troubleshooting)
-- [有关 `OpenApi.docs` 和 `OpenApi.paths_index`](#about-openapidocs-and-openapipaths_index)
+- [有关 `OpenApi.docs` 和 `OpenApi.routes_index`](#about-openapidocs-and-openapiroutes_index)
 
 ## About OAS
 
@@ -81,8 +81,8 @@
     c.open_api_docs = {
         # 对文档 `homepage` 进行定义
         homepage: {
-            # [REQUIRED] ZRO will scan all the descendants of root_controller, then generate their docs.
-            root_controller: Api::V1::BaseController,
+            # [REQUIRED] ZRO will scan all the descendants of base_doc_class, then generate their docs.
+            base_doc_class: Api::V1::BaseController,
   
             # [REQUIRED] OAS Info Object: The section contains API information.
             info: {
@@ -109,7 +109,7 @@
   
   OpenApi::Config.tap do |c|
     c.instance_eval do
-      open_api :homepage_api, root_controller: ApiDoc
+      open_api :homepage_api, base_doc_class: ApiDoc
       info version: '1.0.0', title: 'Homepage APIs'
     end
   end
@@ -148,25 +148,25 @@
 
 ### 作为类方法的 DSL ([source code](lib/open_api/dsl.rb))
 
-#### (1) `ctrl_path` (controller path) [无需调用，当且仅当你是在控制器中写文档时]
+#### (1) `route_base` [无需调用，当且仅当你是在控制器中写文档时]
 
   ```ruby
   # method signature
-  ctrl_path(path)
+  route_base(path)
   # usage
-  ctrl_path 'api/v1/examples'
+  route_base 'api/v1/examples'
   ```
   其默认设定为 `controller_path`.
   
-  [这个技巧](#trick1---write-the-dsl-somewhere-else) 展示如何使用 `ctrl_path` 来让你将 DSL 写在他处（与控制器分离），来简化你的控制器。
+  [这个技巧](#trick1---write-the-dsl-somewhere-else) 展示如何使用 `route_base` 来让你将 DSL 写在他处（与控制器分离），来简化你的控制器。
 
-#### (2) `apis_tag` [optional]
+#### (2) `doc_tag` [optional]
 
   ```ruby
   # method signature
-  apis_tag(name: nil, desc: '', external_doc_url: '')
+  doc_tag(name: nil, desc: '', external_doc_url: '')
   # usage
-  apis_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  doc_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
   ```
   This method allows you to set the Tag (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).  
   
@@ -617,7 +617,7 @@
   ```ruby
   # config/initializers/open_api.rb
   # in your configuration
-  root_controller: ApiDoc
+  base_doc_class: ApiDoc
   
   # app/api_doc/api_doc.rb
   require 'open_api/dsl'
@@ -628,7 +628,7 @@
   
   # app/api_doc/v1/examples_doc.rb
   class V1::ExamplesDoc < ApiDoc
-    ctrl_path 'api/v1/examples'
+    route_base 'api/v1/examples'
     
     api :index do
       # ...
@@ -727,14 +727,14 @@
   3. Put `c.rails_routes_file = 'config/routes.txt'` to your ZRO config.
 
 
-## About `OpenApi.docs` and `OpenApi.paths_index`
+## About `OpenApi.docs` and `OpenApi.routes_index`
 
   After `OpenApi.write_docs`, the above two module variables will be generated.
   
   `OpenApi.docs`: A Hash with API names as keys, and documents of each APIs as values.  
   documents are instances of ActiveSupport::HashWithIndifferentAccess.
   
-  `OpenApi.paths_index`: Inverted index of controller path to API name mappings.  
+  `OpenApi.routes_index`: Inverted index of controller path to API name mappings.  
   Like: `{ 'api/v1/examples' => :homepage_api }`  
   It's useful when you want to look up a document based on a controller and do something.
 

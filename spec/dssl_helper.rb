@@ -36,14 +36,14 @@ alias dsl! before_dsl!
 def it_do!(&block)
   GoodsDoc.class_exec(&block)
   OpenApi.write_docs generate_files: false
-  GoodsDoc.class_eval { undo_dry; @_api_infos = { } }
+  GoodsDoc.class_eval { undo_dry; @api_info = { } }
 end
 
 # put DSL block into the specified method(setting by default_in) when `it`
 def it_dsl!(&block)
   GoodsDoc.class_exec(*default_in) { |method, *args| send(method, *args, &block) }
   OpenApi.write_docs generate_files: false
-  GoodsDoc.class_eval { undo_dry; @_api_infos = { } }
+  GoodsDoc.class_eval { undo_dry; @api_info = { } }
 end
 
 def its_structure(val = nil)

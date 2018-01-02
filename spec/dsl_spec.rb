@@ -2,21 +2,21 @@ require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL do
-  desc :ctrl_path, subject: :paths do
-    before_do { ctrl_path 'examples' }
+  desc :route_base, subject: :paths do
+    before_do { route_base 'examples' }
     make -> { api :action }, 'is not mapped to goods#action', _it { be_nil }
 
     make -> { api :index }, 'is mapped to examples#index', has_key!: :'examples/index'
     focus_on :'examples/index', :get, :tags, 0
     expect_it eq: 'Examples', desc: 'is a Examples api'
 
-    after_do { ctrl_path 'goods' }
+    after_do { route_base 'goods' }
   end
 
 
-  desc :apis_tag do
+  desc :doc_tag do
     make -> do
-      apis_tag name: :Other, desc: 'tag desc', external_doc_url: 'url'
+      doc_tag name: :Other, desc: 'tag desc', external_doc_url: 'url'
       api :action
     end, has_keys!: %i[ tags paths ]
     focus_on :tags, 0
@@ -40,8 +40,8 @@ RSpec.describe OpenApi::DSL do
     end
 
     context 'when this action can be accessed through multiple HTTP methods (not set through `match`)' do
-      make -> { api :change_onsale }, 'matches the first HTTP method',
-           has_keys: { 'goods/{id}/change_onsale': [:patch] }
+      make -> { api :update }, 'matches and generate both HTTP methods',
+           has_keys: { 'goods/{id}': %i[ put patch ] }
     end
   end
 

@@ -4,9 +4,9 @@ module OpenApi
       base.class_eval do
         module_function
 
-        def open_api name, root_controller:
+        def open_api name, base_doc_class:
           @api = name
-          open_api_docs[name] = { root_controller: root_controller }
+          open_api_docs[name] = { base_doc_class: base_doc_class }
         end
 
         def info version:, title:, desc: '', **addition
@@ -23,16 +23,16 @@ module OpenApi
         end
 
         def base_auth scheme_name, other_info = { }
-          security_scheme scheme_name, { type: 'http', scheme: 'basic' }.merge(other_info)
+          security_scheme scheme_name, { type: 'http', scheme: 'basic', **other_info }
         end
 
         def bearer_auth scheme_name, format = 'JWT', other_info = { }
-          security_scheme scheme_name, { type: 'http', scheme: 'bearer', bearerFormat: format }.merge(other_info)
+          security_scheme scheme_name, { type: 'http', scheme: 'bearer', bearerFormat: format, **other_info }
         end
 
         def api_key scheme_name, field:, in: 'header', **other_info
           _in = binding.local_variable_get(:in)
-          security_scheme scheme_name, { type: 'apiKey', name: field, in: _in }.merge(other_info)
+          security_scheme scheme_name, { type: 'apiKey', name: field, in: _in, **other_info }
         end
 
         def global_security_require scheme_name, scopes: [ ]

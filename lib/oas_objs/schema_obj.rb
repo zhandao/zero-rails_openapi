@@ -69,7 +69,7 @@ module OpenApi
         elsif t.in? %w[ binary base64 ]
           { type: 'string', format: t }
         elsif t == 'file'
-          { type: 'string', format: Config.dft_file_format }
+          { type: 'string', format: Config.file_format }
         elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
         else # other string
@@ -110,7 +110,7 @@ module OpenApi
           { minItems: min, maxItems: max }
         else
           { minLength: min, maxLength: max }
-        end.merge(enum: _enum).keep_if &value_present
+        end.merge!(enum: _enum).keep_if &value_present
       end
 
       def processed_range
