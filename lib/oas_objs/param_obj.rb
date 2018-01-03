@@ -19,29 +19,14 @@ module OpenApi
       end
 
       def process
-        assign(desc).to_processed 'description'
-        processed.tap { |it| it[:schema] = schema.process }
+        assign(desc).to_processed :description
+        assign(schema.process).to_processed :schema
+        processed
       end
 
       def desc
-        return _desc unless __desc.present?
-        schema.preprocess_with_desc __desc
-      end
-
-
-      # Getters and Setters of the original values that was passed to param()
-      # This mapping allows user to select the aliases in DSL writing,
-      #   without increasing the complexity of the implementation.
-      { # SELF_MAPPING
-          _range:  %i[ range   number_range ],
-          _length: %i[ length  lth          ],
-          _desc:   %i[ desc    description  ],
-          __desc:  %i[ desc!   description! ],
-      }.each do |key, aliases|
-        define_method key do
-          aliases.each { |alias_name| self[key] ||= self[alias_name] } if self[key].nil?
-          self[key]
-        end
+        return self[:desc] || self[:description] if (self[:desc!] || self[:description!]).blank?
+        schema.__desc # not a copy of __desc, means desc() will change if schema.__desc changes.
       end
     end
   end

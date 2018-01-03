@@ -108,7 +108,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
   end
 
 
-  desc :processed_enum_and_length do
+  desc :enum_and_length do
     context 'when length is an array' do
       api -> { query :info, String, lth: [min = 1, max = 10] }, has_key!: %i[ minLength maxLength ]
       it { expect(min_length).to eq 1 }
@@ -165,14 +165,14 @@ RSpec.describe OpenApi::DSL::SchemaObj do
   end
 
 
-  desc :processed_range do
+  desc :range do
     correct do
       api -> { query :info, Integer, range: { ge: 1, lt: 5 } }, include: { minimum: 1, maximum: 5, exclusiveMaximum: true }
     end
   end
 
 
-  desc :processed_is_and_format do
+  desc :is_and_format do
     correct do
       api -> { query :email, Integer, is: :email }, include: { is: :email, format: :email }
     end

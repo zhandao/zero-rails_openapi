@@ -16,52 +16,28 @@ module OpenApi
       def initialize(type, schema_hash)
         self.preprocessed = false
         self.processed = { }
-        # [Note] Here is no limit to type, even if the input isn't up to OAS,
-        #          like: double, float, hash.
-        #        My consideration is, OAS can't express some cases like:
-        #          `total_price` should be double, is_a `price`, and match /^.*\..*$/
-        #        However, user can decide how to write --
-        #          `type: number, format: double`, or `type: double`
         self.type = type
         merge! schema_hash
       end
 
       def process(options = { inside_desc: false })
-        return processed if preprocessed
-
+        # return processed if preprocessed
         processed.merge!(processed_type)
-        reducx(
-            processed_enum_and_length,
-            processed_range,
-            processed_is_and_format,
-            {
-                pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
-                default:    _default,
-                examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
-            },
-            { as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank },
-        ).then_merge!
-        reducx(processed_desc(options)).then_merge! # TODO
+        reducx(enum_and_length, range, is_and_format, pattern_default_and_other, desc(options)).then_merge!
       end
 
-      def preprocess_with_desc desc
-        self.__desc = desc
-        process
-        self.preprocessed = true
-        __desc
-      end
-
-      def processed_desc(options)
+      def desc(inside_desc:)
         result = __desc ? auto_generate_desc : _desc
-        options[:inside_desc] ? { description: result } : nil
+        return unless inside_desc
+        { description: result }
       end
 
       def processed_type(type = self.type)
         t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
         if t.is_a? Hash
-          processed_hash_type(t)
+          hash_type(t)
         elsif t.is_a? Array
-          processed_array_type(t)
+          array_type(t)
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
         elsif t.in? %w[ float double int32 int64 ]
@@ -77,28 +53,12 @@ module OpenApi
         end
       end
 
-      def processed_hash_type(t)
-        # For supporting this:
-        #   form 'desc', type: {
-        #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
-        # }, should have description within schema
-        if t.key?(:type)
-          SchemaObj.new(t[:type], t).process(inside_desc: true)
-
-        # For supporting combined schema in nested schema.
-        elsif (t.keys & %i[ one_of any_of all_of not ]).present?
-          CombinedSchema.new(t).process(inside_desc: true)
-        else
-          processed_obj_type(t)
-        end
-      end
-
-      def processed_enum_and_length
+      def enum_and_length
         process_enum_info
         process_range_enum_and_lth
 
         # generate length range fields by _lth array
-        if (lth = _length || [ ]).is_a?(Array)
+        if (lth = _length || '').is_a?(Array)
           min, max = [lth.first&.to_i, lth.last&.to_i]
         elsif lth['ge']
           max = lth.to_s.split('_').last.to_i
@@ -113,21 +73,32 @@ module OpenApi
         end.merge!(enum: _enum).keep_if &value_present
       end
 
-      def processed_range
+      def range
         range = _range || { }
         {
-            minimum: range[:gt] || range[:ge],
+                     minimum: range[:gt] || range[:ge],
             exclusiveMinimum: range[:gt].present? ? true : nil,
-            maximum: range[:lt] || range[:le],
+                     maximum: range[:lt] || range[:le],
             exclusiveMaximum: range[:lt].present? ? true : nil
         }.keep_if &value_present
       end
 
-      def processed_is_and_format
+      def is_and_format
         result = { is: _is }
         # `format` that generated in process_type() may be overwrote here.
         result[:format] = _format || _is if processed[:format].blank? || _format.present?
         result
+      end
+
+      def pattern_default_and_other
+        {
+            **{
+                pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
+                default:    _default,
+                examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
+            },
+            **{ as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank }
+        }
       end
 
 
@@ -151,11 +122,7 @@ module OpenApi
       }.each do |key, aliases|
         define_method key do
           return self[key] unless self[key].nil?
-          
-          aliases.each do |alias_name|
-            break if self[key] == false
-            self[key] ||= self[alias_name]
-          end
+          aliases.each { |alias_name| self[key] = self[alias_name] if self[key].nil? }
           self[key]
         end
         define_method "#{key}=" do |value| self[key] = value end

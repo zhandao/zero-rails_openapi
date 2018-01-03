@@ -1,23 +1,23 @@
 module OpenApi
   module DSL
     module SchemaObjHelpers
-      # TODO: more info and desc configure
-      def auto_generate_desc
-        return __desc if processed[:enum].blank?
+      def hash_type(t)
+        # For supporting this:
+        #   form 'desc', type: {
+        #     id!: { type: Integer, enum: 0..5, desc: 'user id' }
+        # }, should have description within schema
+        if t.key?(:type)
+          SchemaObj.new(t[:type], t).process(inside_desc: true)
 
-        if @enum_info.present?
-          @enum_info.each_with_index do |(info, value), index|
-            __desc.concat "<br/>#{index + 1}/ #{info}: #{value}"
-          end
+          # For supporting combined schema in nested schema.
+        elsif (t.keys & %i[ one_of any_of all_of not ]).present?
+          CombinedSchema.new(t).process(inside_desc: true)
         else
-          processed[:enum].each_with_index do |value, index|
-            __desc.concat "<br/>#{index + 1}/ #{value}"
-          end
+          obj_type(t)
         end
-        __desc
       end
 
-      def processed_obj_type(t)
+      def obj_type(t)
         obj_type = { type: 'object', properties: { }, required: [ ] }
 
         t.each do |prop_name, prop_type|
@@ -27,7 +27,7 @@ module OpenApi
         obj_type.keep_if &value_present
       end
 
-      def processed_array_type(t)
+      def array_type(t)
         t = t.size == 1 ? t.first : { one_of: t }
         {
             type: 'array',
@@ -36,14 +36,14 @@ module OpenApi
       end
 
       def process_range_enum_and_lth
-        self[:_enum] = str_range_2a(_enum) if _enum.present? && _enum.is_a?(Range)
-        self[:_length] = str_range_2a(_length) if _length.present? && _length.is_a?(Range)
+        self[:_enum] = str_range_toa(_enum) if _enum.is_a?(Range)
+        self[:_length] = str_range_toa(_length) if _length.is_a?(Range)
 
         values = _enum || _value
         self._enum = Array(values) if truly_present?(values)
       end
 
-      def str_range_2a(val)
+      def str_range_toa(val)
         val_class = val.first.class
         action = "to_#{val_class.to_s.downcase[0]}".to_sym
         (val.first.to_s..val.last.to_s).to_a.map(&action)
@@ -55,10 +55,26 @@ module OpenApi
         #     'all_desc': :all,
         #     'one_desc': :one
         # }
-        self._enum ||= self[:enum!]
-        return unless self[:enum!].is_a? Hash
-        @enum_info = self[:enum!]
-        self._enum = self[:enum!].values
+        self._enum ||= e = self[:enum!]
+        return unless e.is_a? Hash
+        @enum_info = e
+        self._enum = e.values
+      end
+
+      # TODO: more info and desc configure
+      def auto_generate_desc
+        return __desc if _enum.blank?
+
+        if @enum_info.present?
+          @enum_info.each_with_index do |(info, value), index|
+            __desc.concat "<br/>#{index + 1}/ #{info}: #{value}"
+          end
+        else
+          _enum.each_with_index do |value, index|
+            __desc.concat "<br/>#{index + 1}/ #{value}"
+          end
+        end
+        __desc
       end
     end
   end

@@ -12,11 +12,11 @@
 
 ## Contributing
 
-  **Hi, here is ZhanDao = ▽ =
-  I think it's a very useful tool when you want to write API document clearly.
+  **Hi, here is ZhanDao = ▽ =  
+  I think it's a very useful tool when you want to write API document clearly.  
   I'm looking forward to your issue and PR, thanks!**
 
-  And, if you have any questions, please read the test code first.
+  And, if you have any questions, please read the test code first.  
   such as [api DSL](spec/api_info_obj_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
 
 ## Table of Contents
@@ -119,8 +119,8 @@
   end
   ```
 
-  For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)
-  See all the settings you can configure: [config.rb](lib/open_api/config.rb)
+  For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
+  See all the settings you can configure: [config.rb](lib/open_api/config.rb)  
   See all the Document Definition DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## Usage - DSL
@@ -294,7 +294,7 @@
   order                              # order parameters by names array you passed
   examples                           # define examples of parameters
   ```
-  **The bang method (which's name is end of a exclamation point `!`) means this param is required, so without `!` means optional.**
+  **The bang method (which's name is end of a exclamation point `!`) means this param is required, so without `!` means optional.**  
   **THE SAME BELOW.**
 
   ```ruby
@@ -447,14 +447,14 @@
          :wrong_input => { name: 'user2', password: 'abc' }
      }
      ```
-  4. *[IMPORTANT]* Each request bodies you declared will **FUSION** together. <a name="fusion"></a>
+  4. *[IMPORTANT]* Each request bodies you declared will **FUSION** together. <a name="fusion"></a>  
      (1) Media-Types will be merged to `requestBody["content"]`
      ```ruby
      form data: { }, desc: 'desc'
      body :json, data: { }, desc: 'desc'
      # will generate: "content": { "multipart/form-data": { }, "application/json": { } }
      ```
-     (2) The same media-types will fusion, but not merge:
+     (2) The same media-types will fusion, but not merge:  
          (So that you can write `form` separately, and make `data` method possible.)
      ```ruby
      data :param_a!, String
@@ -634,8 +634,8 @@
 
 ### Trick1 - Write the DSL Somewhere Else
 
-  Does your documentation take too many lines?
-  Do you want to separate documentation from business controller to simplify both?
+  Does your documentation take too many lines?  
+  Do you want to separate documentation from business controller to simplify both?  
   Very easy! Just follow
 
   ```ruby
@@ -667,7 +667,7 @@
 
   Method `api_dry` is for DRY but its scope is limited to the current controller.
 
-  I have no idea of best practices, But you can look at this [file](documentation/examples/auto_gen_doc.rb).
+  I have no idea of best practices, But you can look at this [file](documentation/examples/auto_gen_doc.rb).  
   The implementation of the file is: do `api_dry` when inherits the base controller inside `inherited` method.
 
   You can use `sort` to specify the order of parameters.
@@ -735,9 +735,9 @@
 
 ## Troubleshooting
 
-- **You wrote document of the current API, but not find in the generated json file?**
+- **You wrote document of the current API, but not find in the generated json file?**  
   Check your routing settings.
-- **Undefine method `match?`**
+- **Undefine method `match?`**  
   Monkey patches for `String` and `Symbol`:
   ```ruby
   class String # Symbol
@@ -755,11 +755,11 @@
 
   After `OpenApi.write_docs`, the above two module variables will be generated.
 
-  `OpenApi.docs`: A Hash with API names as keys, and documents of each APIs as values.
+  `OpenApi.docs`: A Hash with API names as keys, and documents of each APIs as values.  
   documents are instances of ActiveSupport::HashWithIndifferentAccess.
 
-  `OpenApi.routes_index`: Inverted index of controller path to API name mappings.
-  Like: `{ 'api/v1/examples' => :homepage_api }`
+  `OpenApi.routes_index`: Inverted index of controller path to API name mappings.  
+  Like: `{ 'api/v1/examples' => :homepage_api }`  
   It's useful when you want to look up a document based on a controller and do something.
 
 ## Development
