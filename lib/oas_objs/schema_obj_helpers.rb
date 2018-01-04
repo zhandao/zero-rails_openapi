@@ -45,7 +45,7 @@ module OpenApi
 
       def str_range_toa(val)
         val_class = val.first.class
-        action = "to_#{val_class.to_s.downcase[0]}".to_sym
+        action = :"to_#{val_class.to_s.downcase[0]}"
         (val.first.to_s..val.last.to_s).to_a.map(&action)
       end
 

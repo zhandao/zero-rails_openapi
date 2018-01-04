@@ -296,7 +296,7 @@
   # `schema_type` is the type of parameter, like: String, Integer (must be a constant)
   # For more explanation, please click the link below ↓↓↓
   # method signature
-  param(param_type, param_name, schema_type, is_required, schema_hash = { })
+  param(param_type, param_name, schema_type, is_required, schema_info = { })
   # usage
   param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
   
@@ -309,9 +309,9 @@
   
   
   ### method signature
-   header(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
-  header!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
-   query!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+   header(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_info)
+  header!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_info)
+   query!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_info)
   # ...
   ### usage
   header! 'Token', String
@@ -374,7 +374,7 @@
   
   ```ruby
   # method signature
-  request_body(is_required, media_type, desc = '', schema_hash = { })
+  request_body(is_required, media_type, desc = '', schema_info = { })
   # usage
   request_body :opt, :form, '', type: { id!: Integer, name: String }
   # or
@@ -388,14 +388,14 @@
 
 
   # method signature
-  body!(media_type, desc = '', schema_hash = { })
+  body!(media_type, desc = '', schema_info = { })
   # usage
   body :json
   
   
   # method implement
-  def form desc = '', schema_hash = { }
-    body :form, desc, schema_hash
+  def form desc = '', schema_info = { }
+    body :form, desc, schema_info
   end
   # usage
   form! 'register', data: {
@@ -417,8 +417,8 @@
 
 
   # about `file`
-  def file! media_type, desc = '', schema_hash = { type: File }
-    body! media_type, desc, schema_hash
+  def file! media_type, desc = '', schema_info = { type: File }
+    body! media_type, desc, schema_info
   end
   ```
   
@@ -426,8 +426,8 @@
      That is, all of the above methods you can only choose one of them.  
      (But **multiple media types** will be supported in the future).
   2. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.  
-  3. `schema_hash`: as above (see param).  
-     **One thing that should be noted is: when use Hash writing, `scham_type` is writed in schema_hash using key :type.**
+  3. `schema_info`: as above (see param).  
+     **One thing that should be noted is: when use Hash writing, `scham_type` is writed in schema_info using key :type.**
   4. `exp_by` and `examples`: for the above example, the following has the same effect:
      ```
      examples: {
@@ -449,7 +449,7 @@
   
   ```ruby
   # method signature
-  response(response_code, desc, media_type = nil, schema_hash = { })
+  response(response_code, desc, media_type = nil, schema_info = { })
   # usage
   response 200, 'query result', :pdf, type: File
 
@@ -564,7 +564,7 @@
   
   ```ruby
   # method signature
-  schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+  schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_info)
   # usage
   schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
   # advance usage

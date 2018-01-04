@@ -28,27 +28,22 @@ module OpenApi
         self[:description] = desc
       end
 
-      def param param_type, name, type, required, schema_hash = { }
+      def param param_type, name, type, required, schema_info = { }
         return if param_skip.include?(name)
         return if param_use.present? && param_use.exclude?(name)
 
-        _t = nil
-        schema_hash[:desc]  ||= _t if (_t = param_descs[name]).present?
-        schema_hash[:desc!] ||= _t if (_t = param_descs["#{name}!".to_sym]).present?
-
-        param_obj = ParamObj.new(name, param_type, type, required, schema_hash)
+        schema_info[:desc]  ||= param_descs[name]
+        schema_info[:desc!] ||= param_descs[:"#{name}!"]
+        param_obj = ParamObj.new(name, param_type, type, required, schema_info)
         # The definition of the same name parameter will be overwritten
         fill_in_parameters(param_obj)
       end
 
       # [ header header! path path! query query! cookie cookie! ]
-      def _param_agent name, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash
-        combined_schema = one_of || all_of || any_of || (_not = binding.local_variable_get(:not))
-        type = schema_hash[:type] ||= type
-        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if type.nil? && combined_schema.nil?
-
-        schema_hash = CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if combined_schema
-        param @param_type.to_s.delete('!'), name, type, (@param_type['!'] ? :req : :opt), schema_hash
+      def _param_agent name, type = nil, **schema_info
+        schema = process_schema_info(type, schema_info)
+        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if schema[:illegal?]
+        param @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
       end
 
       # For supporting this: (just like `form '', data: { }` usage)
@@ -58,17 +53,17 @@ module OpenApi
       #   }
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
         define_method "do_#{param_type}" do |by:, **common_schema|
-          by.each do |p_name, schema|
-            action = param_type.to_s.delete('!')
+          by.each do |param_name, schema|
+            action = "#{param_type}#{param_name['!']}".sub('!!', '!')
             type, schema = schema.is_a?(Hash) ? [schema[:type], schema] : [schema, { }]
-            args = [ p_name.to_s.delete('!').to_sym, type, schema.reverse_merge!(common_schema) ]
-            param_type['!'] || p_name['!'] ? send("#{action}!", *args) : send(action, *args)
+            args = [ param_name.to_s.delete('!').to_sym, type, schema.reverse_merge!(common_schema) ]
+            send(action, *args)
           end
         end
       end
 
       def param_ref component_key, *keys
-        self[:parameters].concat([component_key].concat(keys).map { |key| RefObj.new(:parameter, key).process })
+        self[:parameters] += [component_key, *keys].map { |key| RefObj.new(:parameter, key) }
       end
 
       # options: `exp_by` and `examples`
@@ -80,7 +75,7 @@ module OpenApi
 
       # [ body body! ]
       def _request_body_agent media_type, data: { }, **options
-        request_body (@method_name['!'] ? :req : :opt), media_type, data: data, **options
+        request_body @necessity, media_type, data: data, **options
       end
 
       def body_ref component_key
@@ -95,9 +90,9 @@ module OpenApi
         body! :form, data: data, **options
       end
 
-      def data name, type = nil, schema_hash = { }
-        schema_hash[:type] = type if type.present?
-        form data: { name => schema_hash }
+      def data name, type = nil, schema_info = { }
+        schema_info[:type] = type if type.present?
+        form data: { name => schema_info }
       end
 
       def file media_type, data: { type: File }, **options
@@ -109,9 +104,7 @@ module OpenApi
       end
 
       def response_ref code_compkey_hash
-        code_compkey_hash.each do |code, component_key|
-          self[:responses][code] = RefObj.new(:response, component_key).process
-        end
+        code_compkey_hash.each { |code, component_key| self[:responses][code] = RefObj.new(:response, component_key) }
       end
 
       def security_require scheme_name, scopes: [ ]
@@ -128,34 +121,24 @@ module OpenApi
 
       def order *param_names
         self.param_order = param_names
-        # use when api_dry
+        # be used when `api_dry`
         self.param_use = param_order if param_use.blank?
         self.param_skip = param_use - param_order
       end
 
       def param_examples exp_by = :all, examples_hash
-        process_objs
-        exp_by = self[:parameters].map { |p| p[:name] } if exp_by == :all
+        exp_by = self[:parameters].map(&:name) if exp_by == :all
         self[:examples] = ExampleObj.new(examples_hash, exp_by).process
       end
 
       alias examples param_examples
 
       def process_objs
-        self[:parameters]&.each_with_index do |p, index|
-          self[:parameters][index] = p.process if p.is_a?(ParamObj)
-        end
+        self[:parameters].map!(&:process)
+        self[:parameters].sort_by! { |param| param_order.index(param[:name]) || Float::INFINITY } if param_order.present?
 
-        # Parameters sorting
-        self[:parameters].clone.each do |p|
-          self[:parameters][param_order.index(p[:name]) || -1] = p
-        end if param_order.present?
-
-        self[:requestBody] = self[:requestBody].try :process
-
-        self[:responses]&.each do |code, obj|
-          self[:responses][code] = obj.process if obj.is_a?(ResponseObj)
-        end
+        self[:requestBody] = self[:requestBody].try(:process)
+        self[:responses].each { |code, response| self[:responses][code] = response.process }
       end
     end
   end

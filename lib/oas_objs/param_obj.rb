@@ -28,6 +28,10 @@ module OpenApi
         return self[:desc] || self[:description] if (self[:desc!] || self[:description!]).blank?
         schema.__desc # not a copy of __desc, means desc() will change if schema.__desc changes.
       end
+
+      def name
+        processed[:name]
+      end
     end
   end
 end

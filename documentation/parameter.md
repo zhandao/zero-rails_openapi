@@ -1,4 +1,4 @@
-### More Explanation for `param` and `schema_hash`
+### More Explanation for `param` and `schema_info`
 
 #### param_type (param_location)
 OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location: 
@@ -15,7 +15,7 @@ Parameter's (schema) type. We call it `schema_type` because it is inside SchemaO
 
 Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
 
-In addition, you can use `format` in schema_hash to define in fine detail the data type being used, like: 
+In addition, you can use `format` in schema_info to define in fine detail the data type being used, like: 
 int32, float, date ...  
 All the types you can use as following:
   - **String, 'binary', 'base64'**
@@ -41,7 +41,7 @@ All the types you can use as following:
 #### Schema Hash
 
 The [[schema]](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject) defining the type used for the parameter. 
-schema_hash(optional) will be used to generate Schema Object inside Parameter Object.  
+schema_info(optional) will be used to generate Schema Object inside Parameter Object.  
 [source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/schema_obj.rb)  
 You can set the schema by following keys (all are optional), the words in parentheses are available aliases of the keys:  
   - **enum (values, allowable_values)**  

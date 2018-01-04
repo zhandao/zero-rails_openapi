@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## Changed
+
+1. Refactoring SchemaObj and remove `preprocess`.
+2. `schema_hash` => `schema_info`.
+3. Refactoring `process_objs` .. dsl/ files.
+
 ## [1.5.2] - 2018/1/2 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.1...v1.5.2)
 
 ## Added

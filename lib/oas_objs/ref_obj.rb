@@ -13,7 +13,8 @@ module OpenApi
         }
       end
 
-      def process; processed; end
+      def process; processed end
+      def name; nil end
     end
   end
 end

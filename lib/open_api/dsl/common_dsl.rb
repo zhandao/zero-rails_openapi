@@ -12,14 +12,15 @@ module OpenApi
     module CommonDSL
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
         define_method param_type do |*args|
-          @param_type = param_type
+          @necessity = param_type['!'] ? :req : :opt
+          @param_type = param_type.to_s.delete('!') # OR: caller[0][/`.*'/][1..-2].to_sym
           _param_agent *args
         end
       end
 
       %i[ body body! ].each do |method|
         define_method method do |*args|
-          @method_name = method
+          @necessity = method['!'] ? :req : :opt
           _request_body_agent *args
         end
       end

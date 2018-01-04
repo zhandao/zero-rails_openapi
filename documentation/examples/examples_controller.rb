@@ -54,7 +54,7 @@ class Api::V1::ExamplesController < Api::V1::BaseController
             :name! => String, # <= schema_type is `String`
         :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
         # optional
-          :remarks => { type: String, desc: 'remarks' }, # <= schema_type is `String`, and schema_hash is { desc: '..' }
+          :remarks => { type: String, desc: 'remarks' }, # <= schema_type is `String`, and schema_info is { desc: '..' }
     }
   end
 end
