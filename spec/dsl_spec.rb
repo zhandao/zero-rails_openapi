@@ -2,6 +2,8 @@ require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL do
+  set_doc
+
   desc :route_base, subject: :paths do
     before_do { route_base 'examples' }
     make -> { api :action }, 'is not mapped to goods#action', _it { be_nil }

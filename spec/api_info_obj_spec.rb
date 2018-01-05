@@ -2,8 +2,8 @@ require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::ApiInfo do
-  let(:default_in) { [:api, :action, 'test'] }
-  let(:subject_key_path) { %i[ paths goods/action get ] }
+  let(:dsl_in) { [:api, :action, 'test'] }
+  get_and_dig_doc %i[ paths goods/action get ]
 
   ctx 'when doing nothing' do
     api -> { }, eq: { summary: 'test', operationId: :action, tags: ['Goods'] }

@@ -2,7 +2,8 @@ require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::Components do
-  let(:default_in) { [:components] }
+  get_and_dig_doc [:components]
+  let(:dsl_in) { [:components] }
 
   desc :schema, subject: :schemas do
     correct do
