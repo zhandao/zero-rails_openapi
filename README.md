@@ -302,7 +302,7 @@
   # `schema_type` is the type of parameter, like: String, Integer (must be a constant)
   # For more explanation, please click the link below ↓↓↓
   # method signature
-  param(param_type, param_name, schema_type, is_required, schema_hash = { })
+  param(param_type, param_name, schema_type, is_required, schema_info = { })
   # usage
   param :query, :page, Integer, :req,  range: { gt: 0, le: 5 }, desc: 'page'
 
@@ -315,9 +315,9 @@
 
 
   ### method signature
-   header(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
-  header!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
-   query!(param_name, schema_type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+   header(param_name, schema_type = nil, **schema_info)
+  header!(param_name, schema_type = nil, **schema_info)
+   query!(param_name, schema_type = nil, **schema_info)
   # ...
   ### usage
   header! 'Token', String
@@ -426,9 +426,9 @@
 
 
   # method implement
-  def data name, type = nil, schema_hash = { }
-    schema_hash[:type] = type if type.present?
-    form data: { name => schema_hash }
+  def data name, type = nil, schema_info = { }
+    schema_info[:type] = type if type.present?
+    form data: { name => schema_info }
   end
   # usage: please look at the 4th point below
 
@@ -439,7 +439,7 @@
   ```
 
   1. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.
-  2. `schema_hash`: as above (see param).
+  2. `schema_info`: as above (see param).
   3. `exp_by` and `examples`: for the above example, the following has the same effect:
      ```
      examples: {
@@ -588,7 +588,7 @@
 
   ```ruby
   # method signature
-  schema(component_key, type = nil, one_of: nil, all_of: nil, any_of: nil, not: nil, **schema_hash)
+  schema(component_key, type = nil, **schema_info)
   # usage
   schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
   # advance usage

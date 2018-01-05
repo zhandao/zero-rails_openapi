@@ -6,11 +6,11 @@ module OpenApi
       end
 
       # :nocov:
-      def load_schema(model)
+      def load_schema(model) # TODO: test
         # About `show_attrs`, see:
         #   (1) BuilderSupport module: https://github.com/zhandao/zero-rails/blob/master/app/models/concerns/builder_support.rb
         #   (2) config in model: https://github.com/zhandao/zero-rails/tree/master/app/models/good.rb
-        #   (3) jbuilder file: https://github.com/zhandao/zero-rails/blob/mster/app/views/api/v1/goods/index.json.jbuilder
+        #   (3) jbuilder file: https://github.com/zhandao/zero-rails/blob/master/app/views/api/v1/goods/index.json.jbuilder
         # In a word, BuilderSupport let you control the `output fields and nested association infos` very easily.
         if model.respond_to? :show_attrs
           _load_schema_based_on_show_attr(model)
@@ -41,9 +41,25 @@ module OpenApi
       # :nocov:
 
       def fill_in_parameters(param_obj)
-        name = param_obj.processed[:name]
-        index = self[:parameters].map { |p| p.processed[:name] if p.is_a?(ParamObj) }.index(name)
+        index = self[:parameters].map(&:name).index(param_obj.name)
         index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
+      end
+
+      def _combined_schema(one_of: nil, all_of: nil, any_of: nil, not: nil, **other)
+        input = (_not = binding.local_variable_get(:not)) || one_of || all_of || any_of
+        CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if input
+      end
+
+      def process_schema_info(schema_type, schema_info, model: nil)
+        combined_schema = _combined_schema(schema_info)
+        type = schema_info[:type] ||= schema_type
+        schema_info = load_schema(model) if model.try(:superclass) == (Config.active_record_base || ApplicationRecord)
+        {
+            illegal?: type.nil? && combined_schema.nil?,
+            combined: combined_schema,
+            info: schema_info,
+            type: type
+        }
       end
 
       # Arrow Writing:
@@ -51,17 +67,17 @@ module OpenApi
       # It is equivalent to:
       #   response :RespComponent, '200', 'success', :json
       # But I think, in the definition of a component,
-      #   the key-value (arrow) writing is easy to understand.
+      #   the key-value (arrow) writing is more easier to understand.
       def arrow_writing_support
         proc do |args, executor|
-          _args = (args.size == 1 && args.first.is_a?(Hash)) ? args[0].to_a.flatten : args
-          send(executor, *_args)
+          args = (args.size == 1 && args.first.is_a?(Hash)) ? args[0].to_a.flatten : args
+          send(executor, *args)
         end
       end
 
       module ClassMethods
         def arrow_enable method
-          alias_method "_#{method}".to_sym, method
+          alias_method :"_#{method}", method
           define_method method do |*args|
             arrow_writing_support.call(args, "_#{method}")
           end

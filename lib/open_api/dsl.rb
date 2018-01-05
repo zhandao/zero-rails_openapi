@@ -25,7 +25,8 @@ module OpenApi
 
       def components &block
         doc_tag if @doc_info.nil?
-        current_doc = @doc_info[:components] = Components.new
+        structure = %i[ schemas responses	parameters examples requestBodies securitySchemes ].map { |k| [k, { }] }.to_h
+        current_doc = @doc_info[:components] = Components.new.merge!(structure)
         current_doc.instance_exec(&block)
         current_doc.process_objs
       end

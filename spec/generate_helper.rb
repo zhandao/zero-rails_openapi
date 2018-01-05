@@ -14,9 +14,9 @@ end
 
 module Temp; cattr_accessor :stru, :expect_it, :expect_path; end
 
-# put DSL block into the specified method(setting by default_in) when `before`
+# put DSL block into the specified method(setting by dsl_in) when `before`
 def before_dsl(&block)
-  before { GoodsDoc.class_exec(*default_in) { |method, *args| send(method, *args, &block) } }
+  before { GoodsDoc.class_exec(*dsl_in) { |method, *args| send(method, *args, &block) } }
 end
 
 alias dsl before_dsl
@@ -28,9 +28,9 @@ end
 
 alias dsl! before_dsl!
 
-# put DSL block into the specified method(setting by default_in) when `it`
+# put DSL block into the specified method(setting by dsl_in) when `it`
 def it_dsl!(&block)
-  GoodsDoc.class_exec(*default_in) { |method, *args| send(method, *args, &block) }
+  GoodsDoc.class_exec(*dsl_in) { |method, *args| send(method, *args, &block) }
   OpenApi.write_docs generate_files: false
 end
 
@@ -48,7 +48,7 @@ def desc(object, key: nil, stru: nil, group: :describe, &block)
       if key_path
         key_path.map { |p| val = val[p] }.last
       else
-        val[default_in.first]
+        val[dsl_in.first]
       end
     end
 

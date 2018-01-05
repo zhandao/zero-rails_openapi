@@ -2,14 +2,13 @@ require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::SchemaObj do
-  let(:default_in) { [:api, :action, 'test'] }
-  let(:subject_key_path) { %i[ paths goods/action get parameters ] + [ 0, :schema ] }
+  let(:dsl_in) { [:api, :action, 'test'] }
+  get_and_dig_doc %i[ paths goods/action get parameters ] + [ 0, :schema ]
 
   ctx 'when not pass schema type as Hash type' do
     api -> { query :id, Integer }, eq: { type: 'integer' }
     api -> { query :people, { name: String }, desc: '' }, include: { type: 'object' }
-    api -> { query :people, { name: String } }, 'will not have key :schema cause cannot recognize schema type',
-        raise: [NoMethodError, "undefined method `[]' for nil:NilClass"]
+    api -> { query :people, { name: String } }, 'will not have key :schema cause cannot recognize schema type', _it { be_nil }
   end
 
   ctx 'when pass schema type as Hash type' do
