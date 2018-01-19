@@ -357,8 +357,8 @@
   # it defines 2 examples by using parameter :id and :name
   # if pass :all to `exp_by`, keys will be all the parameter's names.
   examples [:id, :name], {
-          :right_input => [ 1, 'user'], # == { id: 1, name: 'user' }
-          :wrong_input => [ -1, ''   ]
+      :right_input => [ 1, 'user'], # == { id: 1, name: 'user' }
+      :wrong_input => [ -1, ''   ]
   }
   ```
 
@@ -407,22 +407,22 @@
   end
   # usage
   form! data: {
-          name: String,
-          password: String,
-          password_confirmation: String
-      }
+      name: String,
+      password: String,
+      password_confirmation: String
+  }
   # advance usage
   form data: {
-              :name! => { type: String, desc: 'user name' },
-          :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
-          # optional
-            :remarks => { type: String, desc: 'remarks' },
-      }, exp_by:            %i[ name password ],
-         examples: {         #    ↓        ↓
-             :right_input => [ 'user1', '123456' ],
-             :wrong_input => [ 'user2', 'abc'    ]
-         },
-      desc: 'for creating a user'
+          :name! => { type: String, desc: 'user name' },
+      :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
+      # optional
+        :remarks => { type: String, desc: 'remarks' },
+  }, exp_by:            %i[ name password ],
+     examples: {         #    ↓        ↓
+         :right_input => [ 'user1', '123456' ],
+         :wrong_input => [ 'user2', 'abc'    ]
+     },
+  desc: 'for creating a user'
 
 
   # method implement
@@ -460,8 +460,8 @@
      data :param_a!, String
      data :param_b,  Integer
      # or same as:
-     form '', data: { :param_a! => String }
-     form '', data: { :param_b  => Integer }
+     form data: { :param_a! => String }
+     form data: { :param_b  => Integer }
      # will generate: { "param_a": { "type": "string" }, "param_b": { "type": "integer" } } (call it X)
      # therefore:
      #   "content": { "multipart/form-data":
@@ -723,7 +723,7 @@
   ```ruby
   query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input' } ]
 
-  form '', data: {
+  form data: {
       :combination_in_form => { any_of: [ Integer, String ] }
   }
 

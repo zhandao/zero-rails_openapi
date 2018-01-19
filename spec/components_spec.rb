@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'dssl_helper'
 
 RSpec.describe OpenApi::DSL::Components do

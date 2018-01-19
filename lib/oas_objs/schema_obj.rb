@@ -21,7 +21,6 @@ module OpenApi
       end
 
       def process(options = { inside_desc: false })
-        # return processed if preprocessed
         processed.merge!(processed_type)
         reducx(enum_and_length, range, is_and_format, pattern_default_and_other, desc(options)).then_merge!
       end
