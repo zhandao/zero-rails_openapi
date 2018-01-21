@@ -13,13 +13,11 @@ module OpenApi
       def generate_docs(doc_name = nil)
         return puts '    ZRO'.red + ' No documents have been configured!' if Config.docs.keys.blank?
 
+        # :nocov:
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
-          # Do Not `require`!
-          #   It causes problems, such as making `skip_before_action` not working.
-          # :nocov:
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
-          # :nocov:
         end
+        # :nocov:
         Dir[*Array(Config.doc_location)].each { |file| require file }
         (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge!)
       end
@@ -64,7 +62,8 @@ module OpenApi
         end
         # :nocov:
       end
-    end # end of module
+    end
+    # end of module
 
     def routes
       @routes ||=

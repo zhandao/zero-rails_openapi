@@ -27,6 +27,7 @@
 - [安装](#installation)
 - [配置](#configure)
 - [DSL 介绍及用例](#usage---dsl)
+  - [基本的 DSL](#基本的-dsl)
   - [用于 `api` 和 `api_dry` 块内的 DSL（描述 API 的参数、响应等）](#dsl-methods-inside-api-and-api_drys-block)
   - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source)
 - [执行文档生成](#run---generate-json-documentation-file)
@@ -47,8 +48,7 @@
   
   你也可以看这份文档做初步的了解 [swagger.io](https://swagger.io/docs/specification/basic-structure/)
   
-  **我建议你应该至少了解 OAS3 的基本结构**
-  比如说 component（组件）—— 这能帮助你进一步减少书写文档 DSL 的代码（如果其中有很多可复用的数据结构的话）。
+  **建议你应该至少了解 OAS3 的基本结构**，比如说 component（组件）—— 这能帮助你进一步减少书写文档 DSL 的代码（如果其中有很多可复用的数据结构的话）。
 
 ## Installation
 
@@ -132,7 +132,7 @@
 
 ### DSL 使用实例
 
-  这是一个最简单的实例：
+  一个最简单的实例：
   
   ```ruby
   class Api::ExamplesController < ApiController
@@ -143,10 +143,10 @@
   end
   ```
   
-  可以查看两份更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb), 以及
-  [examples_controller.rb](documentation/examples/examples_controller.rb)
+  这有两份更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb), 以及
+  [examples_controller.rb](documentation/examples/examples_controller.rb)。
 
-### 作为类方法的 DSL ([source code](lib/open_api/dsl.rb))
+### 基本的 DSL ([source code](lib/open_api/dsl.rb))
 
 #### (1) `route_base` [无需调用，当且仅当你是在控制器中写文档时]
 
@@ -156,7 +156,7 @@
   # usage
   route_base 'api/v1/examples'
   ```
-  其默认设定为 `controller_path`.
+  其默认设定为 `controller_path`。
   
   [这个技巧](#trick1---write-the-dsl-somewhere-else) 展示如何使用 `route_base` 来让你将 DSL 写在他处（与控制器分离），来简化你的控制器。
 
@@ -166,11 +166,12 @@
   # method signature
   doc_tag(name: nil, desc: '', external_doc_url: nil)
   # usage
-  doc_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  doc_tag name: 'ExampleTagName', desc: "ExamplesController's APIs"
   ```
-  This method allows you to set the Tag (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).
+  该方法可以设置当前类中声明的 API 的 Tag
+  (Tag 是一个 [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)节点)。
 
-  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name), but are optional.
+  Tag 的名字默认为 controller_name，除了名字，还可以设置可选参数 desc 和 external_doc_url。
 
 #### (3) `components` [optional]
 
@@ -192,14 +193,14 @@
     response_ref :BadRqResp # to use a Response component
   end
   ```
-  Component can be used to simplify your DSL code (by using `*_ref` methods).
+  Component 用以简化你的 DSL 代码 (即通过 `*_ref` 形式的方法，来引用已定义的 Component 对象)。
 
-  Each RefObj you defined is associated with components through component key.
-  We suggest that component keys should be camelized symbol.
+  每个 RefObj 都是通过 component key 来关联指定的 component。
+  我们建议 component key 规范为驼峰命名法，且必须是 Symbol。
 
 #### (4) `api_dry` [optional]
 
-  This method is for DRYing.
+  顾名思义，此方法用于 DRY。
 
   ```ruby
   # method signature
@@ -212,30 +213,26 @@
   end
   ```
 
-  As you think, the block will be executed to each specified API(action) **firstly**.
+  如你所觉，传给该方法的块，将会 eval 到指定的 API 的**开头**。
 
 #### (5) `api` [required]
 
-  Define the specified API (controller action, in the following example is index).
+  定义指定 API (或者说是一个 controller action).
 
   ```ruby
   # method signature
-  api(action, summary = '', skip: [ ], use: [ ], &block)
+  api(action, summary = '', http: nil, skip: [ ], use: [ ], &block)
   # usage
   api :index, '(SUMMARY) this api blah blah ...', # block ...
   ```
 
-  `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
-
-  [Note] JBuilder file automatic generator has been removed,
-  If you need this function, please refer to [here](https://github.com/zhandao/zero-rails/tree/master/lib/generators/jubilder/dsl.rb)
-  to implement a lib.
+  `use` 和 `skip`: 指定使用或者跳过在 `api_dry` 中声明的参数。
 
   ```ruby
-  api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
+  api :show, 'summary', use: [:id] # 将会从 dry 块中声明的参数中挑出 id 这个参数用于 API :show
   ```
 
-### DSL methods inside [api]() and [api_dry]()'s block
+### 用于 [`api`]() 和 [`api_dry`]() 块内的 DSL
 
   [source code](lib/open_api/dsl/api_info_obj.rb)
 
@@ -352,8 +349,8 @@
   # it defines 2 examples by using parameter :id and :name
   # if pass :all to `exp_by`, keys will be all the parameter's names.
   examples [:id, :name], {
-          :right_input => [ 1, 'user'], # == { id: 1, name: 'user' }
-          :wrong_input => [ -1, ''   ]
+      :right_input => [ 1, 'user'], # == { id: 1, name: 'user' }
+      :wrong_input => [ -1, ''   ]
   }
   ```
 
@@ -402,22 +399,22 @@
   end
   # usage
   form! data: {
-          name: String,
-          password: String,
-          password_confirmation: String
-      }
+      name: String,
+      password: String,
+      password_confirmation: String
+  }
   # advance usage
   form data: {
-              :name! => { type: String, desc: 'user name' },
-          :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
-          # optional
-            :remarks => { type: String, desc: 'remarks' },
-      }, exp_by:            %i[ name password ],
-         examples: {         #    ↓        ↓
-             :right_input => [ 'user1', '123456' ],
-             :wrong_input => [ 'user2', 'abc'    ]
-         },
-      desc: 'for creating a user'
+          :name! => { type: String, desc: 'user name' },
+      :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
+      # optional
+        :remarks => { type: String, desc: 'remarks' },
+  }, exp_by:            %i[ name password ],
+     examples: {         #    ↓        ↓
+         :right_input => [ 'user1', '123456' ],
+         :wrong_input => [ 'user2', 'abc'    ]
+     },
+  desc: 'for creating a user'
 
 
   # method implement
@@ -455,8 +452,8 @@
      data :param_a!, String
      data :param_b,  Integer
      # or same as:
-     form '', data: { :param_a! => String }
-     form '', data: { :param_b  => Integer }
+     form data: { :param_a! => String }
+     form data: { :param_b  => Integer }
      # will generate: { "param_a": { "type": "string" }, "param_b": { "type": "integer" } } (call it X)
      # therefore:
      #   "content": { "multipart/form-data":
@@ -718,7 +715,7 @@
   ```ruby
   query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input' } ]
 
-  form '', data: {
+  form data: {
       :combination_in_form => { any_of: [ Integer, String ] }
   }
 

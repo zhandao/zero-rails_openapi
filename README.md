@@ -25,6 +25,7 @@
 - [Installation](#installation)
 - [Configure](#configure)
 - [Usage - DSL](#usage---dsl)
+  - [Basic DSL](#basic-dsl)
   - [DSL methods inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
   - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
 - [Run! - Generate JSON documentation file](#run---generate-json-documentation-file)
@@ -150,7 +151,7 @@
   For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
   [examples_controller.rb](documentation/examples/examples_controller.rb)
 
-### DSL as class methods ([source code](lib/open_api/dsl.rb))
+### Basic DSL ([source code](lib/open_api/dsl.rb))
 
 #### (1) `route_base` [optional if you're writing DSL in controller]
 
@@ -171,11 +172,11 @@
   # method signature
   doc_tag(name: nil, desc: '', external_doc_url: nil)
   # usage
-  doc_tag name: 'ExampleTagName', desc: 'ExamplesController\'s APIs'
+  doc_tag name: 'ExampleTagName', desc: "ExamplesController's APIs"
   ```
   This method allows you to set the Tag (which is a node of [OpenApi Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#openapi-object)).
 
-  desc and external_doc_url will be output to the tags[the current tag] (tag defaults to controller_name), but are optional.
+  Tag's name defaults to controller_name. desc and external_doc_url are optional.
 
 #### (3) `components` [optional]
 
@@ -197,10 +198,11 @@
     response_ref :BadRqResp # to use a Response component
   end
   ```
-  Component can be used to simplify your DSL code (by using `*_ref` methods).
+  Component can be used to simplify your DSL code
+  (that is, to refer to the defined Component object by `*_ref` methods).
 
-  Each RefObj you defined is associated with components through component key.
-  We suggest that component keys should be camelized symbol.
+  Each RefObj is associated with components through component key.
+  We suggest that component keys should be camelized, and must be Symbol.
 
 #### (4) `api_dry` [optional]
 
@@ -221,23 +223,20 @@
 
 #### (5) `api` [required]
 
-  Define the specified API (controller action, in the following example is index).
+  Define the specified API
+  (or we could say controller action).
 
   ```ruby
   # method signature
-  api(action, summary = '', skip: [ ], use: [ ], &block)
+  api(action, summary = '', http: nil, skip: [ ], use: [ ], &block)
   # usage
   api :index, '(SUMMARY) this api blah blah ...', # block ...
   ```
 
   `use` and `skip` options: to use or skip the parameters defined in `api_dry`.
 
-  [Note] JBuilder file automatic generator has been removed,
-  If you need this function, please refer to [here](https://github.com/zhandao/zero-rails/tree/master/lib/generators/jubilder/dsl.rb)
-  to implement a lib.
-
   ```ruby
-  api :show, 'summary', use: [:id] # => it will only take :id from DRYed result.
+  api :show, 'summary', use: [:id] # it will only take :id from DRYed result to define the API :show
   ```
 
 ### DSL methods inside [api]() and [api_dry]()'s block
