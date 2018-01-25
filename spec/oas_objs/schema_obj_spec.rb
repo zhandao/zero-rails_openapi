@@ -115,8 +115,8 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     context 'when length is a string' do
-      api -> { query :info, String, lth: 'ge_10' }, _it { include maxLength: 10 }
-      api -> { query :info, String, lth: 'le_10' }, _it { include minLength: 10 }
+      api -> { query :info, String, lth: 'ge_10' }, _it { include minLength: 10 }
+      api -> { query :info, String, lth: 'le_10' }, _it { include maxLength: 10 }
     end
 
     context 'when setting the size for the Array type' do

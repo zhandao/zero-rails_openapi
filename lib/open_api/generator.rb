@@ -11,15 +11,13 @@ module OpenApi
 
     module ClassMethods
       def generate_docs(doc_name = nil)
-        pp '[ZRO] No documents have been configured!' and return if Config.docs.keys.blank?
+        return puts '    ZRO'.red + ' No documents have been configured!' if Config.docs.keys.blank?
 
+        # :nocov:
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
-          # Do Not `require`!
-          #   It causes problems, such as making `skip_before_action` not working.
-          # :nocov:
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
-          # :nocov:
         end
+        # :nocov:
         Dir[*Array(Config.doc_location)].each { |file| require file }
         (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge!)
       end
@@ -52,18 +50,20 @@ module OpenApi
 
       def write_docs(generate_files: true)
         docs = generate_docs
+        puts '    ZRO loaded.'.green if ENV['RAILS_ENV']
         return unless generate_files
         # :nocov:
         output_path = Config.file_output_path
         FileUtils.mkdir_p output_path
         max_length = docs.keys.map(&:size).sort.last
         docs.each do |doc_name, doc|
-          puts "[ZRO] `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
+          puts '    ZRO'.green + " `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
           File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
         end
         # :nocov:
       end
-    end # end of module
+    end
+    # end of module
 
     def routes
       @routes ||=

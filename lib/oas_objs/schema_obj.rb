@@ -21,7 +21,6 @@ module OpenApi
       end
 
       def process(options = { inside_desc: false })
-        # return processed if preprocessed
         processed.merge!(processed_type)
         reducx(enum_and_length, range, is_and_format, pattern_default_and_other, desc(options)).then_merge!
       end
@@ -61,9 +60,9 @@ module OpenApi
         if (lth = _length || '').is_a?(Array)
           min, max = [lth.first&.to_i, lth.last&.to_i]
         elsif lth['ge']
-          max = lth.to_s.split('_').last.to_i
-        elsif lth['le']
           min = lth.to_s.split('_').last.to_i
+        elsif lth['le']
+          max = lth.to_s.split('_').last.to_i
         end
 
         if processed[:type] == 'array'
@@ -92,12 +91,10 @@ module OpenApi
 
       def pattern_default_and_other
         {
-            **{
-                pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
-                default:    _default,
-                examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil
-            },
-            **{ as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank }
+            pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
+            default:    _default,
+            examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
+            as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank
         }
       end
 

@@ -42,7 +42,7 @@ module OpenApi
       # [ header header! path path! query query! cookie cookie! ]
       def _param_agent name, type = nil, **schema_info
         schema = process_schema_info(type, schema_info)
-        pp "[ZRO] Syntax Error: param `#{name}` has no schema type!" and return if schema[:illegal?]
+        return puts '    ZRO'.red + " Syntax Error: param `#{name}` has no schema type!" if schema[:illegal?]
         param @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
       end
 

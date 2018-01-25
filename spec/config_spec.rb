@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 RSpec.describe OpenApi::Config do
   before_config { open_api :zro, base_doc_class: ApiDoc }
 

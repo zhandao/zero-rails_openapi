@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
+## [1.5.3] - 2018/1/25 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.2...v1.5.3)
+
+## Added
+
+1. Colorize output.
+
 ## Changed
 
 1. Refactoring SchemaObj and remove `preprocess`.
 2. `schema_hash` => `schema_info`.
 3. Refactoring `process_objs` .. dsl/ files.
+
+## Fixed
+
+1. max lth and min lth is reversed.
 
 ## [1.5.2] - 2018/1/2 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.1...v1.5.2)
 

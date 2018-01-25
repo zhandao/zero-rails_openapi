@@ -1,4 +1,3 @@
-require 'spec_helper'
 require 'support/open_api'
 
 RSpec.describe OpenApi::Generator do

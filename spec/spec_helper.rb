@@ -3,6 +3,7 @@ SimpleCov.start
 
 require 'bundler/setup'
 require 'pp'
+require 'colorize'
 require 'open_api'
 require 'support/api_doc'
 
@@ -45,7 +46,6 @@ RSpec::Matchers.define :have_keys do |*expected|
 end
 
 RSpec::Matchers.alias_matcher :have_key, :have_keys
-
 
 RSpec::Matchers.define :have_size do |expected|
   match do |actual|
