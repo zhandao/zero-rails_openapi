@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zero-rails_openapi (1.5.2)
+    zero-rails_openapi (1.5.3)
       activesupport (>= 3)
       rails (>= 3)
 
@@ -55,7 +55,7 @@ GEM
     erubi (1.7.0)
     globalid (0.4.1)
       activesupport (>= 4.2.0)
-    i18n (0.9.1)
+    i18n (0.9.3)
       concurrent-ruby (~> 1.0)
     json (2.1.0)
     loofah (2.1.1)

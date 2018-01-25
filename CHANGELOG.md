@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.3] - 2018/1/25 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.2...v1.5.3)
+
 ## Added
 
 1. Colorize output.
