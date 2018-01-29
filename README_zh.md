@@ -17,8 +17,8 @@
   有什么想法敬请 PR，谢过！
   另外，走过路过不妨来个 star？**
   
-  另外，如果对其行为表现有任何疑惑，敬请先阅读测试代码，这其中已然表明清楚我的大多数考量。  
-  值得一读的测试：[api DSL](spec/api_info_obj_spec.rb) 以及 [schema Obj](spec/oas_objs/schema_obj_spec.rb)。
+  另外，如果对其行为表现有任何疑惑，请先阅读测试代码，这其中已表明我的大多数考量。  
+  可一读：[api DSL](spec/api_info_obj_spec.rb) 以及 [schema Obj](spec/oas_objs/schema_obj_spec.rb)。
 
 
 ## Table of Contents
@@ -108,6 +108,8 @@
   require 'open_api'
   
   OpenApi::Config.tap do |c|
+    c.file_output_path = 'public/open_api'
+
     c.instance_eval do
       open_api :homepage_api, base_doc_class: ApiDoc
       info version: '1.0.0', title: 'Homepage APIs'

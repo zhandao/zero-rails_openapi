@@ -7,16 +7,15 @@
   [![Gitter Chat](https://badges.gitter.im/zero-rails_openapi/Lobby.svg)](https://gitter.im/zero-rails_openapi/Lobby)
   [![Help Contribute to Open Source](https://www.codetriage.com/zhandao/zero-rails_openapi/badges/users.svg)](https://www.codetriage.com/zhandao/zero-rails_openapi)
 
-  Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application,
-  then you can use Swagger UI 3.2.0+ to show the documentation.
+  Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application.
 
 ## Contributing
 
   **Hi, here is ZhanDao = ▽ =  
-  I think it's a very useful tool when you want to write API document clearly.  
-  I'm looking forward to your issue and PR, thanks!**
+  It may be a very useful tool if you want to write API document clearly.  
+  I'm looking forward to your issue and PR!**
 
-  And, if you have any questions, please read the test code first.  
+  If you have any questions, please read the test code first.  
   such as [api DSL](spec/api_info_obj_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
 
 ## Table of Contents
@@ -113,6 +112,8 @@
   require 'open_api'
 
   OpenApi::Config.tap do |c|
+    c.file_output_path = 'public/open_api'
+
     c.instance_eval do
       open_api :homepage_api, base_doc_class: ApiDoc
       info version: '1.0.0', title: 'Homepage APIs'
@@ -121,7 +122,7 @@
   ```
 
   For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
-  See all the settings you can configure: [config.rb](lib/open_api/config.rb)  
+  See all the settings options: [config.rb](lib/open_api/config.rb)  
   See all the Document Definition DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## Usage - DSL
@@ -223,8 +224,7 @@
 
 #### (5) `api` [required]
 
-  Define the specified API
-  (or we could say controller action).
+  Define the specified API (or we could say controller action).
 
   ```ruby
   # method signature
@@ -270,7 +270,7 @@
   # method signature
   desc(desc, param_descs = { })
   # usage
-  desc 'current API\'s description',
+  desc "current API's description",
        id:    'desc of the parameter :id',
        email: 'desc of the parameter :email'
   ```
