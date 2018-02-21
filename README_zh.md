@@ -158,8 +158,9 @@
   end
   ```
   
-  这有两份更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb), 以及
-  [examples_controller.rb](documentation/examples/examples_controller.rb)。
+  更多更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb)、
+  [examples_controller.rb](documentation/examples/examples_controller.rb)，以及
+  [这里](https://github.com/zhandao/zero-rails/tree/master/app/_docs/v1)。
 
 ### 基本的 DSL ([source code](lib/open_api/dsl.rb))
 

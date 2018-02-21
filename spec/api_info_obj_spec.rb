@@ -246,6 +246,40 @@ RSpec.describe OpenApi::DSL::ApiInfo do
     end
 
 
+    desc :callback, subject: :callbacks do
+      api -> do
+        callback :myEvent, :post, 'localhost:3000/api/goods' do
+          query :name, String
+          data :token, String
+          response 200, 'success', :json, data: { name: String, description: String }
+        end
+      end, has_key!: :myEvent
+      focus_on :myEvent, :'localhost:3000/api/goods', :post
+      expect_it has_keys: %i[ parameters requestBody responses ]
+
+      context 'when using with runtime expression' do
+        api -> do
+          query! :id, Integer
+          data :callback_addr, String, pattern: /^http/
+
+          callback :myEvent, :post, '{body callback_addr}/api/goods/{query id}' do
+            response 200, 'success', :json, data: { name: String, description: String }
+          end
+        end, has_key: { myEvent: [:'{$request.body#/callback_addr}/api/goods/{$request.query.id}'] }
+      end
+
+      context 'when define multiple callbacks' do
+        api -> do
+          callback :Event1, :post, 'url1'
+          callback :Event1, :get,  'url1'
+          callback :Event2, :get,  'url2'
+        end, has_key!: { Event1: [:url1], Event2: [:url2] }
+        focus_on :Event1, :url1
+        expect_it has_keys: %i[ post get ]
+      end
+    end
+
+
     desc :server, subject: :servers, stru: %i[ url description ] do
       api -> { server 'http://localhost:3000', desc: 'Internal staging server for testing' },
           all_have_keys: its_structure, has_size: 1

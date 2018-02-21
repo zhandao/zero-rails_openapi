@@ -56,7 +56,7 @@
 
   You can getting started from [swagger.io](https://swagger.io/docs/specification/basic-structure/)
 
-  **I suggest you should understand OAS3's basic structure at least.**
+  **I suggest you should understand the basic structure of OAS3 at least.**
   such as component (can help you reuse DSL code, when your apis are used with the
   same data structure).
 
@@ -161,7 +161,8 @@
   ```
 
   For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
-  [examples_controller.rb](documentation/examples/examples_controller.rb)
+  [examples_controller.rb](documentation/examples/examples_controller.rb),
+  or [HERE](https://github.com/zhandao/zero-rails/tree/master/app/_docs/v1).
 
 ### Basic DSL ([source code](lib/open_api/dsl.rb))
 

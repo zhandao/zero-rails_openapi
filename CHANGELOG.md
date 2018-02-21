@@ -4,7 +4,7 @@
 
 ## Added
 
-1. Callback Object has been supported. (issue #12 @austbot)
+1. Callback Object has been supported. (issue [#12](#/issues/12) @austbot)
 
 ## Changed
 
