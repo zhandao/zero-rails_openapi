@@ -39,7 +39,7 @@
     - [param family methods](#3-param-family-methods-oas---parameter-object)
     - [request_body family methods](#4-request_body-family-methods-oas---request-body-object)
     - [response family methods](#5-response-family-methods-oas---response-object)
-    - [callback](#6-callback)
+    - [callback](#6-callback-oas---callback-object)
     - [Authentication and Authorization](#7-authentication-and-authorization)
     - [server](#8-overriding-global-servers-by-server)
   - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source)

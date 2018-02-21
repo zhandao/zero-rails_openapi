@@ -4,8 +4,6 @@
   [![Build Status](https://travis-ci.org/zhandao/zero-rails_openapi.svg?branch=master)](https://travis-ci.org/zhandao/zero-rails_openapi)
   [![Maintainability](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/maintainability)](https://codeclimate.com/github/zhandao/zero-rails_openapi/maintainability)
   [![Test Coverage](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/test_coverage)](https://codeclimate.com/github/zhandao/zero-rails_openapi/test_coverage)
-  [![Gitter Chat](https://badges.gitter.im/zero-rails_openapi/Lobby.svg)](https://gitter.im/zero-rails_openapi/Lobby)
-  [![Help Contribute to Open Source](https://www.codetriage.com/zhandao/zero-rails_openapi/badges/users.svg)](https://www.codetriage.com/zhandao/zero-rails_openapi)
 
   Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application.
 
@@ -36,7 +34,7 @@
     - [param family methods](#3-param-family-methods-oas---parameter-object)
     - [request_body family methods](#4-request_body-family-methods-oas---request-body-object)
     - [response family methods](#5-response-family-methods-oas---response-object)
-    - [callback](#6-callback)
+    - [callback](#6-callback-oas---callback-object)
     - [Authentication and Authorization](#7-authentication-and-authorization)
     - [server](#8-overriding-global-servers-by-server)
   - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
@@ -509,11 +507,9 @@
 ### (6) Callback (OAS - [Callback Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#callback-object))
 
   [About Callbacks](https://swagger.io/docs/specification/callbacks/)
-  > In OpenAPI 3 specs, you can define callbacks – asynchronous, out-of-band requests that your service will send to some other service in response to certain events.  
-    This helps you improve the workflow your API offers to clients.  
-    A typical example of a callback is a subscription functionality ... you can define the format of the “subscription” operation  
-    as well as the format of callback messages and expected responses to these messages.  
-    This description will simplify communication between different servers and will help you standardize use of webhooks in your API.
+  > In OpenAPI 3 specs, you can define callbacks – asynchronous, out-of-band requests that your service will send to some other service in response to certain events. This helps you improve the workflow your API offers to clients.  
+    A typical example of a callback is a subscription functionality ... you can define the format of the “subscription” operation as well as the format of callback messages and expected responses to these messages.  
+    This description will simplify communication between different servers and will help you standardize use of webhooks in your API.  
   [Complete YAML Example](https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/callback-example.yaml)
   
   The structure of Callback Object:
@@ -816,6 +812,8 @@
   It's useful when you want to look up a document based on a controller and do something.
 
 ## Development
+
+  TODO ..
 
   After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 

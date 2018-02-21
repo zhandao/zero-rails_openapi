@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## Added
+
+1. Callback Object has been supported. (issue #12 @austbot)
+
+## Changed
+
+1. `mk`'s parameter `eq` is changed to `get`. (dssl.rb)
+
 ## [1.5.4] - 2018/2/15 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.3...v1.5.4)
 
 Thanks to @austbot, fix - colorize fails at runtime.
