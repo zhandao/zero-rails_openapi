@@ -115,6 +115,10 @@ module OpenApi
       alias auth      security_require
       alias need_auth security_require
 
+      def callback event_name, http_method, callback_url, &block
+        (self[:callbacks][event_name] ||= { }).merge! CallbackObj.new(http_method, callback_url, &block).processed
+      end
+
       def server url, desc: ''
         self[:servers] << { url: url, description: desc }
       end

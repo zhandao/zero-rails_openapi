@@ -41,7 +41,7 @@ module OpenApi
           RefObj.new(:schema, t).process
         elsif t.in? %w[ float double int32 int64 ]
           { type: t.match?('int') ? 'integer' : 'number', format: t }
-        elsif t.in? %w[ binary base64 ]
+        elsif t.in? %w[ binary base64 uri ]
           { type: 'string', format: t }
         elsif t == 'file'
           { type: 'string', format: Config.file_format }

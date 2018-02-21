@@ -82,14 +82,14 @@ def ctx(desc, **args, &block)
   desc(desc, group: :context, **args, &block)
 end
 
-def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, eq: nil, has_keys: nil, has_size: nil, take: nil,
+def mk dsl_block, desc0 = nil, desc: nil, scope: :it_dsl!, get: nil, has_keys: nil, has_size: nil, take: nil,
        doc_will_has_keys: nil, include: nil, raise: nil, it: nil, **other
   aliases_of_have_keys = %i[ have_key have_key! have_keys have_keys! all_have_keys all_have_keys!
                              has_key  has_key!  has_keys! will_have_keys will_have_keys! ]
   keys ||= has_keys || other.values_at(*aliases_of_have_keys).compact.first
   size = has_size || other[:has_size!]
   assertion_blk = it
-  expected_value = [eq, other[:will_eq], other[:be]].compact.first
+  expected_value = [get, other[:will_get], other[:be]].compact.first
 
   assertions = [ ]
   assertions << -> { is_expected.to eq expected_value } unless expected_value.nil?

@@ -6,44 +6,44 @@ RSpec.describe OpenApi::DSL::SchemaObj do
   get_and_dig_doc %i[ paths goods/action get parameters ] + [ 0, :schema ]
 
   ctx 'when not pass schema type as Hash type' do
-    api -> { query :id, Integer }, eq: { type: 'integer' }
+    api -> { query :id, Integer }, get: { type: 'integer' }
     api -> { query :people, { name: String }, desc: '' }, include: { type: 'object' }
     api -> { query :people, { name: String } }, 'will not have key :schema cause cannot recognize schema type', _it { be_nil }
   end
 
   ctx 'when pass schema type as Hash type' do
-    api -> { query :id, type: Integer }, eq: { type: 'integer' }
+    api -> { query :id, type: Integer }, get: { type: 'integer' }
     api -> { query :people, type: { name: String } }, include: { type: 'object' }
   end
 
   desc :processed_type do
     context 'when not be one of the [Hash, Array, Symbol]' do
       context 'when in [ float double int32 int64 ]' do
-        api -> { query :info, Float }, eq: { type: 'number', format: 'float' }
-        api -> { query :info, 'double' }, eq: { type: 'number', format: 'double' }
-        api -> { query :info, 'int32' }, eq: { type: 'integer', format: 'int32' }
+        api -> { query :info, Float }, get: { type: 'number', format: 'float' }
+        api -> { query :info, 'double' }, get: { type: 'number', format: 'double' }
+        api -> { query :info, 'int32' }, get: { type: 'integer', format: 'int32' }
       end
 
-      context 'when in [ binary base64 ]' do
-        api -> { query :info, 'binary' }, eq: { type: 'string', format: 'binary' }
+      context 'when in [ binary base64 uri ]' do
+        api -> { query :info, 'uri' }, get: { type: 'string', format: 'uri' }
       end
 
       context 'when be file' do
-        api -> { query :info, 'file' }, eq: { type: 'string', format: OpenApi::Config.file_format }
+        api -> { query :info, 'file' }, get: { type: 'string', format: OpenApi::Config.file_format }
       end
 
       context 'when be datetime' do
-        api -> { query :info, 'datetime' }, eq: { type: 'string', format: 'date-time' }
+        api -> { query :info, 'datetime' }, get: { type: 'string', format: 'date-time' }
       end
 
       context 'when is string or constant (not the above)' do
-        api -> { query :info, 'type' }, eq: { type: 'type' }
-        api -> { query :info, ApiDoc }, eq: { type: 'apidoc' }
+        api -> { query :info, 'type' }, get: { type: 'type' }
+        api -> { query :info, ApiDoc }, get: { type: 'apidoc' }
       end
     end
 
     context 'when be a Symbol' do
-      api -> { query :info, :QueryPage }, 'is a parameter ref', eq: { :$ref => '#components/schemas/QueryPage' }
+      api -> { query :info, :QueryPage }, 'is a parameter ref', get: { :$ref => '#components/schemas/QueryPage' }
     end
 
     context 'when be a Array' do
