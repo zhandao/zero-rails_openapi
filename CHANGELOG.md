@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
+## [1.5.5] - 2018/2/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.4...v1.5.5)
+
 ## Added
 
-1. Callback Object has been supported. (issue [#12](#/issues/12) @austbot)
+1. Callback Object has been supported. (issue [#12](#https://github.com/zhandao/zero-rails_openapi/issues/12) @austbot)
 
 ## Changed
 

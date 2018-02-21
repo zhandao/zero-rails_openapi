@@ -260,7 +260,7 @@ RSpec.describe OpenApi::DSL::ApiInfo do
       context 'when using with runtime expression' do
         api -> do
           query! :id, Integer
-          data :callback_addr, String, pattern: /^http/
+          data :callback_addr!, String, pattern: /^http/
 
           callback :myEvent, :post, '{body callback_addr}/api/goods/{query id}' do
             response 200, 'success', :json, data: { name: String, description: String }

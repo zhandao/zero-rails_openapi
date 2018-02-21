@@ -38,7 +38,7 @@ module OpenApi
         api = ApiInfo.new.merge! parameters: [ ], requestBody: '',  responses: { }
         api.instance_exec(&(self.block || ->{ }))
         api.process_objs
-        api
+        api.delete_if { |_, v| v.blank? }
       end
     end
   end
