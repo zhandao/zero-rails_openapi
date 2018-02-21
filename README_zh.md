@@ -28,17 +28,30 @@
 - [配置](#configure)
 - [DSL 介绍及用例](#usage---dsl)
   - [基本的 DSL](#基本的-dsl)
+    - [route_base](#1-route_base-optional-if-youre-writing-dsl-in-controller)
+    - [doc_tag](#2-doc_tag-optional)
+    - [components](#3-components-optional)
+    - [api_dry](#4-api_dry-optional)
+    - [api](#5-api-required)
   - [用于 `api` 和 `api_dry` 块内的 DSL（描述 API 的参数、响应等）](#dsl-methods-inside-api-and-api_drys-block)
+    - [this_api_is_invalid!](#1-this_api_is_invalid-its-aliases)
+    - [desc](#2-desc-description-for-the-current-api-and-its-inputs-parameters-and-request-body)
+    - [param family methods](#3-param-family-methods-oas---parameter-object)
+    - [request_body family methods](#4-request_body-family-methods-oas---request-body-object)
+    - [response family methods](#5-response-family-methods-oas---response-object)
+    - [callback](#6-callback-oas---callback-object)
+    - [Authentication and Authorization](#7-authentication-and-authorization)
+    - [server](#8-overriding-global-servers-by-server)
   - [用于 `components` 块内的 DSL（描述可复用的组件）](#dsl-methods-inside-componentss-block-code-source)
 - [执行文档生成](#run---generate-json-documentation-file)
 - [使用 Swagger-UI 可视化所生成的文档](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [技巧](#tricks)
-    - [将 DSL 写于他处，与控制器分离](#trick1---write-the-dsl-somewhere-else)
-    - [全局 DRY](#trick2---global-drying)
-    - [基于 enum 等信息自动生成参数描述](#trick3---auto-generate-description)
-    - [跳过或使用 DRY 时（`api_dry`）所定义的参数](#trick4---skip-or-use-parameters-define-in-api_dry)
-    - [基于 DB Schema 自动生成 response 的格式](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
-    - [定义组合的 Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
+  - [将 DSL 写于他处，与控制器分离](#trick1---write-the-dsl-somewhere-else)
+  - [全局 DRY](#trick2---global-drying)
+  - [基于 enum 等信息自动生成参数描述](#trick3---auto-generate-description)
+  - [跳过或使用 DRY 时（`api_dry`）所定义的参数](#trick4---skip-or-use-parameters-define-in-api_dry)
+  - [基于 DB Schema 自动生成 response 的格式](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
+  - [定义组合的 Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [问题集](#troubleshooting)
 - [有关 `OpenApi.docs` 和 `OpenApi.routes_index`](#about-openapidocs-and-openapiroutes_index)
 
@@ -145,8 +158,9 @@
   end
   ```
   
-  这有两份更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb), 以及
-  [examples_controller.rb](documentation/examples/examples_controller.rb)。
+  更多更详细的实例： [goods_doc.rb](documentation/examples/goods_doc.rb)、
+  [examples_controller.rb](documentation/examples/examples_controller.rb)，以及
+  [这里](https://github.com/zhandao/zero-rails/tree/master/app/_docs/v1)。
 
 ### 基本的 DSL ([source code](lib/open_api/dsl.rb))
 

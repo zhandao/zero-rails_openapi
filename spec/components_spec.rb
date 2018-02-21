@@ -8,10 +8,10 @@ RSpec.describe OpenApi::DSL::Components do
     correct do
       mk -> { schema :SchemaA, String; schema :SchemaZ, String }, doc_will_has_keys: { schemas: %i[ SchemaA SchemaZ ] }
 
-      mk -> { schema :SchemaA, String                           }, eq: { SchemaA: { type: 'string'} }
-      mk -> { schema :SchemaA, type: Integer                    }, eq: { SchemaA: { type: 'integer'} }
-      mk -> { schema :SchemaB => [ String ]                     }, eq: { SchemaB: { type: 'string'} }
-      mk -> { schema :SchemaC => [ type: String, desc: 'test' ] }, eq: { SchemaC: { type: 'string', description: 'test' } }
+      mk -> { schema :SchemaA, String                           }, get: { SchemaA: { type: 'string'} }
+      mk -> { schema :SchemaA, type: Integer                    }, get: { SchemaA: { type: 'integer'} }
+      mk -> { schema :SchemaB => [ String ]                     }, get: { SchemaB: { type: 'string'} }
+      mk -> { schema :SchemaC => [ type: String, desc: 'test' ] }, get: { SchemaC: { type: 'string', description: 'test' } }
 
       context 'when defining combined schema' do
         mk -> { schema :SchemaD => [ one_of: [String] ] }, has_keys: { SchemaD: [:oneOf] }
@@ -26,7 +26,7 @@ RSpec.describe OpenApi::DSL::Components do
 
   desc :example, subject: :examples do
     mk -> { example :ExampleA, { }; example :ExampleZ, { } }, doc_will_has_keys: { examples: %i[ ExampleA ExampleZ ] }
-    mk -> { example :ExampleA, { name: 'BeiGou' } }, eq: { ExampleA: [{ name: { value: 'BeiGou' } }] }
+    mk -> { example :ExampleA, { name: 'BeiGou' } }, get: { ExampleA: [{ name: { value: 'BeiGou' } }] }
   end
 
 
@@ -127,11 +127,11 @@ RSpec.describe OpenApi::DSL::Components do
     end, doc_will_has_keys: { securitySchemes: %i[ OAuth ] }
 
     describe '#base_auth' do
-      mk -> { base_auth :BaseAuth }, eq: { BaseAuth: { type: 'http', scheme: 'basic' }}
+      mk -> { base_auth :BaseAuth }, get: { BaseAuth: { type: 'http', scheme: 'basic' }}
     end
 
     describe '#bearer_auth' do
-      mk -> { bearer_auth :Token }, eq: { Token: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }}
+      mk -> { bearer_auth :Token }, get: { Token: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }}
     end
 
     describe '#api_key' do

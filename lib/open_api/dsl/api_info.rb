@@ -8,7 +8,7 @@ module OpenApi
 
       attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_order
 
-      def initialize(action_path, skip: [ ], use: [ ])
+      def initialize(action_path = '', skip: [ ], use: [ ])
         self.action_path = action_path
         self.param_skip  = skip
         self.param_use   = use
@@ -114,6 +114,10 @@ module OpenApi
       alias security  security_require
       alias auth      security_require
       alias need_auth security_require
+
+      def callback event_name, http_method, callback_url, &block
+        self[:callbacks].deep_merge! CallbackObj.new(event_name, http_method, callback_url, &block).process
+      end
 
       def server url, desc: ''
         self[:servers] << { url: url, description: desc }

@@ -5,7 +5,7 @@ RSpec.describe OpenApi::DSL::ApiInfo do
   get_and_dig_doc %i[ paths goods/action get ]
 
   ctx 'when doing nothing' do
-    api -> { }, eq: { summary: 'test', operationId: :action, tags: ['Goods'] }
+    api -> { }, get: { summary: 'test', operationId: :action, tags: ['Goods'] }
   end
 
 
@@ -243,6 +243,40 @@ RSpec.describe OpenApi::DSL::ApiInfo do
     desc :security_require, subject: :security do
       api -> { auth :Token }, has_size!: 1
       it { expect(item_0).to eq Token: [ ] }
+    end
+
+
+    desc :callback, subject: :callbacks do
+      api -> do
+        callback :myEvent, :post, 'localhost:3000/api/goods' do
+          query :name, String
+          data :token, String
+          response 200, 'success', :json, data: { name: String, description: String }
+        end
+      end, has_key!: :myEvent
+      focus_on :myEvent, :'localhost:3000/api/goods', :post
+      expect_it has_keys: %i[ parameters requestBody responses ]
+
+      context 'when using with runtime expression' do
+        api -> do
+          query! :id, Integer
+          data :callback_addr!, String, pattern: /^http/
+
+          callback :myEvent, :post, '{body callback_addr}/api/goods/{query id}' do
+            response 200, 'success', :json, data: { name: String, description: String }
+          end
+        end, has_key: { myEvent: [:'{$request.body#/callback_addr}/api/goods/{$request.query.id}'] }
+      end
+
+      context 'when define multiple callbacks' do
+        api -> do
+          callback :Event1, :post, 'url1'
+          callback :Event1, :get,  'url1'
+          callback :Event2, :get,  'url2'
+        end, has_key!: { Event1: [:url1], Event2: [:url2] }
+        focus_on :Event1, :url1
+        expect_it has_keys: %i[ post get ]
+      end
     end
 
 

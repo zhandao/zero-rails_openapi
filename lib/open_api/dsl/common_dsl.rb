@@ -5,6 +5,7 @@ require 'oas_objs/response_obj'
 require 'oas_objs/request_body_obj'
 require 'oas_objs/ref_obj'
 require 'oas_objs/example_obj'
+require 'oas_objs/callback_obj'
 require 'open_api/dsl/helpers'
 
 module OpenApi

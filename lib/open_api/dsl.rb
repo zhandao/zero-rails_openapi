@@ -40,7 +40,8 @@ module OpenApi
 
         api = ApiInfo.new(action_path, skip: Array(skip), use: Array(use))
                      .merge! description: '', summary: summary, operationId: action, tags: [@doc_tag],
-                             parameters: [ ], requestBody: '',  responses: { },      security: [ ], servers: [ ]
+                             parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
+                             links: { }, security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @zro_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use = api.param_skip = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.instance_exec(&block) if block_given?
