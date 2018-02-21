@@ -25,7 +25,20 @@
 - [Configure](#configure)
 - [Usage - DSL](#usage---dsl)
   - [Basic DSL](#basic-dsl)
+    - [route_base](#1-route_base-optional-if-youre-writing-dsl-in-controller)
+    - [doc_tag](#2-doc_tag-optional)
+    - [components](#3-components-optional)
+    - [api_dry](#4-api_dry-optional)
+    - [api](#5-api-required)
   - [DSL methods inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
+    - [this_api_is_invalid!](#1-this_api_is_invalid-its-aliases)
+    - [desc](#2-desc-description-for-the-current-api-and-its-inputs-parameters-and-request-body)
+    - [param family methods](#3-param-family-methods-oas---parameter-object)
+    - [request_body family methods](#4-request_body-family-methods-oas---request-body-object)
+    - [response family methods](#5-response-family-methods-oas---response-object)
+    - [callback](#6-callback)
+    - [Authentication and Authorization](#7-authentication-and-authorization)
+    - [server](#8-overriding-global-servers-by-server)
   - [DSL methods inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
 - [Run! - Generate JSON documentation file](#run---generate-json-documentation-file)
 - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
@@ -492,8 +505,49 @@
   ```
 
   **practice:** Automatically generate responses based on the agreed error class. [AutoGenDoc](documentation/examples/auto_gen_doc.rb#L63)
+  
+### (6) Callback (OAS - [Callback Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#callback-object))
 
-#### (6) Authentication and Authorization
+  [About Callbacks](https://swagger.io/docs/specification/callbacks/)
+  > In OpenAPI 3 specs, you can define callbacks – asynchronous, out-of-band requests that your service will send to some other service in response to certain events.  
+    This helps you improve the workflow your API offers to clients.  
+    A typical example of a callback is a subscription functionality ... you can define the format of the “subscription” operation  
+    as well as the format of callback messages and expected responses to these messages.  
+    This description will simplify communication between different servers and will help you standardize use of webhooks in your API.
+  [Complete YAML Example](https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/callback-example.yaml)
+  
+  The structure of Callback Object:
+  ```
+  callbacks:
+    Event1:
+      path1:
+        ...
+      path2:
+       ...
+    Event2:
+      ...
+  ```
+  
+  To define callbacks, you can use `callback` method:
+  ```ruby
+  # method signature
+  callback(event_name, http_method, callback_url, &block)
+  # usage
+  callback :myEvent, :post, 'localhost:3000/api/goods' do
+    query :name, String
+    data :token, String
+    response 200, 'success', :json, data: { name: String, description: String }
+  end
+  ```
+  
+  Use runtime expressions in callback_url:
+  ```ruby
+  callback :myEvent, :post, '{body callback_addr}/api/goods/{query id}'
+  # the final URL will be: {$request.body#/callback_addr}/api/goods/{$request.query.id}
+  # Note: Other expressions outside "$request" are not supported yet
+  ```
+
+#### (7) Authentication and Authorization
 
   First of all, please make sure that you have read one of the following documents:
   [OpenApi Auth](https://swagger.io/docs/specification/authentication/)
@@ -551,7 +605,7 @@
   auth :OAuth, scopes: %w[ read_example admin ]
   ```
 
-#### (7) Overriding Global Servers by `server`
+#### (8) Overriding Global Servers by `server`
 
   ```ruby
   # method signature
