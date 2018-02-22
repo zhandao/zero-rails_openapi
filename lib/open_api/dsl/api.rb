@@ -2,7 +2,7 @@ require 'open_api/dsl/common_dsl'
 
 module OpenApi
   module DSL
-    class ApiInfo < Hash
+    class Api < Hash
       include DSL::CommonDSL
       include DSL::Helpers
 

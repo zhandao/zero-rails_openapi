@@ -1,6 +1,6 @@
 require 'dssl_helper'
 
-RSpec.describe OpenApi::DSL::ApiInfo do
+RSpec.describe OpenApi::DSL::Api do
   let(:dsl_in) { [:api, :action, 'test'] }
   get_and_dig_doc %i[ paths goods/action get ]
 

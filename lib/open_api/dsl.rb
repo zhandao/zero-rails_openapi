@@ -1,4 +1,4 @@
-require 'open_api/dsl/api_info'
+require 'open_api/dsl/api'
 require 'open_api/dsl/components'
 
 module OpenApi
@@ -38,10 +38,10 @@ module OpenApi
         routes = ctrl_routes_list&.select { |api| api[:action_path].match?(/^#{action_path}$/) }
         return puts '    ZRO'.red + " Route mapping failed: #{@route_base}##{action}" if routes.blank?
 
-        api = ApiInfo.new(action_path, skip: Array(skip), use: Array(use))
-                     .merge! description: '', summary: summary, operationId: action, tags: [@doc_tag],
-                             parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
-                             links: { }, security: [ ], servers: [ ]
+        api = Api.new(action_path, skip: Array(skip), use: Array(use))
+                 .merge! description: '', summary: summary, operationId: action, tags: [@doc_tag],
+                         parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
+                         links: { }, security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @zro_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use = api.param_skip = [ ] # `skip` and `use` only affect `api_dry`'s blocks
         api.instance_exec(&block) if block_given?

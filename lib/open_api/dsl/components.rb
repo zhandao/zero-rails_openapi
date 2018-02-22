@@ -9,7 +9,7 @@ module OpenApi
       def schema component_key, type = nil, **schema_info
         schema = process_schema_info(type, schema_info, model: component_key)
         return puts '    ZRO'.red + " Syntax Error: component schema `#{component_key}` has no type!" if schema[:illegal?]
-        self[:schemas][component_key.to_s.to_sym] = (schema[:combined] || SchemaObj.new(type = schema[:info], { })).process
+        self[:schemas][component_key.to_s.to_sym] = (schema[:combined] or SchemaObj.new(type = schema[:info], { })).process
       end
 
       arrow_enable :schema
@@ -46,7 +46,7 @@ module OpenApi
 
       arrow_enable :_request_body_agent
 
-      arrow_enable :resp # alias_method 竟然也会指向旧的方法？
+      arrow_enable :resp
       arrow_enable :response
 
       def security_scheme scheme_name, other_info# = { }

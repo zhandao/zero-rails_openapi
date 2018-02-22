@@ -14,7 +14,7 @@
   I'm looking forward to your issue and PR!**
 
   If you have any questions, please read the test code first.  
-  such as [api DSL](spec/api_info_obj_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
+  such as [api DSL](spec/api_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
 
 ## Table of Contents
 

@@ -36,14 +36,14 @@ module OpenApi
       end
 
       def process_range_enum_and_lth
-        self[:_enum] = str_range_toa(_enum) if _enum.is_a?(Range)
-        self[:_length] = str_range_toa(_length) if _length.is_a?(Range)
+        self[:_enum] = str_range_to_a(_enum) if _enum.is_a?(Range)
+        self[:_length] = str_range_to_a(_length) if _length.is_a?(Range)
 
         values = _enum || _value
         self._enum = Array(values) if truly_present?(values)
       end
 
-      def str_range_toa(val)
+      def str_range_to_a(val)
         val_class = val.first.class
         action = :"to_#{val_class.to_s.downcase[0]}"
         (val.first.to_s..val.last.to_s).to_a.map(&action)
@@ -55,7 +55,7 @@ module OpenApi
         #     'all_desc': :all,
         #     'one_desc': :one
         # }
-        self._enum ||= e = self[:enum!]
+        self._enum ||= (e = self[:enum!])
         return unless e.is_a? Hash
         @enum_info = e
         self._enum = e.values

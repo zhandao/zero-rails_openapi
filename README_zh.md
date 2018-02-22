@@ -18,7 +18,7 @@
   另外，走过路过不妨来个 star？**
   
   另外，如果对其行为表现有任何疑惑，请先阅读测试代码，这其中已表明我的大多数考量。  
-  可一读：[api DSL](spec/api_info_obj_spec.rb) 以及 [schema Obj](spec/oas_objs/schema_obj_spec.rb)。
+  可一读：[api DSL](spec/api_spec.rb) 以及 [schema Obj](spec/oas_objs/schema_obj_spec.rb)。
 
 
 ## Table of Contents

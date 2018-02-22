@@ -35,7 +35,7 @@ module OpenApi
       end
 
       def processed_block
-        api = ApiInfo.new.merge! parameters: [ ], requestBody: '',  responses: { }
+        api = Api.new.merge! parameters: [ ], requestBody: '',  responses: { }
         api.instance_exec(&(self.block || ->{ }))
         api.process_objs
         api.delete_if { |_, v| v.blank? }
