@@ -1,4 +1,4 @@
-require 'dssl_helper'
+require 'spec_dsl'
 
 RSpec.describe OpenApi::DSL::Components do
   get_and_dig_doc [:components]

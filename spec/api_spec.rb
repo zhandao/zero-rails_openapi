@@ -1,4 +1,4 @@
-require 'dssl_helper'
+require 'spec_dsl'
 
 RSpec.describe OpenApi::DSL::Api do
   let(:dsl_in) { [:api, :action, 'test'] }
@@ -45,10 +45,12 @@ RSpec.describe OpenApi::DSL::Api do
     end, all_have_its_structure
 
     context 'when passing `use` and `skip` to control parameters from `api_dry`' do
-      before_do do api_dry {
-        param :query, :page, Integer, :req
-        param :query, :per, Integer, :opt
-      } end
+      before_do {
+        api_dry do
+          param :query, :page, Integer, :req
+          param :query, :per, Integer, :opt
+        end
+      }
 
       make -> { api :action, use: [ ]      }, 'uses all', has_size: 2
       make -> { api :action, use: [:none]  }, then_it('only uses :none') { be_nil }

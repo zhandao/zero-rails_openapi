@@ -3,7 +3,7 @@ require 'open_api/config'
 
 module OpenApi
   module Generator
-    extend self
+    module_function
 
     def self.included(base)
       base.extend ClassMethods

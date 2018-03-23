@@ -22,7 +22,7 @@ module OpenApi
 
       def process(options = { inside_desc: false })
         processed.merge!(processed_type)
-        reducx(enum_and_length, range, is_and_format, pattern_default_and_other, desc(options)).then_merge!
+        reducx(enum_and_length, range, format, pattern_default_and_other, desc(options)).then_merge!
       end
 
       def desc(inside_desc:)
@@ -82,7 +82,7 @@ module OpenApi
         }.keep_if &value_present
       end
 
-      def is_and_format
+      def format
         result = { is: _is }
         # `format` that generated in process_type() may be overwrote here.
         result[:format] = _format || _is if processed[:format].blank? || _format.present?
@@ -91,7 +91,7 @@ module OpenApi
 
       def pattern_default_and_other
         {
-            pattern:    _pattern.is_a?(String)? _pattern : _pattern&.inspect&.delete('/'),
+            pattern:    _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
             default:    _default,
             examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
             as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank
@@ -122,7 +122,7 @@ module OpenApi
           aliases.each { |alias_name| self[key] = self[alias_name] if self[key].nil? }
           self[key]
         end
-        define_method "#{key}=" do |value| self[key] = value end
+        define_method("#{key}=") { |value| self[key] = value }
       end
     end
   end

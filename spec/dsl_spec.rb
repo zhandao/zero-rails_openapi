@@ -1,4 +1,4 @@
-require 'dssl_helper'
+require 'spec_dsl'
 
 RSpec.describe OpenApi::DSL do
   set_doc
