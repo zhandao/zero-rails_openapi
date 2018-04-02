@@ -1,5 +1,6 @@
 require 'active_support/hash_with_indifferent_access'
 require 'open_api/config'
+require 'colorize'
 
 module OpenApi
   module Generator

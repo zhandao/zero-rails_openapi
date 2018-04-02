@@ -1,5 +1,6 @@
 require 'open_api/dsl/api'
 require 'open_api/dsl/components'
+require 'colorize'
 
 module OpenApi
   module DSL

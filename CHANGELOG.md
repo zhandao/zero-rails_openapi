@@ -6,7 +6,7 @@
 
 ## Changed
 
-1. Update `loofah` and `rails-html-sanitizer` cause XSS vulnerability.
+1. Upgrade `loofah` and `rails-html-sanitizer` cause XSS vulnerability.
 2. Refactor and document DSL for Rspec (spec_dsl.rb).
 
 ## [1.5.5] - 2018/2/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.4...v1.5.5)
