@@ -32,7 +32,7 @@ module OpenApi
                 }.merge!(settings[:components] || { })
               )
 
-        settings[:base_doc_class].descendants.each do |ctrl|
+        [(bdc = settings[:base_doc_class]), *bdc.descendants].each do |ctrl|
           doc_info = ctrl.instance_variable_get('@doc_info')
           next if doc_info.nil?
 
