@@ -6,12 +6,24 @@
   [![Test Coverage](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/test_coverage)](https://codeclimate.com/github/zhandao/zero-rails_openapi/test_coverage)
 
   Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application.
+  
+  ```ruby
+  class Api::ExamplesController < ApiController
+    api :update, 'POST update some thing' do
+      path  :id, Integer
+      query :token, String, desc: 'api token', length: 16
+      form data: { phone: String }
+    end
+  end
+  ```
 
 ## Contributing
 
   **Hi, here is ZhanDao = ▽ =  
   It may be a very useful tool if you want to write API document clearly.  
   I'm looking forward to your issue and PR!**
+  
+  [Need Help](https://github.com/zhandao/zero-rails_openapi/issues/14)
 
   If you have any questions, please read the test code first.  
   such as [api DSL](spec/api_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
