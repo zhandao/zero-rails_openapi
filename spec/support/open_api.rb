@@ -5,8 +5,6 @@ OpenApi::Config.tap do |c|
     info version: '0.0.1', title: 'APIs', desc: 'API documentation of Zero-Rails Application.'
     server 'http://localhost:3000', desc: 'Main (production) server'
     server 'http://localhost:3000', desc: 'Internal staging server for testing'
-    bearer_auth :Token
-    global_auth :Token
   end
 
   c.file_output_path = 'spec/support'

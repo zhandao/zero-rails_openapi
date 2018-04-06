@@ -136,7 +136,7 @@ RSpec.describe OpenApi::DSL::Components do
 
     describe '#api_key' do
       mk -> { api_key :ApiKey => [ field: 'field_name', desc: 'desc' ] },
-         eq: { ApiKey: { type: 'apiKey', name: 'field_name', in: 'header', description: 'desc' } }
+         get: { ApiKey: { type: 'apiKey', name: 'field_name', in: 'header', description: 'desc' } }
     end
   end
 end
