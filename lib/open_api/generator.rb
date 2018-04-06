@@ -28,8 +28,9 @@ module OpenApi
         doc = { openapi: '3.0.0', **settings.slice(:info, :servers) }.merge!(
                 security: settings[:global_security], tags: [ ], paths: { },
                 components: {
-                    securitySchemes: { }, schemas: { }, parameters: { }, requestBodies: { }
-                }.merge!(settings[:components] || { })
+                    securitySchemes: settings[:securitySchemes] || { },
+                    schemas: { }, parameters: { }, requestBodies: { }
+                }
               )
 
         [(bdc = settings[:base_doc_class]), *bdc.descendants].each do |ctrl|

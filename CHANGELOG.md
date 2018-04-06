@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [1.5.7] - 2018/4/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.6...v1.5.7)
+
+## Changed
+
+1. issue [#16](#https://github.com/zhandao/zero-rails_openapi/issues/16) DSL in `base_doc_class` can not be generated.
+
+## Fixed
+
+1. issue [#15](#https://github.com/zhandao/zero-rails_openapi/issues/15) colorize was not required.
+2. securitySchemes defined by config DSL was not be generated.
+
 ## [1.5.6] - 2018/3/23 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.5...v1.5.6)
 
 ## Changed
