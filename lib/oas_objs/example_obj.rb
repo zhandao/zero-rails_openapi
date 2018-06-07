@@ -7,14 +7,16 @@ module OpenApi
     class ExampleObj < Hash
       include Helpers
 
-      attr_accessor :processed, :examples_hash, :keys_of_value
+      attr_accessor :processed, :examples_hash, :example_value, :keys_of_value
 
-      def initialize(examples_hash, keys_of_value = nil)
-        self.examples_hash = examples_hash
+      def initialize(exp, keys_of_value = nil, multiple: false)
+        multiple ? self.examples_hash = exp : self.example_value = exp
         self.keys_of_value = keys_of_value
       end
 
       def process
+        return self.processed = example_value if example_value
+
         self.processed =
           examples_hash.map do |(name, value)|
             value =

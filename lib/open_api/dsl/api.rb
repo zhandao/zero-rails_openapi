@@ -132,7 +132,7 @@ module OpenApi
 
       def param_examples exp_by = :all, examples_hash
         exp_by = self[:parameters].map(&:name) if exp_by == :all
-        self[:examples] = ExampleObj.new(examples_hash, exp_by).process
+        self[:examples] = ExampleObj.new(examples_hash, exp_by, multiple: true).process
       end
 
       alias examples param_examples

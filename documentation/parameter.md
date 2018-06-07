@@ -66,3 +66,4 @@ You can set the schema by following keys (all are optional), the words in parent
   Regexp or Time Format
   - **default (dft, default_value)**
   - **as** # TODO
+  - **example & examples** # TODO

@@ -58,9 +58,9 @@ RSpec.describe OpenApi::DSL::Api do
       make -> { api :action, skip: [ ]     }, 'skips nothing', has_size: 2
       make -> { api :action, skip: [:page] }, has_size: 1
 
-      make -> { api :action, use: [:nothing] { param :query, :page, Integer, :req } },
+      make -> { api(:action, use: [:nothing]) { param :query, :page, Integer, :req } },
            'not skip the params inside block', has_size: 1
-      make -> { api :action, skip: [:per] { param :query, :per, Integer, :req } },
+      make -> { api(:action, skip: [:per]) { param :query, :per, Integer, :req } },
            'not skip the params inside block', has_size: 2
 
       after_do { undo_dry }

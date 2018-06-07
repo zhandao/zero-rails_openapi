@@ -91,9 +91,10 @@ module OpenApi
 
       def pattern_default_and_other
         {
-            pattern:    _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
-            default:    _default,
-            examples:   self[:examples].present? ? ExampleObj.new(self[:examples], self[:exp_by]).process : nil,
+            pattern:  _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
+            default:  _default,
+            example:  _exp.present? ? ExampleObj.new(_exp).process : nil,
+            examples: _exps.present? ? ExampleObj.new(_exps, self[:exp_by], multiple: true).process : nil,
             as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank
         }
       end
@@ -104,18 +105,20 @@ module OpenApi
           _value:   %i[ must_be  value   allowable_value  ],
           _range:   %i[ range    number_range             ],
           _length:  %i[ length   lth     size             ],
-          _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
           _format:  %i[ format   fmt                      ],
           _pattern: %i[ pattern  regexp  pt   reg         ],
           _default: %i[ default  dft     default_value    ],
           _desc:    %i[ desc     description  d           ],
           __desc:   %i[ desc!    description! d!          ],
+          _exp:     %i[ example                           ],
+          _exps:    %i[ examples                          ],
+          _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
           _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
-          _permit:  %i[ permit   pmt                      ], # NOT OAS Spec, it's for zero-params_processor
-          _npermit: %i[ npmt     not_permit   unpermit    ], # NOT OAS Spec, it's for zero-params_processor
-          _req_if:  %i[ req_if   req_when                 ], # NOT OAS Spec, it's for zero-params_processor
-          _opt_if:  %i[ opt_if   opt_when                 ], # NOT OAS Spec, it's for zero-params_processor
-          _blank:   %i[ blank    blankable                ], # NOT OAS Spec, it's for zero-params_processor
+          _permit:  %i[ permit   pmt                      ], # ditto
+          _npermit: %i[ npmt     not_permit   unpermit    ], # ditto
+          _req_if:  %i[ req_if   req_when                 ], # ditto
+          _opt_if:  %i[ opt_if   opt_when                 ], # ditto
+          _blank:   %i[ blank    blankable                ], # ditto
       }.each do |key, aliases|
         define_method key do
           return self[key] unless self[key].nil?

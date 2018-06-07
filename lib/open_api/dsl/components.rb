@@ -15,7 +15,7 @@ module OpenApi
       arrow_enable :schema
 
       def example component_key, examples_hash
-        self[:examples][component_key] = ExampleObj.new(examples_hash).process
+        self[:examples][component_key] = ExampleObj.new(examples_hash, multiple: true).process
       end
 
       arrow_enable :example

@@ -37,7 +37,7 @@ module OpenApi
         # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@route_base ||= controller_path}##{action}"
         routes = ctrl_routes_list&.select { |api| api[:action_path].match?(/^#{action_path}$/) }
-        return puts '    ZRO'.red + " Route mapping failed: #{@route_base}##{action}" if routes.blank?
+        return puts '    ZRO'.red + " Route mapping failed: #{action_path}" if routes.blank?
 
         api = Api.new(action_path, skip: Array(skip), use: Array(use))
                  .merge! description: '', summary: summary, operationId: action, tags: [@doc_tag],

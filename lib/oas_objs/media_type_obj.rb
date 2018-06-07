@@ -13,7 +13,7 @@ module OpenApi
         schema_type   = hash.values_at(:type, :data).compact.first
         exp_by        = schema_type.keys if exp_by == :all
 
-        self.examples   = ExampleObj.new(examples_hash, exp_by) if examples_hash.present?
+        self.examples   = ExampleObj.new(examples_hash, exp_by, multiple: true) if examples_hash.present?
         self.media_type = media_type_mapping media_type
         self.schema     = SchemaObj.new(schema_type, hash)
       end

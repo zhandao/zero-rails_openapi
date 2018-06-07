@@ -193,6 +193,10 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       api -> { query :info, String, dft: 'default' }, include: { default: 'default' }
     end
 
+    describe ':example' do
+      api -> { query :info, String, example: 'abc' }, include: { example: 'abc' }
+    end
+
     describe ':examples' do
       api -> { query :info, { name: String, age: Integer }, examples: { input1: ['a', 1], input2: ['b, 2'] }, exp_by: %i[ name age ] },
           has_key!: :examples
