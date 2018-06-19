@@ -1,17 +1,21 @@
 require 'spec_dsl'
 
+def clear
+  after_do { @doc_info[:components] = { } }
+end
+
 RSpec.describe OpenApi::DSL::Components do
   get_and_dig_doc [:components]
   let(:dsl_in) { [:components] }
 
   desc :schema, subject: :schemas do
     correct do
-      mk -> { schema :SchemaA, String; schema :SchemaZ, String }, doc_will_has_keys: { schemas: %i[ SchemaA SchemaZ ] }
+      mk -> { schema :SchemaA, String; schema :SchemaZ, String }, doc_will_has_keys: { schemas: %i[ SchemaA SchemaZ ] }; clear
 
-      mk -> { schema :SchemaA, String                           }, get: { SchemaA: { type: 'string'} }
-      mk -> { schema :SchemaA, type: Integer                    }, get: { SchemaA: { type: 'integer'} }
-      mk -> { schema :SchemaB => [ String ]                     }, get: { SchemaB: { type: 'string'} }
-      mk -> { schema :SchemaC => [ type: String, desc: 'test' ] }, get: { SchemaC: { type: 'string', description: 'test' } }
+      mk -> { schema :SchemaA, String                           }, get: { SchemaA: { type: 'string'} }; clear
+      mk -> { schema :SchemaA, type: Integer                    }, get: { SchemaA: { type: 'integer'} }; clear
+      mk -> { schema :SchemaB => [ String ]                     }, get: { SchemaB: { type: 'string'} }; clear
+      mk -> { schema :SchemaC => [ type: String, desc: 'test' ] }, get: { SchemaC: { type: 'string', description: 'test' } }; clear
 
       context 'when defining combined schema' do
         mk -> { schema :SchemaD => [ one_of: [String] ] }, has_keys: { SchemaD: [:oneOf] }
@@ -25,7 +29,7 @@ RSpec.describe OpenApi::DSL::Components do
 
 
   desc :example, subject: :examples do
-    mk -> { example :ExampleA, { }; example :ExampleZ, { } }, doc_will_has_keys: { examples: %i[ ExampleA ExampleZ ] }
+    mk -> { example :ExampleA, { }; example :ExampleZ, { } }, doc_will_has_keys: { examples: %i[ ExampleA ExampleZ ] }; clear
     mk -> { example :ExampleA, { name: 'BeiGou' } }, get: { ExampleA: [{ name: { value: 'BeiGou' } }] }
   end
 
@@ -43,7 +47,7 @@ RSpec.describe OpenApi::DSL::Components do
         expect_its :name, eq: :page
         expect_its :in, eq: 'query'
         expect_its :required, eq: false
-        expect_its :schema, eq: { type: 'integer' }
+        expect_its :schema, eq: { type: 'integer' }; clear
 
         mk -> { path :PathId => [ :id, Integer ] }, has_keys: { PathId: its_structure << { schema: [:type] } }
 
@@ -107,7 +111,7 @@ RSpec.describe OpenApi::DSL::Components do
     mk -> do
       response :RespA, 'invalid token'
       response :RespZ, 'parameter validation failed'
-    end, doc_will_has_keys: { responses: %i[ RespA RespZ ] }
+    end, doc_will_has_keys: { responses: %i[ RespA RespZ ] }; clear
 
     mk -> { resp :RespA => [ 'desc', :json ] }, has_keys!: { RespA: its_structure }
     focus_on :RespA
@@ -124,14 +128,14 @@ RSpec.describe OpenApi::DSL::Components do
           authorizationUrl: 'https://example.com/api/oauth/dialog',
           scopes: { 'write:pets': 'modify pets in your account',  'read:pets': 'read your pets' }
       } }, desc: 'desc'
-    end, doc_will_has_keys: { securitySchemes: %i[ OAuth ] }
+    end, doc_will_has_keys: { securitySchemes: %i[ OAuth ] }; clear
 
     describe '#base_auth' do
-      mk -> { base_auth :BaseAuth }, get: { BaseAuth: { type: 'http', scheme: 'basic' }}
+      mk -> { base_auth :BaseAuth }, get: { BaseAuth: { type: 'http', scheme: 'basic' } }; clear
     end
 
     describe '#bearer_auth' do
-      mk -> { bearer_auth :Token }, get: { Token: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }}
+      mk -> { bearer_auth :Token }, get: { Token: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } }; clear
     end
 
     describe '#api_key' do
