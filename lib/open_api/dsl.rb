@@ -27,9 +27,11 @@ module OpenApi
       def components &block
         doc_tag if @doc_info.nil?
         structure = %i[ schemas responses	parameters examples requestBodies securitySchemes ].map { |k| [k, { }] }.to_h
-        current_doc = @doc_info[:components] = Components.new.merge!(structure)
+        current_doc = Components.new.merge!(structure)
         current_doc.instance_exec(&block)
         current_doc.process_objs
+
+        (@doc_info[:components] ||= { }).deep_merge!(current_doc)
       end
 
       def api action, summary = '', http: http_method = nil, skip: [ ], use: [ ], &block

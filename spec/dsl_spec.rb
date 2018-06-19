@@ -69,4 +69,11 @@ RSpec.describe OpenApi::DSL do
       expect_its(:responses) { be_nil }
     end
   end
+
+  desc :components, subject: :components do
+    make -> do
+      components { response :RespA, 'invalid token' }
+      components { response :RespZ, 'parameter validation failed' }
+    end, has_keys!: { responses: %i[ RespA RespZ ] }
+  end
 end
