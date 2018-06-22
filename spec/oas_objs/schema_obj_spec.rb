@@ -204,4 +204,12 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       expect_its 0, eq: { input1: { value: { name: 'a', age: 1 } } }
     end
   end
+
+
+  desc :additional_properties do
+    correct do
+      api -> { query :info, Object, add_prop: 'string' }, include: { additionalProperties: { type: 'string' } }
+      api -> { query :info, '{=>integer}' }, include: { additionalProperties: { type: 'integer' } }
+    end
+  end
 end

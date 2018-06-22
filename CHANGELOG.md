@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## Changed
+
+1. issue [#21](https://github.com/zhandao/zero-rails_openapi/issues/21) support additionalProperties.
+
+## [1.5.8 & 1.5.9] - 2018/6/19 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.7...v1.5.9)
+
+## Changed
+
+1. issue [#17](https://github.com/zhandao/zero-rails_openapi/issues/17) singular example in schema.
+1. issue [#18](https://github.com/zhandao/zero-rails_openapi/issues/18) define multiple components blocks in one class.
+
 ## [1.5.7] - 2018/4/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.6...v1.5.7)
 
 ## Changed

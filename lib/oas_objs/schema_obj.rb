@@ -22,7 +22,7 @@ module OpenApi
 
       def process(options = { inside_desc: false })
         processed.merge!(processed_type)
-        reducx(enum_and_length, range, format, pattern_default_and_other, desc(options)).then_merge!
+        reducx(additional_properties, enum_and_length, range, format, pattern_default_and_other, desc(options)).then_merge!
       end
 
       def desc(inside_desc:)
@@ -47,9 +47,19 @@ module OpenApi
           { type: 'string', format: Config.file_format }
         elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
+        elsif t.match?(/\{=>.*\}/)
+          self[:values_type] = t[3..-2]
+          { type: 'object' }
         else # other string
           { type: t }
         end
+      end
+
+      def additional_properties
+        return { } if processed[:type] != 'object'
+        {
+            additionalProperties: SchemaObj.new(_addProp, { }).process(inside_desc: true)
+        }
       end
 
       def enum_and_length
@@ -112,6 +122,7 @@ module OpenApi
           __desc:   %i[ desc!    description! d!          ],
           _exp:     %i[ example                           ],
           _exps:    %i[ examples                          ],
+          _addProp: %i[ additional_properties add_prop values_type ],
           _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
           _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
           _permit:  %i[ permit   pmt                      ], # ditto
