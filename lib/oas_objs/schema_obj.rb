@@ -56,7 +56,7 @@ module OpenApi
       end
 
       def additional_properties
-        return { } if processed[:type] != 'object'
+        return { } if processed[:type] != 'object' || _addProp.nil?
         {
             additionalProperties: SchemaObj.new(_addProp, { }).process(inside_desc: true)
         }
