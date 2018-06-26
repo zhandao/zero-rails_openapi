@@ -43,7 +43,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     context 'when be a Symbol' do
-      api -> { query :info, :QueryPage }, 'is a parameter ref', get: { :$ref => '#components/schemas/QueryPage' }
+      api -> { query :info, :QueryPage }, 'is a parameter ref', get: { :$ref => '#/components/schemas/QueryPage' }
     end
 
     context 'when be a Array' do
@@ -100,7 +100,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
             'is a combined schema', has_key!: :oneOf
         focus_on :one_of
         expect_it { have_size 3 }
-        expect_its 0, eq: { :$ref => '#components/schemas/GoodSchema' }
+        expect_its 0, eq: { :$ref => '#/components/schemas/GoodSchema' }
         expect_its -1, eq: { type: 'integer', enum: [1, 2] }
       end
     end

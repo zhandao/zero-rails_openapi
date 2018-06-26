@@ -121,7 +121,7 @@ RSpec.describe OpenApi::DSL::Api do
           # } end
           api -> { param_ref :QueryPage, :PathId, :NotExistCom }, has_size: 3, take: 2,
               desc: '---> has 3 ref, and the last:'
-          it { expect(item_2[:$ref]).to eq '#components/parameters/NotExistCom' }
+          it { expect(item_2[:$ref]).to eq '#/components/parameters/NotExistCom' }
         end
       end
 
@@ -207,7 +207,7 @@ RSpec.describe OpenApi::DSL::Api do
         #   body :BodyB => [:ppt ]
         # } end
         api -> { body :json; body_ref :BodyA; body_ref :BodyB }, 'is the last ref',
-            include: { :$ref => '#components/requestBodies/BodyB' }
+            include: { :$ref => '#/components/requestBodies/BodyB' }
       end
     end
 
@@ -236,7 +236,7 @@ RSpec.describe OpenApi::DSL::Api do
         correct 'passing a code-to-refkey mapping hash' do
           api -> { response_ref unauthorized: :UnauthorizedResp, bad_request: :BadRequestResp },
               has_keys!: %i[ unauthorized bad_request ]
-          it { expect(bad_request).to include :$ref => '#components/responses/BadRequestResp' }
+          it { expect(bad_request).to include :$ref => '#/components/responses/BadRequestResp' }
         end
       end
     end
@@ -334,7 +334,7 @@ RSpec.describe OpenApi::DSL::Api do
           }
         end, has_size!: 3
         it { expect(item_0).to eq right_input: { value: { id: 1, name: 'user' } } }
-        it { expect(item_2).to eq example_ref: { :$ref => '#components/InputExamples/example' } }
+        it { expect(item_2).to eq example_ref: { :$ref => '#/components/InputExamples/example' } }
       end
 
       context 'when passing default :all to exp_  by' do
