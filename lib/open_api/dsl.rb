@@ -34,7 +34,7 @@ module OpenApi
         (@doc_info[:components] ||= { }).deep_merge!(current_doc)
       end
 
-      def api action, summary = '', http: http_method = nil, skip: [ ], use: [ ], &block
+      def api action, summary = '', id: nil, http: http_method = nil, skip: [ ], use: [ ], &block
         doc_tag if @doc_info.nil?
         # select the routing info (corresponding to the current method) from routing list.
         action_path = "#{@route_base ||= controller_path}##{action}"
@@ -42,8 +42,8 @@ module OpenApi
         return puts '    ZRO'.red + " Route mapping failed: #{action_path}" if routes.blank?
 
         api = Api.new(action_path, skip: Array(skip), use: Array(use))
-                 .merge! description: '', summary: summary, operationId: action, tags: [@doc_tag],
-                         parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
+                 .merge! description: '', summary: summary, operationId: id || "#{@doc_info[:tag][:name]}_#{action}",
+                         tags: [@doc_tag], parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
                          links: { }, security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @zro_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
         api.param_use = api.param_skip = [ ] # `skip` and `use` only affect `api_dry`'s blocks

@@ -2,26 +2,33 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2018/6/26 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.9...v1.6.0)
+
 ## Changed
 
-1. issue [#21](https://github.com/zhandao/zero-rails_openapi/issues/21) support additionalProperties.
+1. issue [#21](https://github.com/zhandao/zero-rails_openapi/issues/21) support additionalProperties. Thanks @barnaclebarnes
+2. issue [#23](https://github.com/zhandao/zero-rails_openapi/issues/23) Uniqueness of operationId. Thanks @barnaclebarnes
+
+## Fixed
+
+1. issue [#22](https://github.com/zhandao/zero-rails_openapi/issues/22) missing `/` in reference. Thanks @barnaclebarnes
 
 ## [1.5.8 & 1.5.9] - 2018/6/19 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.7...v1.5.9)
 
 ## Changed
 
-1. issue [#17](https://github.com/zhandao/zero-rails_openapi/issues/17) singular example in schema.
-1. issue [#18](https://github.com/zhandao/zero-rails_openapi/issues/18) define multiple components blocks in one class.
+1. issue [#17](https://github.com/zhandao/zero-rails_openapi/issues/17) singular example in schema. Thanks @williamdias
+1. issue [#18](https://github.com/zhandao/zero-rails_openapi/issues/18) define multiple components blocks in one class. Thanks @Amnesthesia
 
 ## [1.5.7] - 2018/4/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.6...v1.5.7)
 
 ## Changed
 
-1. issue [#16](https://github.com/zhandao/zero-rails_openapi/issues/16) DSL in `base_doc_class` can not be generated.
+1. issue [#16](https://github.com/zhandao/zero-rails_openapi/issues/16) DSL in `base_doc_class` can not be generated. Thanks @jonathantribouharet
 
 ## Fixed
 
-1. issue [#15](https://github.com/zhandao/zero-rails_openapi/issues/15) colorize was not required.
+1. issue [#15](https://github.com/zhandao/zero-rails_openapi/issues/15) colorize was not required. Thanks @jonathantribouharet
 2. securitySchemes defined by config DSL was not be generated.
 
 ## [1.5.6] - 2018/3/23 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.5...v1.5.6)

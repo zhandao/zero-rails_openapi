@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zero-rails_openapi (1.5.9)
+    zero-rails_openapi (1.6.0)
       activesupport (>= 3)
       colorize
       rails (>= 3)
