@@ -15,6 +15,7 @@ RSpec.describe OpenApi::DSL::Components do
       mk -> { schema :SchemaA, String                           }, get: { SchemaA: { type: 'string'} }; clear
       mk -> { schema :SchemaA, type: Integer                    }, get: { SchemaA: { type: 'integer'} }; clear
       mk -> { schema :SchemaB => [ String ]                     }, get: { SchemaB: { type: 'string'} }; clear
+      mk -> { schema :SchemaB => { type: String }               }, get: { SchemaB: { type: 'string'} }; clear
       mk -> { schema :SchemaC => [ type: String, desc: 'test' ] }, get: { SchemaC: { type: 'string', description: 'test' } }; clear
 
       context 'when defining combined schema' do
