@@ -29,7 +29,7 @@ module OpenApi
       # `code`: when defining components, `code` means `component_key`
       def response code, desc, media_type = nil, data: { }, type: nil
         self[:responses][code] = ResponseObj.new(desc) unless (self[:responses] ||= { })[code].is_a?(ResponseObj)
-        self[:responses][code].add_or_fusion(media_type, { data: type || data })
+        self[:responses][code].add_or_fusion(desc, media_type, { data: type || data })
       end
 
       alias_method :resp,  :response

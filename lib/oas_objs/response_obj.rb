@@ -13,7 +13,8 @@ module OpenApi
         self.processed   = { description: desc }
       end
 
-      def add_or_fusion(media_type, hash)
+      def add_or_fusion(desc, media_type, hash)
+        self.processed[:description] = desc if desc.present?
         media_types << MediaTypeObj.new(media_type, hash)
         self
       end

@@ -697,7 +697,7 @@
 ### Trick1 - Write the DSL Somewhere Else
 
   Does your documentation take too many lines?  
-  Do you want to separate documentation from business controller to simplify both?  
+  Do you want to separate documentation from controller to simplify both?  
   Very easy! Just follow
 
   ```ruby
@@ -722,8 +722,14 @@
   end
   ```
 
-  Notes: file name ends in `_doc.rb` by default, but you can change via `Config.doc_location`
-  (it should be file paths, defaults to `./app/**/*_doc.rb`).
+  Explain: These four steps are necessary:
+  1. create a class, like ApiDoc, and make it include OpenApi::DSL (then it could be the base class for writing Api spec).
+  2. set the specified Api spec's base_doc_class to ApiDoc.
+  3. let your doc class (like V1::ExamplesDoc) inherit the base_doc_class (ApiDoc).
+  4. set the route_base (to route path api/v1/examples of that controller Api::V1::ExamplesController) inside V1::ExamplesDoc.
+  
+  Notes: file name ends in `_doc.rb` by default, but you can change it by setting `Config.doc_location`
+    (it should be file paths, defaults to `./app/**/*_doc.rb`).
 
 ### Trick2 - Global DRYing
 

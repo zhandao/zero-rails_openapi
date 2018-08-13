@@ -5,7 +5,7 @@ RSpec.describe OpenApi::DSL::Api do
   get_and_dig_doc %i[ paths goods/action get ]
 
   ctx 'when doing nothing' do
-    api -> { }, get: { summary: 'test', operationId: "Goods_action", tags: ['Goods'] }
+    api -> { }, get: { summary: 'test', operationId: 'GoodsAction', tags: ['Goods'] }
   end
 
 
@@ -225,9 +225,10 @@ RSpec.describe OpenApi::DSL::Api do
         api -> do
           response :success, 'success desc1', :json, data: { name: String }
           response :success, 'success desc2', :json, data: { age: Integer }
+          response :success, ''
         end, has_key!: :success
         focus_on :success
-        expect_its :description, eq: 'success desc1', desc: 'not cover the older'
+        expect_its :description, eq: 'success desc2', desc: 'not cover the older'
         step_into :content, :'application/json', :schema, :properties, desc: 'fusion together:'
         expect_it has_keys: %i[ name age ]
       end
