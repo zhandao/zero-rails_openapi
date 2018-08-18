@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## Changed
+
+1. make operationId camelize.
+
 ## [1.6.0] - 2018/6/26 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.9...v1.6.0)
 
 ## Changed

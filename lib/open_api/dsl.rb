@@ -42,7 +42,7 @@ module OpenApi
         return puts '    ZRO'.red + " Route mapping failed: #{action_path}" if routes.blank?
 
         api = Api.new(action_path, skip: Array(skip), use: Array(use))
-                 .merge! description: '', summary: summary, operationId: id || "#{@doc_info[:tag][:name]}#{action.capitalize}",
+                 .merge! description: '', summary: summary, operationId: id || "#{@doc_info[:tag][:name]}#{action.to_s.camelize}",
                          tags: [@doc_tag], parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
                          links: { }, security: [ ], servers: [ ]
         [action, :all].each { |blk_key| @zro_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
