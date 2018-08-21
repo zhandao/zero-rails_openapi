@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.6.1] - 2018/8/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.6.0...v1.6.1)
+
+## Fixed
+
+1. camelize action tag
+2. update gems cause sprockets vulnerability
+
 ## [1.6.0] - 2018/6/26 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.9...v1.6.0)
 
 ## Changed
