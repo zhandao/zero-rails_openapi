@@ -5,7 +5,7 @@ RSpec.describe OpenApi::DSL do
 
   desc :route_base, subject: :paths do
     before_do { route_base 'examples' }
-    make -> { api :action }, 'is not mapped to goods#action', _it { be_nil }
+    make -> { api :action }, 'is not mapped to goods#action', eq: Hash.new
 
     make -> { api :index }, 'is mapped to examples#index', has_key!: :'examples/index'
     focus_on :'examples/index', :get, :tags, 0
@@ -32,7 +32,7 @@ RSpec.describe OpenApi::DSL do
 
   desc :api, subject: :paths do
     context 'when this action is not configured routing' do
-      make -> { api :no_routing_action }, 'refuses to be generated', _it { be_nil }
+      make -> { api :no_routing_action }, 'refuses to be generated', eq: Hash.new
     end
 
     context 'when this action can be accessed through multiple HTTP methods (set through `match`, like `GET|POST`)' do

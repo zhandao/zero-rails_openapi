@@ -5,7 +5,7 @@ RSpec.describe OpenApi::DSL::Api do
   get_and_dig_doc %i[ paths goods/action get ]
 
   ctx 'when doing nothing' do
-    api -> { }, get: { summary: 'test', operationId: 'GoodsAction', tags: ['Goods'] }
+    api -> { }, get: { summary: 'test', operationId: 'Goods_Action', tags: ['Goods'] }
   end
 
 
