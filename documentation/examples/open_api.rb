@@ -3,7 +3,7 @@ require 'open_api'
 OpenApi::Config.tap do |c|
   # Config DSL
   c.instance_eval do
-    open_api :zero_rails, base_doc_class: ApiDoc
+    open_api :zero_rails, base_doc_classes: [ApiDoc]
     info version: '0.0.1', title: 'Zero Rails APIs', description: 'API documentation of Zero-Rails Application.'
     server 'http://localhost:3000', desc: 'Main (production) server'
     server 'http://localhost:3000', desc: 'Internal staging server for testing'
@@ -21,8 +21,8 @@ OpenApi::Config.tap do |c|
   # Getting started: https://swagger.io/docs/specification/basic-structure/
   c.open_api_docs = {
       blog_api: {
-          # [REQUIRED] ZRO will scan all the descendants of the base_doc_class, then generate their docs.
-          base_doc_class: ApiController,
+          # [REQUIRED] ZRO will scan all the descendants of the base_doc_classes, then generate their docs.
+          base_doc_classes: [ApiController],
 
           # [REQUIRED] Info Object: The info section contains API information
           info: {

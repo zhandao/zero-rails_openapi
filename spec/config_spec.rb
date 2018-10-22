@@ -1,12 +1,12 @@
 RSpec.describe OpenApi::Config do
-  before_config { open_api :zro, base_doc_class: ApiDoc }
+  before_config { open_api :zro, base_doc_classes: [ApiDoc] }
 
   describe '.open_api' do
     let(:docs) { OpenApi::Config.docs }
-    it { expect(docs).to include(zro: { base_doc_class: ApiDoc }) }
+    it { expect(docs).to include(zro: { base_doc_classes: [ApiDoc] }) }
 
     context 'when adding a second doc' do
-      before_config { open_api :doc2, base_doc_class: ApiDoc }
+      before_config { open_api :doc2, base_doc_classes: [ApiDoc] }
       it { expect(docs).to have_keys :zro, :doc2 }
     end
   end
@@ -22,7 +22,7 @@ RSpec.describe OpenApi::Config do
           name: 'API Support', url: 'http://www.skippingcat.com', email: 'x@skippingcat.com'
       }
     end
-    it { is_expected.to have_keys :base_doc_class, info: %i[ version title description contact ] }
+    it { is_expected.to have_keys :base_doc_classes, info: %i[ version title description contact ] }
     it { expect(info[:contact]).to have_keys :name, :url, :email }
   end
 
@@ -30,7 +30,7 @@ RSpec.describe OpenApi::Config do
     let(:servers) { subject[:servers] }
 
     before_config { server 'http://localhost:3000', desc: 'Internal staging server for testing' }
-    it { is_expected.to have_keys :base_doc_class, :servers }
+    it { is_expected.to have_keys :base_doc_classes, :servers }
     it { expect(servers.first).to have_keys :url, :description }
   end
 
@@ -43,7 +43,7 @@ RSpec.describe OpenApi::Config do
           scopes: { 'write:pets': 'modify pets in your account',  'read:pets': 'read your pets' }
       } }, desc: 'desc'
     end
-    it { is_expected.to have_keys :base_doc_class, securitySchemes: [ OAuth: %i[ description type flows ] ] }
+    it { is_expected.to have_keys :base_doc_classes, securitySchemes: [ OAuth: %i[ description type flows ] ] }
 
     describe '.base_auth' do
       before_config { base_auth :BaseAuth }

@@ -4,9 +4,9 @@ module OpenApi
       base.class_eval do
         module_function
 
-        def open_api name, base_doc_class:
+        def open_api name, base_doc_classes:
           @api = name
-          open_api_docs[name] = { base_doc_class: base_doc_class }
+          open_api_docs[name] = { base_doc_classes: base_doc_classes }
         end
 
         def info version:, title:, desc: '', **addition

@@ -94,8 +94,8 @@
     c.open_api_docs = {
         # 对文档 `homepage` 进行定义
         homepage: {
-            # [REQUIRED] ZRO will scan all the descendants of base_doc_class, then generate their docs.
-            base_doc_class: Api::V1::BaseController,
+            # [REQUIRED] ZRO will scan all the descendants of base_doc_classes, then generate their docs.
+            base_doc_classes: [Api::V1::BaseController],
   
             # [REQUIRED] OAS Info Object: The section contains API information.
             info: {
@@ -124,7 +124,7 @@
     c.file_output_path = 'public/open_api'
 
     c.instance_eval do
-      open_api :homepage_api, base_doc_class: ApiDoc
+      open_api :homepage_api, base_doc_classes: [ApiDoc]
       info version: '1.0.0', title: 'Homepage APIs'
     end
   end
@@ -649,7 +649,7 @@
   ```ruby
   # config/initializers/open_api.rb
   # in your configuration
-  base_doc_class: ApiDoc
+  base_doc_classes: [ApiDoc]
 
   # app/api_doc/api_doc.rb
   require 'open_api/dsl'

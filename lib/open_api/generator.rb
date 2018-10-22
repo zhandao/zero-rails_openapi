@@ -14,6 +14,7 @@ module OpenApi
       def generate_docs(doc_name = nil)
         return puts '    ZRO'.red + ' No documents have been configured!' if Config.docs.keys.blank?
 
+        # TODO
         # :nocov:
         Dir['./app/controllers/**/*_controller.rb'].each do |file|
           file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
@@ -33,7 +34,7 @@ module OpenApi
                 }
               )
 
-        [(bdc = settings[:base_doc_class]), *bdc.descendants].each do |ctrl|
+        [*(bdc = settings[:base_doc_classes]), *bdc.flat_map(&:descendants)].each do |ctrl|
           doc_info = ctrl.instance_variable_get('@doc_info')
           next if doc_info.nil?
 

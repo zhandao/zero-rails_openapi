@@ -107,8 +107,8 @@
     c.open_api_docs = {
         # The definition of the document `homepage`.
         homepage: {
-            # [REQUIRED] ZRO will scan all the descendants of base_doc_class, then generate their docs.
-            base_doc_class: Api::V1::BaseController,
+            # [REQUIRED] ZRO will scan all the descendants of base_doc_classes, then generate their docs.
+            base_doc_classes: [Api::V1::BaseController],
 
             # [REQUIRED] OAS Info Object: The section contains API information.
             info: {
@@ -138,7 +138,7 @@
     c.file_output_path = 'public/open_api'
 
     c.instance_eval do
-      open_api :homepage_api, base_doc_class: ApiDoc
+      open_api :homepage_api, base_doc_classes: [ApiDoc]
       info version: '1.0.0', title: 'Homepage APIs'
     end
   end
@@ -703,7 +703,7 @@
   ```ruby
   # config/initializers/open_api.rb
   # in your configuration
-  base_doc_class: ApiDoc
+  base_doc_classes: [ApiDoc]
 
   # app/api_doc/api_doc.rb
   require 'open_api/dsl'
@@ -724,8 +724,8 @@
 
   Explain: These four steps are necessary:
   1. create a class, like ApiDoc, and make it include OpenApi::DSL (then it could be the base class for writing Api spec).
-  2. set the specified Api spec's base_doc_class to ApiDoc.
-  3. let your doc class (like V1::ExamplesDoc) inherit the base_doc_class (ApiDoc).
+  2. set the specified Api spec's base_doc_classes to ApiDoc.
+  3. let your doc class (like V1::ExamplesDoc) inherit the base_doc_classes (ApiDoc).
   4. set the route_base (to route path api/v1/examples of that controller Api::V1::ExamplesController) inside V1::ExamplesDoc.
   
   Notes: file name ends in `_doc.rb` by default, but you can change it by setting `Config.doc_location`

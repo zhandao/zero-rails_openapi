@@ -2,60 +2,64 @@
 
 ## [Unreleased]
 
+### Changed
+
+1. `base_doc_class: ApiDoc` => `base_doc_classes: [ApiDoc]`
+
 ## [1.6.1] - 2018/8/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.6.0...v1.6.1)
 
-## Added
+### Added
 
 `tag` is allowed to pass to `api`
 
-## Fixed
+### Fixed
 
 1. camelize action tag
 2. update gems cause sprockets vulnerability
 
 ## [1.6.0] - 2018/6/26 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.9...v1.6.0)
 
-## Changed
+### Changed
 
 1. issue [#21](https://github.com/zhandao/zero-rails_openapi/issues/21) support additionalProperties. Thanks @barnaclebarnes
 2. issue [#23](https://github.com/zhandao/zero-rails_openapi/issues/23) Uniqueness of operationId. Thanks @barnaclebarnes
 
-## Fixed
+### Fixed
 
 1. issue [#22](https://github.com/zhandao/zero-rails_openapi/issues/22) missing `/` in reference. Thanks @barnaclebarnes
 
 ## [1.5.8 & 1.5.9] - 2018/6/19 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.7...v1.5.9)
 
-## Changed
+### Changed
 
 1. issue [#17](https://github.com/zhandao/zero-rails_openapi/issues/17) singular example in schema. Thanks @williamdias
 1. issue [#18](https://github.com/zhandao/zero-rails_openapi/issues/18) define multiple components blocks in one class. Thanks @Amnesthesia
 
 ## [1.5.7] - 2018/4/6 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.6...v1.5.7)
 
-## Changed
+### Changed
 
 1. issue [#16](https://github.com/zhandao/zero-rails_openapi/issues/16) DSL in `base_doc_class` can not be generated. Thanks @jonathantribouharet
 
-## Fixed
+### Fixed
 
 1. issue [#15](https://github.com/zhandao/zero-rails_openapi/issues/15) colorize was not required. Thanks @jonathantribouharet
 2. securitySchemes defined by config DSL was not be generated.
 
 ## [1.5.6] - 2018/3/23 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.5...v1.5.6)
 
-## Changed
+### Changed
 
 1. Upgrade `loofah` and `rails-html-sanitizer` cause XSS vulnerability.
 2. Refactor and document DSL for Rspec (spec_dsl.rb).
 
 ## [1.5.5] - 2018/2/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.4...v1.5.5)
 
-## Added
+### Added
 
 1. Callback Object has been supported. (issue [#12](#https://github.com/zhandao/zero-rails_openapi/issues/12) @austbot)
 
-## Changed
+### Changed
 
 1. `mk`'s parameter `eq` is changed to `get`. (dssl.rb)
 
@@ -65,29 +69,29 @@ Thanks to @austbot, fix - colorize fails at runtime.
 
 ## [1.5.3] - 2018/1/25 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.2...v1.5.3)
 
-## Added
+### Added
 
 1. Colorize output.
 
-## Changed
+### Changed
 
 1. Refactoring SchemaObj and remove `preprocess`.
 2. `schema_hash` => `schema_info`.
 3. Refactoring `process_objs` .. dsl/ files.
 
-## Fixed
+### Fixed
 
 1. max lth and min lth is reversed.
 
 ## [1.5.2] - 2018/1/2 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.5.1...v1.5.2)
 
-## Added
+### Added
 
 1. `do_*` can be passed common schema after (or before) `by:`.
 2. when this action can be accessed through multiple HTTP methods (but not set through `match`),
    it also matches and generate both HTTP methods.
 
-## Changed
+### Changed
 
 1. `root_controller` => `base_doc_class`.
 2. `ctrl_path` => `ctrl_base`.
