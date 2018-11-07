@@ -3,6 +3,7 @@ SimpleCov.start
 
 require 'bundler/setup'
 require 'pp'
+require 'pry'
 require 'colorize'
 require 'open_api'
 require 'support/api_doc'

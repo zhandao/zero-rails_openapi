@@ -52,6 +52,7 @@ GEM
       tzinfo (~> 1.1)
     arel (9.0.0)
     builder (3.2.3)
+    coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.0.5)
     crass (1.0.4)
@@ -78,6 +79,9 @@ GEM
     nio4r (2.3.1)
     nokogiri (1.8.4)
       mini_portile2 (~> 2.3.0)
+    pry (0.11.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
     rack (2.0.5)
     rack-test (1.0.0)
       rack (>= 1.0, < 3)
@@ -144,10 +148,11 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16.a)
+  pry
   rake (~> 10.0)
   rspec (~> 3.0)
   simplecov
   zero-rails_openapi!
 
 BUNDLED WITH
-   1.16.1
+   1.16.6

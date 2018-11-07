@@ -145,7 +145,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       it { expect(enum).to have_size ('1.2'..'3.4').to_a.size }
     end
 
-    let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro], &:[])[0][:description] }
+    let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro].deep_symbolize_keys, &:[])[0][:description] }
 
     context 'when passing Array to enum!' do
       api -> { query :info, String, enum!: %w[ a b ], desc!: 'info: ' }, has_key!: :enum

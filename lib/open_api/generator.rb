@@ -1,4 +1,3 @@
-require 'active_support/hash_with_indifferent_access'
 require 'open_api/config'
 require 'colorize'
 
@@ -48,7 +47,7 @@ module OpenApi
         doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
         doc[:paths] = doc[:paths].sort.to_h
 
-        OpenApi.docs[doc_name] = HashWithIndifferentAccess.new(doc)#.delete_if { |_, v| v.blank? }
+        OpenApi.docs[doc_name] = doc#.delete_if { |_, v| v.blank? }
       end
 
       def write_docs(generate_files: true)

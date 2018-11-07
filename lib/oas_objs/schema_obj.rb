@@ -43,7 +43,7 @@ module OpenApi
           { type: t.match?('int') ? 'integer' : 'number', format: t }
         elsif t.in? %w[ binary base64 uri ]
           { type: 'string', format: t }
-        elsif t == 'file'
+        elsif t == 'file' # TODO
           { type: 'string', format: Config.file_format }
         elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
