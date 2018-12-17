@@ -805,13 +805,7 @@
 
 - **You wrote document of the current API, but not find in the generated json file?**  
   Check your routing settings.
-- **Undefine method `match?`**  
-  Monkey patches for `String` and `Symbol`:
-  ```ruby
-  class String # Symbol
-    def match?(pattern); !match(pattern).nil? end
-  end
-  ```
+
 - **Report error when require `routes.rb`?***
   1. Run `rails routes`.
   2. Copy the output to a file, for example `config/routes.txt`.

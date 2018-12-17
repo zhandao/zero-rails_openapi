@@ -12,7 +12,7 @@ module OpenApi
         self.processed = {
             name: name,
             in: param_type,
-            required: required.to_s.match?(/req/)
+            required: required.to_s[/req/].present?
         }
         self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
         merge! schema

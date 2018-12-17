@@ -2,9 +2,19 @@
 
 ## [Unreleased]
 
+## [1.7.0] - 2018/12/17 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.6.1...v1.7.0)
+
+### Added
+
+1. Declare Ruby & Rails version requirement in Gemspec
+
+### Fixed
+
+1. `match?` => `'string'[matcher].present?`, for compatibility with ruby < 2.4
+
 ### Changed
 
-1. `base_doc_class: ApiDoc` => `base_doc_classes: [ApiDoc]`
+1. Config option `base_doc_class: ApiDoc` changed to `base_doc_classes: [ApiDoc]`
 
 ## [1.6.1] - 2018/8/21 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.6.0...v1.6.1)
 

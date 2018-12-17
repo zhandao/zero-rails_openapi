@@ -31,7 +31,7 @@ module OpenApi
           if columns.include?(attr)
             index = columns.index(attr)
             _type_mapping(model.columns[index])
-          elsif attr.match?(/_info/)
+          elsif attr[/_info/]
             # TODO: 如何获知关系是 many？因为不能只判断结尾是否 ‘s’
             assoc_model = Object.const_get(attr.to_s.split('_').first.singularize.camelize)
             { attr => load_schema(assoc_model) }

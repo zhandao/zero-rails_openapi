@@ -11,7 +11,7 @@ module OpenApi
       attr_accessor :processed, :media_types
       def initialize(required, desc)
         self.media_types = [ ]
-        self.processed   = { required: required.match?('req'), description: desc }
+        self.processed   = { required: required['req'].present?, description: desc }
       end
 
       def add_or_fusion(media_type, hash)

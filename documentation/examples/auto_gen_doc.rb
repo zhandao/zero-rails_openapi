@@ -10,8 +10,8 @@ module AutoGenDoc
     def inherited(subclass)
       super
       subclass.class_eval do
-        break unless self.name.match?(/sController|sDoc/)
-        route_base self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
+        break unless self.name[/sController|sDoc/]
+        route_base self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name[/sDoc/]
         open_api_dry
       end
     end

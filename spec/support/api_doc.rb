@@ -9,8 +9,8 @@ class ApiDoc < Object
     def inherited(subclass)
       super
       subclass.class_eval do
-        break unless self.name.match?(/sController|sDoc/)
-        route_base self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name.match?(/sDoc/)
+        break unless self.name[/sController|sDoc/]
+        route_base self.name.sub('Doc', '').downcase.gsub('::', '/') if self.name[/sDoc/]
       end
     end
   end

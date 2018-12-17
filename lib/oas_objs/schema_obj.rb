@@ -40,14 +40,14 @@ module OpenApi
         elsif t.is_a? Symbol
           RefObj.new(:schema, t).process
         elsif t.in? %w[ float double int32 int64 ]
-          { type: t.match?('int') ? 'integer' : 'number', format: t }
+          { type: t['int'] ? 'integer' : 'number', format: t }
         elsif t.in? %w[ binary base64 uri ]
           { type: 'string', format: t }
         elsif t == 'file' # TODO
           { type: 'string', format: Config.file_format }
         elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
-        elsif t.match?(/\{=>.*\}/)
+        elsif t[/\{=>.*\}/]
           self[:values_type] = t[3..-2]
           { type: 'object' }
         else # other string

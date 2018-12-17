@@ -85,7 +85,7 @@ module OpenApi
 
     def routes_list
       @routes_list ||= routes.split("\n").drop(1).map do |line|
-        next unless line.match?('#')
+        next unless line['#']
         infos = line.match(/[A-Z|].*/).to_s.split(' ') # => [GET, /api/v1/examples/:id, api/v1/examples#index]
 
         {
