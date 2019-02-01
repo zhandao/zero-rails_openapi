@@ -10,7 +10,7 @@ module OpenApi
 
       def schema component_key, type = nil, **schema_info
         schema = process_schema_info(type, schema_info, model: component_key)
-        return puts '    ZRO'.red + " Syntax Error: component schema `#{component_key}` has no type!" if schema[:illegal?]
+        return Tip.schema_no_type(component_key) if schema[:illegal?]
         self[:schemas][component_key.to_s.to_sym] = (schema[:combined] or SchemaObj.new(type = schema[:info], { })).process
       end
 
@@ -29,7 +29,7 @@ module OpenApi
       # [ header header! path path! query query! cookie cookie! ]
       def _param_agent component_key, name, type = nil, **schema_info
         schema = process_schema_info(type, schema_info)
-        return puts '    ZRO'.red + " Syntax Error: param `#{name}` has no schema type!" if schema[:illegal?]
+        return Tip.param_no_type(name) if schema[:illegal?]
         param component_key, @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
       end
 

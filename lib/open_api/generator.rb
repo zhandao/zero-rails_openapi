@@ -1,73 +1,10 @@
 # frozen_string_literal: true
 
 require 'open_api/config'
-require 'colorize'
 
 module OpenApi
   module Generator
     module_function
-
-    def self.included(base)
-      base.extend ClassMethods
-    end
-
-    module ClassMethods
-      def generate_docs(doc_name = nil)
-        return puts '    ZRO'.red + ' No documents have been configured!' if Config.docs.keys.blank?
-
-        # TODO
-        # :nocov:
-        Dir['./app/controllers/**/*_controller.rb'].each do |file|
-          file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
-        end
-        # :nocov:
-        Dir[*Array(Config.doc_location)].each { |file| require file }
-        (doc_name || Config.docs.keys).map { |name| { name => generate_doc(name) } }.reduce({ }, :merge!)
-      end
-
-      def generate_doc(doc_name)
-        settings = Config.docs[doc_name]
-        doc = { openapi: '3.0.0', **settings.slice(:info, :servers) }.merge!(
-                security: settings[:global_security], tags: [ ], paths: { },
-                components: {
-                    securitySchemes: settings[:securitySchemes] || { },
-                    schemas: { }, parameters: { }, requestBodies: { }
-                }
-              )
-
-        [*(bdc = settings[:base_doc_classes]), *bdc.flat_map(&:descendants)].each do |ctrl|
-          doc_info = ctrl.instance_variable_get('@doc_info')
-          next if doc_info.nil?
-
-          doc[:paths].merge!(ctrl.instance_variable_get('@api_info') || { })
-          doc[:tags] << doc_info[:tag]
-          doc[:components].deep_merge!(doc_info[:components] || { })
-          OpenApi.routes_index[ctrl.instance_variable_get('@route_base')] = doc_name
-        end
-
-        doc[:components].delete_if { |_, v| v.blank? }
-        doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
-        doc[:paths] = doc[:paths].sort.to_h
-
-        OpenApi.docs[doc_name] = doc#.delete_if { |_, v| v.blank? }
-      end
-
-      def write_docs(generate_files: true)
-        docs = generate_docs
-        puts '    ZRO loaded.'.green if ENV['RAILS_ENV']
-        return unless generate_files
-        # :nocov:
-        output_path = Config.file_output_path
-        FileUtils.mkdir_p output_path
-        max_length = docs.keys.map(&:size).sort.last
-        docs.each do |doc_name, doc|
-          puts '    ZRO'.green + " `#{doc_name.to_s.rjust(max_length)}.json` has been generated."
-          File.open("#{output_path}/#{doc_name}.json", 'w') { |file| file.write JSON.pretty_generate doc }
-        end
-        # :nocov:
-      end
-    end
-    # end of module
 
     def routes
       @routes ||=

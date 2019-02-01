@@ -23,15 +23,15 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.3.0'
 
-  spec.add_development_dependency 'bundler', '~> 1.16.a'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'rspec', '~> 3.0'
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'pry'
 
-  spec.add_runtime_dependency 'colorize'
-  spec.add_runtime_dependency 'activesupport', '>= 4.1'
-  spec.add_runtime_dependency 'rails', '>= 4.1'
+  spec.add_dependency 'colorize'
+  spec.add_dependency 'activesupport', '>= 4.1'
+  spec.add_dependency 'rails', '>= 4.1'
 
   # spec.post_install_message = ""
 end

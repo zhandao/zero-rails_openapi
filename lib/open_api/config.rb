@@ -34,7 +34,7 @@ module OpenApi
       {
       #     # [REQUIRED] At least one doc.
       #     zero_rails: {
-      #         # [REQUIRED] ZRO will scan all the descendants of the base_doc_classes, and then generate their docs.
+      #         # [REQUIRED] OpenApi will scan all the descendants of the base_doc_classes, and then generate their docs.
       #         base_doc_classes: [ApplicationController],
       #
       #         # [REQUIRED] Info Object: The info section contains API information

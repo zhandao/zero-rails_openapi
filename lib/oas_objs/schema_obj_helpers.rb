@@ -69,7 +69,7 @@ module OpenApi
 
         if @enum_info.present?
           @enum_info.each_with_index do |(info, value), index|
-            self.__desc = __desc + "<br/>#{index + 1}/ #{info}: #{value}"
+            self.__desc = __desc + "<br/>#{index + 1}/ #{info}: #{value}" # FIXME
           end
         else
           _enum.each_with_index do |value, index|
