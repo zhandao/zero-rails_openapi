@@ -20,7 +20,7 @@ module OpenApi
                     callbacks: { }, links: { }, security: [ ], servers: [ ])
       end
 
-      def this_api_is_invalid! explain = ''
+      def this_api_is_invalid!(*)
         self[:deprecated] = true
       end
 
@@ -128,13 +128,6 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
-      def order *param_names
-        self.param_order = param_names
-        # be used when `api_dry`
-        self.param_use = param_order if param_use.blank?
-        self.param_skip = param_use - param_order
-      end
-
       def param_examples exp_by = :all, examples_hash
         exp_by = self[:parameters].map(&:name) if exp_by == :all
         self[:examples] = ExampleObj.new(examples_hash, exp_by, multiple: true).process
@@ -144,10 +137,9 @@ module OpenApi
 
       def process_objs
         self[:parameters].map!(&:process)
-        self[:parameters].sort_by! { |param| param_order.index(param[:name]) || Float::INFINITY } if param_order.present?
-
         self[:requestBody] = self[:requestBody].try(:process)
         self[:responses].each { |code, response| self[:responses][code] = response.process }
+        self[:responses] = self[:responses].sort.to_h
       end
     end
   end
