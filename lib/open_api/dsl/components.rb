@@ -8,6 +8,10 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
+      def initialize
+        self.merge!(%i[ schemas responses	parameters examples requestBodies securitySchemes ].map { |k| [ k, { } ] }.to_h)
+      end
+
       def schema component_key, type = nil, **schema_info
         schema = process_schema_info(type, schema_info, model: component_key)
         return Tip.schema_no_type(component_key) if schema[:illegal?]

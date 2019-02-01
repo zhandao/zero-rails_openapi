@@ -15,6 +15,9 @@ module OpenApi
         self.param_skip  = skip
         self.param_use   = use
         self.param_descs = { }
+
+        self.merge!(description: '', parameters: [ ], requestBody: '', responses: { },
+                    callbacks: { }, links: { }, security: [ ], servers: [ ])
       end
 
       def this_api_is_invalid! explain = ''
