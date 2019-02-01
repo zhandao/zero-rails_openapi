@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'open_api/config'
-
 module OpenApi
   module Generator
     module_function

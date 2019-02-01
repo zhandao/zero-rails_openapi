@@ -4,7 +4,7 @@ RSpec.describe OpenApi::DSL do
   set_doc
 
   desc :route_base, subject: :paths do
-    before_do { route_base 'examples' }
+    before_do { @oas = nil; route_base 'examples' }
     make -> { api :action }, 'is not mapped to goods#action', eq: Hash.new
 
     make -> { api :index }, 'is mapped to examples#index', has_key!: :'examples/index'
@@ -14,21 +14,18 @@ RSpec.describe OpenApi::DSL do
     after_do { route_base 'goods' }
   end
 
-
   desc :doc_tag do
     make -> do
-      doc_tag name: :Other, desc: 'tag desc', external_doc_url: 'url'
+      doc_tag name: :Other, description: 'tag desc'
       api :action
     end, has_keys!: %i[ tags paths ]
     focus_on :tags, 0
     expect_its :name, eq: :Other
     expect_its :description, eq: 'tag desc'
-    expect_its :externalDocs, eq: { description: 'ref', url: 'url' }
 
     focus_on :paths, :'goods/action', :get, :tags, 0
     expect_it eq: :Other
   end
-
 
   desc :api, subject: :paths do
     context 'when this action is not configured routing' do

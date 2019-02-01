@@ -13,10 +13,9 @@ module OpenApi
   cattr_accessor :routes_index, default: { }
   cattr_accessor :docs, default: { }
 
-  def write_docs(args = { if: true })
-    docs = generate_docs
-    Tip.loaded if ENV['RAILS_ENV']
-    return unless args[:if]
+  def write_docs(if: true, read_on_controller: true)
+    (docs = generate_docs(read_on_controller)) and Tip.loaded
+    return unless binding.local_variable_get :if
 
     FileUtils.mkdir_p Config.file_output_path
     docs.each do |name, doc|
@@ -25,29 +24,23 @@ module OpenApi
     end
   end
 
-  def generate_docs
+  def generate_docs(read_on_controller)
     return Tip.no_config if Config.docs.keys.blank?
-
-    # TODO
-    # :nocov:
-    Dir['./app/controllers/**/*_controller.rb'].each do |file|
-      file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
-    end
-    # :nocov:
+    traverse_controllers if read_on_controller
     Dir[*Array(Config.doc_location)].each { |file| require file }
     Config.docs.keys.map { |name| [ name, generate_doc(name) ] }.to_h
   end
 
   def generate_doc(doc_name)
     settings, doc = init_hash(doc_name)
-    [*(bdc = settings[:base_doc_classes]), *bdc.flat_map(&:descendants)].each do |ctrl|
-      doc_info = ctrl.instance_variable_get('@doc_info')
-      next if doc_info.nil?
+    [*(bdc = settings[:base_doc_classes]), *bdc.flat_map(&:descendants)].each do |kls|
+      next if kls.oas[:doc].blank?
 
-      doc[:paths].merge!(ctrl.instance_variable_get('@api_info') || { })
-      doc[:tags] << doc_info[:tag]
-      doc[:components].deep_merge!(doc_info[:components] || { })
-      OpenApi.routes_index[ctrl.instance_variable_get('@route_base')] = doc_name
+      doc[:paths].merge!(kls.oas[:apis])
+      binding.pry unless kls.oas[:doc][:tag]
+      doc[:tags] << kls.oas[:doc][:tag]
+      doc[:components].deep_merge!(kls.oas[:doc][:components] || { })
+      OpenApi.routes_index[kls.oas[:route_base]] = doc_name
     end
 
     doc[:components].delete_if { |_, v| v.blank? }
@@ -67,5 +60,11 @@ module OpenApi
         }
     )
     [ settings, doc ]
+  end
+
+  def traverse_controllers
+    Dir['./app/controllers/**/*_controller.rb'].each do |file|
+      file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
+    end
   end
 end

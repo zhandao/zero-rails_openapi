@@ -23,8 +23,8 @@ def _dsl(block)
 end
 
 def _write_docs
-  OpenApi.write_docs(generate_files: false)
-  GoodsDoc.class_eval { undo_dry; @api_info = { } }
+  OpenApi.write_docs(if: false)
+  GoodsDoc.class_eval { undo_dry; oas[:apis] = { } }
 end
 
 def _do!(block)

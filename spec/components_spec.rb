@@ -1,7 +1,7 @@
 require 'spec_dsl'
 
 def clear
-  after_do { @doc_info[:components] = { } }
+  after_do { oas[:doc][:components] = { } }
 end
 
 RSpec.describe OpenApi::DSL::Components do

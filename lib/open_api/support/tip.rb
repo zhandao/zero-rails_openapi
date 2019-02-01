@@ -5,7 +5,7 @@ module OpenApi
     extend self
 
     def no_config; puts '    OpenApi'.red + ' No documents have been configured!' end
-    def loaded;    puts '    OpenApi'.green + ' loaded' end
+    def loaded;    puts '    OpenApi'.green + ' loaded' if ENV['RAILS_ENV'] end
 
     def generated(name)
       puts '    OpenApi'.green + " `#{name}.json` has been generated."
