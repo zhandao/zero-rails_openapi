@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OpenApi
   module DSL
     module SchemaObjHelpers
@@ -67,11 +69,11 @@ module OpenApi
 
         if @enum_info.present?
           @enum_info.each_with_index do |(info, value), index|
-            __desc.concat "<br/>#{index + 1}/ #{info}: #{value}"
+            self.__desc = __desc + "<br/>#{index + 1}/ #{info}: #{value}"
           end
         else
           _enum.each_with_index do |value, index|
-            __desc.concat "<br/>#{index + 1}/ #{value}"
+            self.__desc = __desc + "<br/>#{index + 1}/ #{value}"
           end
         end
         __desc

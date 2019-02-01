@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open_api/config_dsl'
 require 'active_support/all'
 

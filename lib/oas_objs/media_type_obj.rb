@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'oas_objs/schema_obj'
 require 'oas_objs/example_obj'
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'oas_objs/helpers'
 require 'open_api/config'
 require 'oas_objs/ref_obj'

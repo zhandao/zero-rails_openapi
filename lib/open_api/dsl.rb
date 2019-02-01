@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open_api/dsl/api'
 require 'open_api/dsl/components'
 require 'colorize'

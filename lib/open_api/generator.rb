@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open_api/config'
 require 'colorize'
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'oas_objs/helpers'
 
 module OpenApi

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OpenApi
   module DSL
     # https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/

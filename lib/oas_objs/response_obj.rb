@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'oas_objs/media_type_obj'
 require 'oas_objs/helpers'
 
