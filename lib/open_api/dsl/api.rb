@@ -8,13 +8,12 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_order
+      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :param_descs, :param_order
 
-      def initialize(action_path = '', skip: [ ], use: [ ])
+      def initialize(action_path = '')
         self.action_path = action_path
-        self.param_skip  = skip
-        self.param_use   = use
         self.param_descs = { }
+        self.dry_blocks  = [ ]
 
         self.merge!(description: '', parameters: [ ], requestBody: '', responses: { },
                     callbacks: { }, links: { }, security: [ ], servers: [ ])
@@ -32,10 +31,16 @@ module OpenApi
         self.param_descs = param_descs
         self[:description] = desc
       end
+      
+      def dry only: nil, skip: nil, none: false
+        self.dry_skip = skip
+        self.dry_only  = none ? [:none] : only
+        dry_blocks.each { |blk| instance_eval(&blk) }
+        self.dry_skip = self.dry_only = nil
+      end
 
       def param param_type, name, type, required, schema_info = { }
-        return if param_skip.include?(name)
-        return if param_use.present? && param_use.exclude?(name)
+        return if dry_skip&.include?(name) || dry_only&.exclude?(name)
 
         schema_info[:desc]  ||= param_descs[name]
         schema_info[:desc!] ||= param_descs[:"#{name}!"]

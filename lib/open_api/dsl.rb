@@ -30,16 +30,17 @@ module OpenApi
         (oas[:doc][:components] ||= { }).deep_merge!(current_doc)
       end
 
-      def api action, summary = '', id: nil, tag: nil, http: nil, skip: [ ], use: [ ], &block
+      def api action, summary = '', id: nil, tag: nil, http: nil, &block
         doc_tag if oas[:doc].blank?
         action_path = "#{oas[:route_base]}##{action}"
-        routes = ctrl_routes_list&.select { |api| api[:action_path][/^#{action_path}$/].present? }
+        routes = Generator.routes_list[oas[:route_base]]
+                     &.select { |api| api[:action_path][/^#{action_path}$/].present? }
         return Tip.no_route(action_path) if routes.blank?
 
         tag = tag || oas[:doc][:tag][:name]
-        api = Api.new(action_path, skip: Array(skip), use: Array(use))
-                 .merge!(summary: summary, tags: [tag], operationId: id || "#{tag}_#{action.to_s.camelize}")
-        _api_dry(api, action, tag)
+        api = Api.new(action_path)
+                  .merge!(summary: summary, tags: [tag], operationId: id || "#{tag}_#{action.to_s.camelize}")
+        [action, tag, :all].each { |key| api.dry_blocks.concat(oas[:dry_blocks][key] || [ ]) }
         api.instance_exec(&block) if block_given?
         api.process_objs
         api.delete_if { |_, v| v.blank? }
@@ -47,18 +48,7 @@ module OpenApi
       end
 
       def api_dry action_or_tags = :all, &block
-        Array(action_or_tags).each { |a| (oas[:dry_blocks][a.to_sym] ||= [ ]) << block }
-      end
-
-      def ctrl_routes_list
-        Generator.routes_list[oas[:route_base]]
-      end
-
-      def _api_dry(api, action, tag)
-        [action, tag, :all].each do |blk_key|
-          oas[:dry_blocks][blk_key]&.each { |blk| api.instance_eval(&blk) }
-        end
-        api.param_use = api.param_skip = [ ] # `skip` and `use` only affect `api_dry`'s blocks
+        Array(action_or_tags).each { |a| (oas[:dry_blocks][a] ||= [ ]) << block }
       end
 
       def _set_apis(api, routes, http)

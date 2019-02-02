@@ -52,15 +52,15 @@ RSpec.describe OpenApi::DSL::Api do
         end
       }
 
-      make -> { api :action, use: [ ]      }, 'uses all', has_size: 2
-      make -> { api :action, use: [:none]  }, then_it('only uses :none') { be_nil }
-      make -> { api :action, use: [:page]  }, has_size: 1
-      make -> { api :action, skip: [ ]     }, 'skips nothing', has_size: 2
-      make -> { api :action, skip: [:page] }, has_size: 1
+      make -> { api(:action) { dry }               }, 'uses all', has_size: 2
+      make -> { api(:action) { dry none: true }    }, then_it('only uses :none') { be_nil }
+      make -> { api(:action) { dry only: [:page] } }, has_size: 1
+      make -> { api(:action) { dry }               }, 'skips nothing', has_size: 2
+      make -> { api(:action) { dry skip: [:page] } }, has_size: 1
 
-      make -> { api(:action, use: [:nothing]) { param :query, :page, Integer, :req } },
+      make -> { api(:action) { dry none: true; param :query, :page, Integer, :req } },
            'not skip the params inside block', has_size: 1
-      make -> { api(:action, skip: [:per]) { param :query, :per, Integer, :req } },
+      make -> { api(:action) { dry skip: [:per]; param :query, :per, Integer, :req } },
            'not skip the params inside block', has_size: 2
 
       after_do { undo_dry }
@@ -289,40 +289,40 @@ RSpec.describe OpenApi::DSL::Api do
     end
 
 
-    desc :order, subject: :parameters do
-      context 'when using in .api' do
-        api -> do
-          query :page, String
-          path  :id, Integer
-          order :id, :page
-        end, has_size!: 2
-        it { expect(item_0).to include name: :id }
-        it { expect(item_1).to include name: :page }
-      end
-
-      context 'when using in .api_dry' do
-        before_do! do
-          api_dry do
-            header :token, String
-            path   :id, Integer
-            order :id, :name, :age, :token, :remarks
-          end
-
-          api :action do
-            query :remarks, String
-            query :name, String
-            query :age, String
-          end
-
-          undo_dry
-        end
-
-        focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
-        expect_it { have_size 5 }
-        expect_its(0) { include name: :id }
-        expect_its(4) { include name: :remarks }
-      end
-    end
+    # desc :order, subject: :parameters do
+    #   context 'when using in .api' do
+    #     api -> do
+    #       query :page, String
+    #       path  :id, Integer
+    #       order :id, :page
+    #     end, has_size!: 2
+    #     it { expect(item_0).to include name: :id }
+    #     it { expect(item_1).to include name: :page }
+    #   end
+    #
+    #   context 'when using in .api_dry' do
+    #     before_do! do
+    #       api_dry do
+    #         header :token, String
+    #         path   :id, Integer
+    #         order :id, :name, :age, :token, :remarks
+    #       end
+    #
+    #       api :action do
+    #         query :remarks, String
+    #         query :name, String
+    #         query :age, String
+    #       end
+    #
+    #       undo_dry
+    #     end
+    #
+    #     focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
+    #     expect_it { have_size 5 }
+    #     expect_its(0) { include name: :id }
+    #     expect_its(4) { include name: :remarks }
+    #   end
+    # end
 
 
     desc :param_examples, subject: :examples do

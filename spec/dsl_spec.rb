@@ -47,18 +47,18 @@ RSpec.describe OpenApi::DSL do
   desc :api_dry, subject: :paths do
     context 'when using the default :all parameter' do
       make -> do
-        api_dry { resp :success, 'success response' }
-        api :create
-        api :index
+        api_dry { response :success, 'success response' }
+        api(:create) { dry }
+        api(:index) { dry }
       end, 'makes all actions have a :success response',
            has_keys: { goods: [ get: [responses: [:success]], post: [responses: [:success]] ] }
     end
 
     context 'when the action is specified' do
       make -> do
-        api_dry(:index) { resp :success, 'success response' }
+        api_dry(:index) { response :success, 'success response' }
         api :create
-        api :index
+        api(:index) { dry }
       end, has_keys!: :goods
       focus_on :goods, :get
       expect_its :responses, has_keys: :success
