@@ -30,7 +30,7 @@ module OpenApi
         (oas[:doc][:components] ||= { }).deep_merge!(current_doc)
       end
 
-      def api action, summary = '', id: nil, tag: nil, http: nil, &block
+      def api action, summary = '', id: nil, tag: nil, http: nil, dry: Config.default_run_dry, &block
         doc_tag if oas[:doc].blank?
         action_path = "#{oas[:route_base]}##{action}"
         routes = Generator.routes_list[oas[:route_base]]
@@ -38,17 +38,14 @@ module OpenApi
         return Tip.no_route(action_path) if routes.blank?
 
         tag = tag || oas[:doc][:tag][:name]
-        api = Api.new(action_path)
-                  .merge!(summary: summary, tags: [tag], operationId: id || "#{tag}_#{action.to_s.camelize}")
+        api = Api.new(action_path, summary: summary, tags: [tag], id: id || "#{tag}_#{action.to_s.camelize}")
         [action, tag, :all].each { |key| api.dry_blocks.concat(oas[:dry_blocks][key] || [ ]) }
-        api.instance_exec(&block) if block_given?
-        api.process_objs
-        api.delete_if { |_, v| v.blank? }
+        api.run_dsl(dry: dry, &block)
         _set_apis(api, routes, http)
       end
 
       def api_dry action_or_tags = :all, &block
-        Array(action_or_tags).each { |a| (oas[:dry_blocks][a] ||= [ ]) << block }
+        Array(action_or_tags).each { |a| (oas[:dry_blocks][a.to_sym] ||= [ ]) << block }
       end
 
       def _set_apis(api, routes, http)

@@ -8,14 +8,15 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :param_descs, :param_order
+      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :dryed, :param_descs, :param_order
 
-      def initialize(action_path = '')
+      def initialize(action_path = '', summary: nil, tags: [ ], id: nil)
         self.action_path = action_path
         self.param_descs = { }
         self.dry_blocks  = [ ]
 
-        self.merge!(description: '', parameters: [ ], requestBody: '', responses: { },
+        self.merge!(summary: summary, operationId: id, tags: tags,
+                    description: '', parameters: [ ], requestBody: '', responses: { },
                     callbacks: { }, links: { }, security: [ ], servers: [ ])
       end
 
@@ -31,12 +32,14 @@ module OpenApi
         self.param_descs = param_descs
         self[:description] = desc
       end
-      
+
       def dry only: nil, skip: nil, none: false
-        self.dry_skip = skip
-        self.dry_only  = none ? [:none] : only
+        return if dry_blocks.blank? || dryed
+        self.dry_skip = skip && Array(skip)
+        self.dry_only = none ? [:none] : only && Array(only)
         dry_blocks.each { |blk| instance_eval(&blk) }
         self.dry_skip = self.dry_only = nil
+        self.dryed = true
       end
 
       def param param_type, name, type, required, schema_info = { }
@@ -140,11 +143,18 @@ module OpenApi
 
       alias examples param_examples
 
+      def run_dsl(dry: false, &block)
+        instance_exec(&block) if block_given?
+        dry() if dry
+        process_objs
+      end
+
       def process_objs
         self[:parameters].map!(&:process)
         self[:requestBody] = self[:requestBody].try(:process)
         self[:responses].each { |code, response| self[:responses][code] = response.process }
         self[:responses] = self[:responses].sort.to_h
+        self.delete_if { |_, v| v.blank? }
       end
     end
   end

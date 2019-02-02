@@ -7,6 +7,8 @@ module OpenApi
   module Config
     include ConfigDSL
 
+    cattr_accessor :default_run_dry, default: false
+
     # [REQUIRED] The location where .json doc file will be output.
     cattr_accessor :file_output_path do
       'public/open_api'
