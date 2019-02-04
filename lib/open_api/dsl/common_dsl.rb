@@ -13,14 +13,6 @@ require 'open_api/dsl/helpers'
 module OpenApi
   module DSL
     module CommonDSL
-      %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
-        define_method param_type do |*args|
-          @necessity = param_type['!'] ? :req : :opt
-          @param_type = param_type.to_s.delete('!') # OR: caller[0][/`.*'/][1..-2].to_sym
-          _param_agent *args
-        end
-      end
-
       %i[ body body! ].each do |method|
         define_method method do |*args|
           @necessity = method['!'] ? :req : :opt

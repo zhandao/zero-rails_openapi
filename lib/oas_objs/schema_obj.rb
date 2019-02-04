@@ -15,11 +15,11 @@ module OpenApi
 
       attr_accessor :processed, :type, :preprocessed
 
-      def initialize(type, schema_info)
+      def initialize(type = nil, schema_info)
+        merge!(schema_info.is_a?(Hash) ? schema_info : { type: schema_info })
         self.preprocessed = false
         self.processed = { }
-        self.type = type
-        merge! schema_info
+        self.type = type || self[:type]
       end
 
       def process(options = { inside_desc: false })

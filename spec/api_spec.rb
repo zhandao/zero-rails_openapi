@@ -21,20 +21,6 @@ RSpec.describe OpenApi::DSL::Api do
 
   desc :desc do
     api -> { desc 'description for api #action.' }, has_key: :description
-
-    context "when uniting parameters' description" do
-      let(:params) { subject[:parameters] }
-
-      before_dsl! do
-        desc '#action', name: 'name', age!: 'age', id: 'id'
-        query :name, String
-        query :age, Integer
-        query :id, Integer, desc: 'override'
-      end
-      it { expect(params[0]).to include name: :name, description: 'name' }
-      it { expect(params[1]).to include name: :age, description: 'age' }
-      it { expect(params[2]).to include name: :id, description: 'override' }
-    end
   end
 
 
@@ -95,22 +81,14 @@ RSpec.describe OpenApi::DSL::Api do
         end
 
         describe '#do_*:' do
-          api -> { do_query by: { } }, then_it { be_nil }
-
-          api -> { do_header by: { key: Integer, token!: String } }, has_size!: 2
+          api -> { in_header(key: Integer, token!: String) }, has_size!: 2
           it { expect(item_0).to include name: :key, required: false }
           it { expect(item_1).to include name: :token, required: true }
 
           context 'when calling bang method' do
-            api -> { do_path! by: { id: Integer, name: String } }, '---> has 2 required items:', has_size!: 2
+            api -> { in_path!(id: Integer, name: { type: String }) }, '---> has 2 required items:', has_size!: 2
             it { expect(item_0).to include name: :id, required: true}
-            it { expect(item_1).to include name: :name, required: true}
-          end
-
-          context 'when passing common schema' do
-            api -> { do_query by: { id: Integer, name: String }, pmt: true }, '---> has 2 required items:', has_size!: 2
-            it { expect(item_0[:schema]).to include permit: true }
-            it { expect(item_1[:schema]).to include permit: true }
+            it { expect(item_1).to include name: :name, required: true, schema: { type: 'string' }}
           end
         end
 

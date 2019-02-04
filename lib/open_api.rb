@@ -35,9 +35,7 @@ module OpenApi
     settings, doc = init_hash(doc_name)
     [*(bdc = settings[:base_doc_classes]), *bdc.flat_map(&:descendants)].each do |kls|
       next if kls.oas[:doc].blank?
-
       doc[:paths].merge!(kls.oas[:apis])
-      binding.pry unless kls.oas[:doc][:tag]
       doc[:tags] << kls.oas[:doc][:tag]
       doc[:components].deep_merge!(kls.oas[:doc][:components] || { })
       OpenApi.routes_index[kls.oas[:route_base]] = doc_name
@@ -46,7 +44,6 @@ module OpenApi
     doc[:components].delete_if { |_, v| v.blank? }
     doc[:tags]  = doc[:tags].sort { |a, b| a[:name] <=> b[:name] }
     doc[:paths] = doc[:paths].sort.to_h
-
     OpenApi.docs[doc_name] = doc#.delete_if { |_, v| v.blank? }
   end
 

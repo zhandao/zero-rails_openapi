@@ -7,7 +7,6 @@ module OpenApi
         base.extend ClassMethods
       end
 
-      # :nocov:
       def load_schema(model) # TODO: test
           model.columns.map do |column|
             type = column.sql_type_metadata.type.to_s.camelize
@@ -15,7 +14,6 @@ module OpenApi
             [ column.name.to_sym, Object.const_get(type) ]
           end.to_h rescue ''
       end
-      # :nocov:
 
       def fill_in_parameters(param_obj)
         index = self[:parameters].map(&:name).index(param_obj.name)

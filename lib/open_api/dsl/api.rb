@@ -8,16 +8,13 @@ module OpenApi
       include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :dryed, :param_descs, :param_order
+      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :dryed, :param_order
 
       def initialize(action_path = '', summary: nil, tags: [ ], id: nil)
         self.action_path = action_path
-        self.param_descs = { }
         self.dry_blocks  = [ ]
-
-        self.merge!(summary: summary, operationId: id, tags: tags,
-                    description: '', parameters: [ ], requestBody: '', responses: { },
-                    callbacks: { }, links: { }, security: [ ], servers: [ ])
+        self.merge!(summary: summary, operationId: id, tags: tags, description: '', parameters: [ ],
+                    requestBody: '', responses: { }, callbacks: { }, links: { }, security: [ ], servers: [ ])
       end
 
       def this_api_is_invalid!(*)
@@ -28,10 +25,11 @@ module OpenApi
       alias this_api_is_unused!       this_api_is_invalid!
       alias this_api_is_under_repair! this_api_is_invalid!
 
-      def desc desc, param_descs = { }
-        self.param_descs = param_descs
+      def desc desc
         self[:description] = desc
       end
+
+      alias description desc
 
       def dry only: nil, skip: nil, none: false
         return if dry_blocks.blank? || dryed
@@ -45,32 +43,29 @@ module OpenApi
       def param param_type, name, type, required, schema_info = { }
         return if dry_skip&.include?(name) || dry_only&.exclude?(name)
 
-        schema_info[:desc]  ||= param_descs[name]
-        schema_info[:desc!] ||= param_descs[:"#{name}!"]
         param_obj = ParamObj.new(name, param_type, type, required, schema_info)
         # The definition of the same name parameter will be overwritten
         fill_in_parameters(param_obj)
       end
 
-      # [ header header! path path! query query! cookie cookie! ]
-      def _param_agent name, type = nil, **schema_info
-        schema = process_schema_info(type, schema_info)
-        return Tip.param_no_type(name) if schema[:illegal?]
-        param @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
-      end
+      alias parameter param
 
-      # For supporting this: (just like `form '', data: { }` usage)
-      #   do_query by: {
-      #     :search_type => { type: String  },
-      #         :export! => { type: Boolean }
-      #   }
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
-        define_method "do_#{param_type}" do |by:, **common_schema|
-          by.each do |param_name, schema|
-            action = "#{param_type}#{param_name['!']}".sub('!!', '!')
-            type, schema = schema.is_a?(Hash) ? [schema[:type], schema] : [schema, { }]
-            args = [ param_name.to_s.delete('!').to_sym, type, schema.reverse_merge!(common_schema) ]
-            send(action, *args)
+        define_method param_type do |name, type = nil, **schema_info|
+          schema = process_schema_info(type, schema_info)
+          return Tip.param_no_type(name) if schema[:illegal?]
+          param param_type, name, schema[:type], (param_type['!'] ? :req : :opt),
+                schema[:combined] || schema[:info]
+        end
+
+        # For supporting this: (just like `form '', data: { }` usage)
+        #   in_query(
+        #     :search_type => String,
+        #         :export! => { type: Boolean }
+        #   )
+        define_method "in_#{param_type}" do |params|
+          params.each_pair do |param_name, schema|
+            param param_type, param_name.to_sym, nil, (param_type['!'] || param_name['!'] ? :req : :opt), schema
           end
         end
       end

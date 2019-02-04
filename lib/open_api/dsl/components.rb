@@ -30,14 +30,16 @@ module OpenApi
         self[:parameters][component_key] = ParamObj.new(name, param_type, type, required, schema_info).process
       end
 
-      # [ header header! path path! query query! cookie cookie! ]
-      def _param_agent component_key, name, type = nil, **schema_info
-        schema = process_schema_info(type, schema_info)
-        return Tip.param_no_type(name) if schema[:illegal?]
-        param component_key, @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
-      end
+      %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
+        define_method param_type do |component_key, name, type = nil, **schema_info|
+          schema = process_schema_info(type, schema_info)
+          return Tip.param_no_type(name) if schema[:illegal?]
+          param component_key, param_type.to_s.delete('!'), name, schema[:type], (param_type['!'] ? :req : :opt),
+                schema[:combined] || schema[:info]
+        end
 
-      arrow_enable :_param_agent
+        arrow_enable param_type
+      end
 
       def request_body component_key, required, media_type, data: { }, desc: '', **options
         cur = self[:requestBodies][component_key]
@@ -86,6 +88,7 @@ module OpenApi
       def process_objs
         self[:requestBodies].each { |key, body| self[:requestBodies][key] = body.process }
         self[:responses].each { |code, response| self[:responses][code] = response.process }
+        self.delete_if { |_, v| v.blank? }
       end
     end
   end

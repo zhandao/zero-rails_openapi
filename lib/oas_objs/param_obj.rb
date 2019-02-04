@@ -12,12 +12,12 @@ module OpenApi
 
       def initialize(name, param_type, type, required, schema)
         self.processed = {
-            name: name,
-            in: param_type,
+            name: name.to_s.delete('!').to_sym,
+            in: param_type.to_s.delete('!'),
             required: required.to_s[/req/].present?
         }
         self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
-        merge! schema
+        merge!(schema.is_a?(Hash) ? schema : { type: schema })
       end
 
       def process

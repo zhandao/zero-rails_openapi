@@ -36,9 +36,7 @@ module OpenApi
     end
 
     def get_actions_by_route_base(route_base)
-      routes_list[route_base]&.map do |action_info|
-        action_info[:action_path].split('#').last
-      end
+      routes_list[route_base]&.map { |action_info| action_info[:action_path].split('#').last }
     end
 
     def find_path_httpverb_by(route_base, action)
@@ -46,8 +44,7 @@ module OpenApi
         if action_info[:action_path].split('#').last == action.to_s
           return [ action_info[:path], action_info[:http_verb].split('|').first ]
         end
-      end
-      nil
+      end ; nil
     end
   end
 end

@@ -25,9 +25,9 @@ module OpenApi
 
       def components &block
         doc_tag if oas[:doc].blank?
-        (current_doc = Components.new).instance_exec(&block)
-        current_doc.process_objs
-        (oas[:doc][:components] ||= { }).deep_merge!(current_doc)
+        (components = Components.new).instance_exec(&block)
+        components.process_objs
+        (oas[:doc][:components] ||= { }).deep_merge!(components)
       end
 
       def api action, summary = '', id: nil, tag: nil, http: nil, dry: Config.default_run_dry, &block
