@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'oas_objs/helpers'
-require 'open_api/config'
 require 'oas_objs/ref_obj'
 require 'oas_objs/example_obj'
 require 'oas_objs/schema_obj_helpers'
@@ -15,8 +14,8 @@ module OpenApi
 
       attr_accessor :processed, :type, :preprocessed
 
-      def initialize(type = nil, schema_info)
-        merge!(schema_info.is_a?(Hash) ? schema_info : { type: schema_info })
+      def initialize(type = nil, schema)
+        merge!(schema)
         self.preprocessed = false
         self.processed = { }
         self.type = type || self[:type]

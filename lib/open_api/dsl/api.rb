@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-require 'open_api/dsl/common_dsl'
+require 'open_api/dsl/helpers'
 
 module OpenApi
   module DSL
     class Api < Hash
-      include DSL::CommonDSL
       include DSL::Helpers
 
       attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :dryed, :param_order
@@ -40,22 +39,22 @@ module OpenApi
         self.dryed = true
       end
 
-      def param param_type, name, type, required, schema_info = { }
+      def param param_type, name, type, required, schema = { }
         return if dry_skip&.include?(name) || dry_only&.exclude?(name)
 
-        param_obj = ParamObj.new(name, param_type, type, required, schema_info)
+        schema = process_schema_input(type, schema)
+        return Tip.param_no_type(name) if schema[:illegal?]
+        param_obj = ParamObj.new(name, param_type, type, required, schema[:combined] || schema[:info])
         # The definition of the same name parameter will be overwritten
-        fill_in_parameters(param_obj)
+        index = self[:parameters].map(&:name).index(param_obj.name)
+        index ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
       end
 
       alias parameter param
 
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
-        define_method param_type do |name, type = nil, **schema_info|
-          schema = process_schema_info(type, schema_info)
-          return Tip.param_no_type(name) if schema[:illegal?]
-          param param_type, name, schema[:type], (param_type['!'] ? :req : :opt),
-                schema[:combined] || schema[:info]
+        define_method param_type do |name, type = nil, **schema|
+          param param_type, name, type, (param_type['!'] ? :req : :opt), schema
         end
 
         # For supporting this: (just like `form '', data: { }` usage)
@@ -65,7 +64,7 @@ module OpenApi
         #   )
         define_method "in_#{param_type}" do |params|
           params.each_pair do |param_name, schema|
-            param param_type, param_name.to_sym, nil, (param_type['!'] || param_name['!'] ? :req : :opt), schema
+            param param_type, param_name, nil, (param_type['!'] || param_name['!'] ? :req : :opt), schema
           end
         end
       end
@@ -75,15 +74,15 @@ module OpenApi
       end
 
       # options: `exp_by` and `examples`
-      def request_body required, media_type, data: { }, **options
-        desc = options.delete(:desc) || ''
+      def request_body required, media_type, data: { }, desc: '', **options
         self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
         self[:requestBody].add_or_fusion(media_type, { data: data , **options })
       end
 
-      # [ body body! ]
-      def _request_body_agent media_type, data: { }, **options
-        request_body @necessity, media_type, data: data, **options
+      %i[ body body! ].each do |method|
+        define_method method do |media_type, data: { }, **options|
+          request_body (method['!'] ? :req : :opt), media_type, data: data, **options
+        end
       end
 
       def body_ref component_key
@@ -110,6 +109,14 @@ module OpenApi
       def file! media_type, data: { type: File }, **options
         body! media_type, data: data, **options
       end
+
+      def response code, desc, media_type = nil, data: { }, type: nil
+        self[:responses][code] = ResponseObj.new(desc) unless (self[:responses] ||= { })[code].is_a?(ResponseObj)
+        self[:responses][code].add_or_fusion(desc, media_type, { data: type || data })
+      end
+
+      alias_method :resp,  :response
+      alias_method :error, :response
 
       def response_ref code_compkey_hash
         code_compkey_hash.each { |code, component_key| self[:responses][code] = RefObj.new(:response, component_key) }
@@ -141,10 +148,7 @@ module OpenApi
       def run_dsl(dry: false, &block)
         instance_exec(&block) if block_given?
         dry() if dry
-        process_objs
-      end
 
-      def process_objs
         self[:parameters].map!(&:process)
         self[:requestBody] = self[:requestBody].try(:process)
         self[:responses].each { |code, response| self[:responses][code] = response.process }

@@ -1,23 +1,26 @@
 # frozen_string_literal: true
 
+require 'oas_objs/schema_obj'
+require 'oas_objs/combined_schema'
+require 'oas_objs/param_obj'
+require 'oas_objs/response_obj'
+require 'oas_objs/request_body_obj'
+require 'oas_objs/ref_obj'
+require 'oas_objs/example_obj'
+require 'oas_objs/callback_obj'
+
 module OpenApi
   module DSL
     module Helpers
-      def self.included(base)
-        base.extend ClassMethods
-      end
+      extend ActiveSupport::Concern
 
       def load_schema(model) # TODO: test
-          model.columns.map do |column|
+        return unless Config.model_base && model.try(:superclass) == Config.model_base
+        model.columns.map do |column|
             type = column.sql_type_metadata.type.to_s.camelize
             type = 'DateTime' if type == 'Datetime'
             [ column.name.to_sym, Object.const_get(type) ]
           end.to_h rescue ''
-      end
-
-      def fill_in_parameters(param_obj)
-        index = self[:parameters].map(&:name).index(param_obj.name)
-        index.present? ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
       end
 
       def _combined_schema(one_of: nil, all_of: nil, any_of: nil, not: nil, **other)
@@ -25,14 +28,14 @@ module OpenApi
         CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if input
       end
 
-      def process_schema_info(schema_type, schema_info, model: nil)
-        combined_schema = _combined_schema(schema_info)
-        type = schema_info[:type] ||= schema_type
-        schema_info = load_schema(model) if Config.active_record_base && model.try(:superclass) == Config.active_record_base
+      def process_schema_input(schema_type, schema, model: nil)
+        schema = { type: schema } unless schema.is_a?(Hash)
+        combined_schema = _combined_schema(schema)
+        type = schema[:type] ||= schema_type
         {
             illegal?: type.nil? && combined_schema.nil?,
             combined: combined_schema,
-            info: schema_info,
+            info: load_schema(model) || schema,
             type: type
         }
       end
@@ -50,7 +53,7 @@ module OpenApi
         end
       end
 
-      module ClassMethods
+      class_methods do
         def arrow_enable method
           alias_method :"_#{method}", method
           define_method method do |*args|

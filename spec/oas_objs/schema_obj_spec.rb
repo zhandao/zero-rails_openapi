@@ -144,23 +144,23 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       api -> { query :info, String, enum: (1.2..3.4) }, has_key!: :enum
       it { expect(enum).to have_size ('1.2'..'3.4').to_a.size }
     end
-
-    let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro].deep_symbolize_keys, &:[])[0][:description] }
-
-    context 'when passing Array to enum!' do
-      api -> { query :info, String, enum!: %w[ a b ], desc!: 'info: ' }, has_key!: :enum
-      it { expect(description).to eq 'info: <br/>1/ a<br/>2/ b' }
-
-      context 'when not passing desc!' do
-        api -> { query :info, String, enum!: %w[ a b ] }, has_key!: :enum
-        it('parameter has not desc') { expect(description).to eq nil }
-      end
-    end
-
-    context 'when passing Hash to enum!' do
-      api -> { query :info, String, enum!: { 'desc1': :a, 'desc2': :b }, desc!: 'info: ' }, has_key!: :enum
-      it { expect(description).to eq 'info: <br/>1/ desc1: a<br/>2/ desc2: b' }
-    end
+    #
+    # let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro].deep_symbolize_keys, &:[])[0][:description] }
+    #
+    # context 'when passing Array to enum!' do
+    #   api -> { query :info, String, enum!: %w[ a b ], desc!: 'info: ' }, has_key!: :enum
+    #   it { expect(description).to eq 'info: <br/>1/ a<br/>2/ b' }
+    #
+    #   context 'when not passing desc!' do
+    #     api -> { query :info, String, enum!: %w[ a b ] }, has_key!: :enum
+    #     it('parameter has not desc') { expect(description).to eq nil }
+    #   end
+    # end
+    #
+    # context 'when passing Hash to enum!' do
+    #   api -> { query :info, String, enum!: { 'desc1': :a, 'desc2': :b }, desc!: 'info: ' }, has_key!: :enum
+    #   it { expect(description).to eq 'info: <br/>1/ desc1: a<br/>2/ desc2: b' }
+    # end
   end
 
 

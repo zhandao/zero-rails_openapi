@@ -17,7 +17,7 @@ module OpenApi
             required: required.to_s[/req/].present?
         }
         self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
-        merge!(schema.is_a?(Hash) ? schema : { type: schema })
+        merge!(schema)
       end
 
       def process

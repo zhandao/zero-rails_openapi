@@ -80,7 +80,7 @@ RSpec.describe OpenApi::DSL::Api do
           expect_it eq: 'integer'
         end
 
-        describe '#do_*:' do
+        describe '#in_*:' do
           api -> { in_header(key: Integer, token!: String) }, has_size!: 2
           it { expect(item_0).to include name: :key, required: false }
           it { expect(item_1).to include name: :token, required: true }

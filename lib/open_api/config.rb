@@ -26,7 +26,7 @@ module OpenApi
       nil
     end
 
-    cattr_accessor :active_record_base do
+    cattr_accessor :model_base do
       nil
     end
 
