@@ -12,9 +12,8 @@ module OpenApi
       end
 
       def schema component_key, type = nil, **schema_info
-        schema = process_schema_input(type, schema_info, model: component_key)
-        return Tip.schema_no_type(component_key) if schema[:illegal?]
-        self[:schemas][component_key.to_s.to_sym] = (schema[:combined] or SchemaObj.new(schema[:info], { })).process
+        return unless schema = process_schema_input(type, schema_info, component_key, model: component_key)
+        self[:schemas][component_key.to_s.to_sym] = schema.process
       end
 
       arrow_enable :schema
@@ -26,24 +25,19 @@ module OpenApi
       arrow_enable :example
 
       def param component_key, param_type, name, type, required, schema = { }
-        schema = process_schema_input(type, schema)
-        return Tip.param_no_type(name) if schema[:illegal?]
-        self[:parameters][component_key] =
-            ParamObj.new(name, param_type, type, required, schema[:combined] || schema[:info]).process
+        return unless schema = process_schema_input(type, schema, name)
+        self[:parameters][component_key] = ParamObj.new(name, param_type, type, required, schema).process
       end
 
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
         define_method param_type do |component_key, name, type = nil, **schema|
           param component_key, param_type, name, type, (param_type['!'] ? :req : :opt), schema
         end
-
         arrow_enable param_type
       end
 
       def request_body component_key, required, media_type, data: { }, desc: '', **options
-        cur = self[:requestBodies][component_key]
-        cur = RequestBodyObj.new(required, desc) unless cur.is_a?(RequestBodyObj)
-        self[:requestBodies][component_key] = cur.add_or_fusion(media_type, { data: data, **options })
+        (self[:requestBodies][component_key] ||= RequestBodyObj.new(required, desc)).absorb(media_type, { data: data, **options })
       end
 
       %i[ body body! ].each do |method|
@@ -56,8 +50,7 @@ module OpenApi
       arrow_enable :body!
 
       def response component_key, desc, media_type = nil, data: { }, type: nil
-        self[:responses][component_key] = ResponseObj.new(desc) unless (self[:responses] ||= { })[component_key].is_a?(ResponseObj)
-        self[:responses][component_key].add_or_fusion(desc, media_type, { data: type || data })
+        (self[:responses][component_key] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: type || data })
       end
 
       alias_method :resp,  :response
@@ -88,8 +81,7 @@ module OpenApi
       arrow_enable :bearer_auth
 
       def api_key scheme_name, field:, in: 'header', **other_info
-        _in = binding.local_variable_get(:in)
-        security_scheme scheme_name, { type: 'apiKey', name: field, in: _in, **other_info }
+        security_scheme scheme_name, { type: 'apiKey', name: field, in: binding.local_variable_get(:in), **other_info }
       end
 
       arrow_enable :api_key

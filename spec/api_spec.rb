@@ -164,19 +164,6 @@ RSpec.describe OpenApi::DSL::Api do
             end
           end
         end
-
-        describe '#file and #file!' do
-          api -> { file :ppt }, has_its_structure!
-          focus_on :content
-          expect_it has_key: :'application/vnd.ms-powerpoint'
-
-          step_into :'application/vnd.ms-powerpoint', :schema, :format
-          expect_it eq: OpenApi::Config.file_format
-
-          context 'when calling the bang method' do
-            api -> { file! :doc }, include: { required: true }
-          end
-        end
       end
 
       describe '#body_ref' do

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module OpenApi
-  module Generator
+  module Router
     module_function
 
     def routes

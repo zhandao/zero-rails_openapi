@@ -16,8 +16,7 @@ module OpenApi
             in: param_type.to_s.delete('!'),
             required: required.to_s[/req/].present?
         }
-        self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
-        merge!(schema)
+        merge!(self.schema = schema)
       end
 
       def process

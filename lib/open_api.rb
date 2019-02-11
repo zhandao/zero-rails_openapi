@@ -5,7 +5,7 @@ require 'colorize'
 require 'open_api/version'
 require 'open_api/support/tip'
 require 'open_api/config'
-require 'open_api/generator'
+require 'open_api/router'
 require 'open_api/dsl'
 
 module OpenApi

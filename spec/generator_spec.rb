@@ -1,8 +1,8 @@
 require 'support/open_api'
 
-RSpec.describe OpenApi::Generator do
+RSpec.describe OpenApi::Router do
   describe '.routes_list' do
-    subject { OpenApi::Generator.routes_list }
+    subject { OpenApi::Router.routes_list }
     it { is_expected.to have_keys 'goods' }
 
     let(:goods_routes) { subject['goods'] }

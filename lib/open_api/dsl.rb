@@ -33,7 +33,7 @@ module OpenApi
       def api action, summary = '', id: nil, tag: nil, http: nil, dry: Config.default_run_dry, &block
         doc_tag if oas[:doc].blank?
         action_path = "#{oas[:route_base]}##{action}"
-        routes = Generator.routes_list[oas[:route_base]]
+        routes = Router.routes_list[oas[:route_base]]
                      &.select { |api| api[:action_path][/^#{action_path}$/].present? }
         return Tip.no_route(action_path) if routes.blank?
 

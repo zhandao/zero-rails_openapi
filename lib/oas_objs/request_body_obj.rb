@@ -17,13 +17,14 @@ module OpenApi
         self.processed   = { required: required['req'].present?, description: desc }
       end
 
-      def add_or_fusion(media_type, hash)
+      def absorb(media_type, hash)
         media_types << MediaTypeObj.new(media_type, hash)
         self
       end
 
       def process
-        processed[:content] = media_types.map(&:process).reduce({ }, &fusion)
+        content = media_types.map(&:process).reduce({ }, &fusion)
+        processed[:content] = content if content
         processed
       end
     end

@@ -28,16 +28,12 @@ module OpenApi
         CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, not: _not) if input
       end
 
-      def process_schema_input(schema_type, schema, model: nil)
+      def process_schema_input(schema_type, schema, name, model: nil)
         schema = { type: schema } unless schema.is_a?(Hash)
         combined_schema = _combined_schema(schema)
         type = schema[:type] ||= schema_type
-        {
-            illegal?: type.nil? && combined_schema.nil?,
-            combined: combined_schema,
-            info: load_schema(model) || schema,
-            type: type
-        }
+        return Tip.param_no_type(name) if type.nil? && combined_schema.nil?
+        combined_schema || SchemaObj.new(type, load_schema(model) || schema)
       end
 
       # Arrow Writing:
