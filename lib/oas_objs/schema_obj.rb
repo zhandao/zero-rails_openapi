@@ -15,19 +15,18 @@ module OpenApi
       attr_accessor :processed, :type
 
       def initialize(type = nil, schema)
-        merge!(schema)
+        self.merge!(schema)
         self.processed = { type: nil, format: nil, **schema.except(:type, :range, :enum!, *SELF_MAPPING.values.flatten) }
         self.type = type || self[:type]
       end
 
       def process
         processed.merge!(recg_schema_type)
-        reducx(additional_properties, enum, length, range, format, other, desc).then_merge!
-        processed.keep_if &value_present
+        reducing(additional_properties, enum, length, range, format, other, desc)
       end
 
       def desc
-        result = @bang_enum.present? ? auto_generate_desc : _desc
+        return unless (result = @bang_enum.present? ? auto_generate_desc : _desc)
         { description: result }
       end
 
@@ -99,8 +98,7 @@ module OpenApi
       end
 
       def format
-        # `format` that generated in process_type() may be overwrote here.
-        processed[:format].blank? ? { format: self[:format] || self[:is_a] } : { }
+        { format: self[:format] || self[:is_a] } unless processed[:format]
       end
 
       def other
@@ -119,7 +117,7 @@ module OpenApi
           _desc:    %i[ desc     description  d           ],
           _addProp: %i[ additional_properties add_prop values_type ],
       }.each do |key, aliases|
-        define_method(key) { self[key] || aliases.each { |aname| self[key] ||= self[aname] } and self[key] }
+        define_method(key)       { self[key] ||= self.values_at(*aliases).compact.first }
         define_method("#{key}=") { |value| self[key] = value }
       end
     end

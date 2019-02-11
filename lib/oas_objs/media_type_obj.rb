@@ -10,21 +10,20 @@ module OpenApi
       attr_accessor :media_type, :schema, :examples
 
       def initialize(media_type, hash)
-        examples_hash = hash.delete(:examples)
-        exp_by        = hash.delete(:exp_by)
-        schema_type   = hash.values_at(:type, :data).compact.first
-        exp_by        = schema_type.keys if exp_by == :all
-
+        examples_hash   = hash.delete(:examples)
+        exp_by          = schema_type.keys if (exp_by = hash.delete(:exp_by)) == :all
         self.examples   = ExampleObj.new(examples_hash, exp_by, multiple: true) if examples_hash.present?
-        self.media_type = media_type_mapping media_type
-        self.schema     = SchemaObj.new(schema_type, hash.except(:type, :data))
+        self.media_type = media_type_mapping(media_type)
+        self.schema     = SchemaObj.new(hash.values_at(:type, :data).compact.first,
+                                        hash.except(:type, :data))
       end
 
       def process
+        return { } if media_type.nil?
         schema_processed = schema.process
         result = schema_processed.values.join.blank? ? { } : { schema: schema_processed }
         result[:examples] = examples.process unless examples.nil?
-        media_type.nil? ? { } : { media_type => result }
+        { media_type => result }
       end
 
       # https://swagger.io/docs/specification/media-types/
@@ -48,7 +47,6 @@ module OpenApi
         when :xlsx then  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         when :ppt then   'application/vnd.ms-powerpoint'
         when :pptx then  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        # when :pdf then   'application/pdf'
         when :form then  'multipart/form-data'; when :form_data then 'multipart/form-data'
         when :text then  'text/*'
         when :plain then 'text/plain then charset=utf-8'

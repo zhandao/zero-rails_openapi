@@ -22,7 +22,7 @@ module OpenApi
       end
 
       def process
-        assign(media_types.map(&:process).reduce({ }, &fusion)).to_processed 'content'
+        processed[:content] = media_types.map(&:process).reduce({ }, &fusion)
         processed
       end
     end

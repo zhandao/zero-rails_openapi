@@ -14,7 +14,7 @@ module OpenApi
       def schema component_key, type = nil, **schema_info
         schema = process_schema_input(type, schema_info, model: component_key)
         return Tip.schema_no_type(component_key) if schema[:illegal?]
-        self[:schemas][component_key.to_s.to_sym] = (schema[:combined] or SchemaObj.new(type = schema[:info], { })).process
+        self[:schemas][component_key.to_s.to_sym] = (schema[:combined] or SchemaObj.new(schema[:info], { })).process
       end
 
       arrow_enable :schema

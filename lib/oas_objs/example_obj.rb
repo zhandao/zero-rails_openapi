@@ -9,7 +9,7 @@ module OpenApi
     class ExampleObj < Hash
       include Helpers
 
-      attr_accessor :processed, :examples_hash, :example_value, :keys_of_value
+      attr_accessor :examples_hash, :example_value, :keys_of_value
 
       def initialize(exp, keys_of_value = nil, multiple: false)
         multiple ? self.examples_hash = exp : self.example_value = exp
@@ -17,12 +17,11 @@ module OpenApi
       end
 
       def process
-        return unless examples_hash || example_value
-        return self.processed = example_value if example_value
+        return example_value if example_value
+        return unless examples_hash
 
-        self.processed =
-          examples_hash.map do |(name, value)|
-            value =
+        examples_hash.map do |(name, value)|
+          value =
               if keys_of_value.present? && value.is_a?(Array)
                 { value: Hash[keys_of_value.zip(value)] }
               elsif value.is_a?(Symbol) && value['$']
@@ -31,8 +30,8 @@ module OpenApi
                 { value: value }
               end
 
-            { name => value }
-          end
+          { name => value }
+        end
       end
     end
   end

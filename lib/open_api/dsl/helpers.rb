@@ -25,7 +25,7 @@ module OpenApi
 
       def _combined_schema(one_of: nil, all_of: nil, any_of: nil, not: nil, **other)
         input = (_not = binding.local_variable_get(:not)) || one_of || all_of || any_of
-        CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, _not: _not) if input
+        CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, not: _not) if input
       end
 
       def process_schema_input(schema_type, schema, model: nil)

@@ -11,6 +11,7 @@ module OpenApi
       include Helpers
 
       attr_accessor :processed, :media_types
+
       def initialize(required, desc)
         self.media_types = [ ]
         self.processed   = { required: required['req'].present?, description: desc }
@@ -22,7 +23,7 @@ module OpenApi
       end
 
       def process
-        assign(media_types.map(&:process).reduce({ }, &fusion)).to_processed 'content'
+        processed[:content] = media_types.map(&:process).reduce({ }, &fusion)
         processed
       end
     end

@@ -21,8 +21,9 @@ module OpenApi
       end
 
       def process
-        assign(schema.process).to_processed :schema
-        assign(schema.processed[:description]).to_processed :description
+        processed[:schema] = schema.process
+        desc = schema.processed[:description]
+        processed[:description] = desc if desc
         processed
       end
 
