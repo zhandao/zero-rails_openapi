@@ -23,10 +23,7 @@
   It may be a very useful tool if you want to write API document clearly.  
   I'm looking forward to your issue and PR!**
   
-  [Need Help](https://github.com/zhandao/zero-rails_openapi/issues/14)
-
-  If you have any questions, please read the test code first.  
-  such as [api DSL](spec/api_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb).
+  (Test cases are rich, like: [api DSL](spec/api_spec.rb) and [schema Obj](spec/oas_objs/schema_obj_spec.rb))
 
 ## Table of Contents
 
@@ -86,10 +83,6 @@
 
       $ bundle
 
-  Or install it yourself as:
-
-      $ gem install zero-rails_openapi
-
 ## Configure
 
   Create an initializer, configure ZRO and define your OpenApi documents.
@@ -97,61 +90,44 @@
   This is the simplest example:
 
   ```ruby
-  # config/initializers/open_api.rb
+  # in config/initializers/open_api.rb
   require 'open_api'
 
-  OpenApi::Config.tap do |c|
-    # [REQUIRED] The output location where .json doc file will be written to.
-    c.file_output_path = 'public/open_api'
+  OpenApi::Config.class_eval do |c|
+    # Part 1: configs of this gem
+    self.file_output_path = 'public/open_api'
 
-    c.open_api_docs = {
-        # The definition of the document `homepage`.
-        homepage: {
-            # [REQUIRED] ZRO will scan all the descendants of base_doc_classes, then generate their docs.
-            base_doc_classes: [Api::V1::BaseController],
-
-            # [REQUIRED] OAS Info Object: The section contains API information.
-            info: {
-                # [REQUIRED] The title of the application.
-                title: 'Homepage APIs',
-                # Description of the application.
-                description: 'API documentation of Rails Application. <br/>' \
-                             'Optional multiline or single-line Markdown-formatted description ' \
-                             'in [CommonMark](http://spec.commonmark.org/) or `HTML`.',
-                # [REQUIRED] The version of the OpenAPI document
-                # (which is distinct from the OAS version or the API implementation version).
-                version: '1.0.0'
-            }
-        }
-    }
+    # Part 2: config (DSL) for generating OpenApi info
+    open_api :doc_name, base_doc_classes: [ApiDoc]
+    info version: '1.0.0', title: 'Homepage APIs'#, description: ..
+    # server 'http://localhost:3000', desc: 'Internal staging server for testing'
+    # bearer_auth :Authorization
   end
   ```
+  
+### Part 1: configs of this gem
 
-  In addition to directly using Hash,
-  you can also use DSL to define the document information:
+1. `file_output_path`(required): The location where .json doc file will be output.
+2. `default_run_dry`: defaults to run dry blocks even if the `dry` method is not called in the (Basic) DSL block. defaults to `false`.
+3. `doc_location`: give regular expressions for file or folder paths. `Dir[doc_location]` will be `require` before document generates.
+    this option is only for not writing spec in controllers.
+4. `rails_routes_file`: give a txt's file path (which's content is the copy of `rails routes`'s output). This will speed up document generation. 
+5. `model_base`: The parent class of models in your application. This option is for auto loading schema from database.
+6. `file_format`
 
-  ```ruby
-  # config/initializers/open_api.rb
-  require 'open_api'
+### Part 2: config (DSL) for generating OpenApi info
 
-  OpenApi::Config.tap do |c|
-    c.file_output_path = 'public/open_api'
+  See all the DSLs: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
-    c.instance_eval do
-      open_api :homepage_api, base_doc_classes: [ApiDoc]
-      info version: '1.0.0', title: 'Homepage APIs'
-    end
-  end
-  ```
+## DSL Usage
 
-  For more detailed configuration: [open_api.rb](documentation/examples/open_api.rb)  
-  See all the settings options: [config.rb](lib/open_api/config.rb)  
-  See all the Document Definition DSL: [config_dsl.rb](lib/open_api/config_dsl.rb)
+There are two kinds of DSL for this gem: **basic** and **inside basic**.
+1. Basic DSLs are class methods which is for declaring your APIs, components, and spec code DRYing ...
+2. DSLs written inside the block of Basic DSLs, is for declaring the parameters, responses (and so on) of the specified API and component.
 
-## Usage - DSL
+### First of all, `include OpenApi::DSL` to your base class (which is for writing spec):
 
-### First of all, `include OpenApi::DSL` to your base class (which is for writing docs), for example:
-
+For example:
   ```ruby
   # app/controllers/api/api_controller.rb
   class ApiController < ActionController::API
@@ -166,15 +142,11 @@
   ```ruby
   class Api::ExamplesController < ApiController
     api :index, 'GET list' do
-      query :page, Integer#, desc: 'page, greater than 1', range: { ge: 1 }, dft: 1
+      query :page, Integer#, range: { ge: 1 }, default: 1
       query :rows, Integer#, desc: 'per page', range: { ge: 1 }, default: 10
     end
   end
   ```
-
-  For more example, see [goods_doc.rb](documentation/examples/goods_doc.rb), and
-  [examples_controller.rb](documentation/examples/examples_controller.rb),
-  or [HERE](https://github.com/zhandao/zero-rails/tree/master/app/_docs/v1).
 
 ### Basic DSL ([source code](lib/open_api/dsl.rb))
 

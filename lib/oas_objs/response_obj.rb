@@ -23,7 +23,7 @@ module OpenApi
 
       def process
         content = media_types.map(&:process).reduce({ }, &fusion)
-        processed[:content] = content if content
+        processed[:content] = content if content.present?
         processed
       end
     end

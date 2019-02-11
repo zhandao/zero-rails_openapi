@@ -1,25 +1,23 @@
 require 'open_api'
 
-OpenApi::Config.tap do |c|
+OpenApi::Config.class_eval do
   # Config DSL
-  c.instance_eval do
-    open_api :zero_rails, base_doc_classes: [ApiDoc]
-    info version: '0.0.1', title: 'Zero Rails APIs', description: 'API documentation of Zero-Rails Application.'
-    server 'http://localhost:3000', desc: 'Main (production) server'
-    server 'http://localhost:3000', desc: 'Internal staging server for testing'
-    bearer_auth :Token
-    global_auth :Token
-  end
+  open_api :zero_rails, base_doc_classes: [ApiDoc]
+  info version: '0.0.1', title: 'Zero Rails APIs', description: 'API documentation of Zero-Rails Application.'
+  server 'http://localhost:3000', desc: 'Main (production) server'
+  server 'http://localhost:3000', desc: 'Internal staging server for testing'
+  bearer_auth :Token
+  global_auth :Token
 
   # [REQUIRED] The location where .json doc file will be output.
-  c.file_output_path = 'public/open_api'
+  self.file_output_path = 'public/open_api'
 
   # [Optional] Use this txt instead of running `rails routes`.
-  # c.rails_routes_file = 'config/routes.txt'
+  # self.rails_routes_file = 'config/routes.txt'
 
   # Everything about OAS3 is on https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md
   # Getting started: https://swagger.io/docs/specification/basic-structure/
-  c.open_api_docs = {
+  self.open_api_docs = {
       blog_api: {
           # [REQUIRED] ZRO will scan all the descendants of the base_doc_classes, then generate their docs.
           base_doc_classes: [ApiController],
@@ -96,9 +94,7 @@ OpenApi::Config.tap do |c|
 
 end
 
-Object.const_set('Boolean', 'boolean') # Support `Boolean` writing in DSL
-
-OpenApi.write_docs generate_files: !Rails.env.production?
+OpenApi.write_docs if: !Rails.env.production?
 
 
 __END__
