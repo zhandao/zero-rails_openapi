@@ -15,11 +15,11 @@ module OpenApi
         @schemas = combined_schema.values.first
       end
 
-      def process(options = { inside_desc: false })
+      def process()
         processed[@mode] = @schemas.map do |schema|
           type = schema.is_a?(Hash) ? schema[:type] : schema
           schema = { } unless schema.is_a?(Hash)
-          SchemaObj.new(type, schema).process(options)
+          SchemaObj.new(type, schema).process
         end
         processed
       end

@@ -16,7 +16,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     api -> { query :people, type: { name: String } }, include: { type: 'object' }
   end
 
-  desc :processed_type do
+  desc :recg_schema_type do
     context 'when not be one of the [Hash, Array, Symbol]' do
       context 'when in [ float double int32 int64 ]' do
         api -> { query :info, Float }, get: { type: 'number', format: 'float' }
@@ -200,6 +200,12 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     correct do
       api -> { query :info, Object, add_prop: 'string' }, include: { additionalProperties: { type: 'string' } }
       api -> { query :info, '{=>integer}' }, include: { additionalProperties: { type: 'integer' } }
+    end
+  end
+
+  desc :custom_addition do
+    correct do
+      api -> { query :info, Integer, permit: true }, include: { permit: true }
     end
   end
 end

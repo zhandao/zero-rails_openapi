@@ -20,19 +20,18 @@ module OpenApi
         self.type = type || self[:type]
       end
 
-      def process(options = { inside_desc: false })
-        processed.merge!(processed_type)
-        reducx(additional_properties, enum_and_length, range, format, other, desc(options)).then_merge!
+      def process
+        processed.merge!(recg_schema_type)
+        reducx(additional_properties, enum, length, range, format, other, desc).then_merge!
         processed.keep_if &value_present
       end
 
-      def desc(inside_desc:)
+      def desc
         result = @bang_enum.present? ? auto_generate_desc : _desc
-        # return unless inside_desc
         { description: result }
       end
 
-      def processed_type(t = self.type)
+      def recg_schema_type(t = self.type)
         t = t.class.in?([Hash, Array, Symbol]) ? t : t.to_s.downcase
         if t.is_a? Hash
           hash_type(t)
@@ -57,39 +56,45 @@ module OpenApi
       end
 
       def additional_properties
-        return { } if processed[:type] != 'object' || _addProp.nil?
+        return if processed[:type] != 'object' || _addProp.nil?
         {
-            additionalProperties: SchemaObj.new(_addProp, { }).process(inside_desc: true)
+            additionalProperties: SchemaObj.new(_addProp, { }).process
         }
       end
 
-      def enum_and_length
-        process_enum_info
-        process_range_enum_and_lth
+      def enum
+        self._enum = str_range_to_a(_enum) if _enum.is_a?(Range)
+        # Support this writing for auto generating desc from enum.
+        #   enum!: {
+        #     'all_desc': :all,
+        #     'one_desc': :one
+        # }
+        if (@bang_enum = self[:enum!])
+          self._enum ||= @bang_enum.is_a?(Hash) ? @bang_enum.values : @bang_enum
+        end
+        { enum: _enum }
+      end
 
-        # generate length range fields by _lth array
-        if (lth = _length || '').is_a?(Array)
-          min, max = [lth.first&.to_i, lth.last&.to_i]
-        elsif lth['ge']
-          min = lth.to_s.split('_').last.to_i
-        elsif lth['le']
-          max = lth.to_s.split('_').last.to_i
+      def length
+        return unless _length
+        self._length = str_range_to_a(_length) if _length.is_a?(Range)
+
+        if _length.is_a?(Array)
+          min, max = [ _length.first&.to_i, _length.last&.to_i ]
+        else
+          min, max = _length[/ge_(.*)/, 1]&.to_i, _length[/le_(.*)/, 1]&.to_i
         end
 
-        if processed[:type] == 'array'
-          { minItems: min, maxItems: max }
-        else
-          { minLength: min, maxLength: max }
-        end.merge!(enum: _enum).keep_if &value_present
+        processed[:type] == 'array' ? { minItems: min, maxItems: max } : { minLength: min, maxLength: max }
       end
 
       def range
-        range = self[:range] || { }
+        (range = self[:range]) or return
         {
                      minimum: range[:gt] || range[:ge],
-            exclusiveMinimum: range[:gt].present? ? true : nil,
+            exclusiveMinimum: range[:gt].present? || nil,
                      maximum: range[:lt] || range[:le],
-            exclusiveMaximum: range[:lt].present? ? true : nil
+            exclusiveMaximum: range[:lt].present? || nil
         }
       end
 
@@ -114,17 +119,12 @@ module OpenApi
           _desc:    %i[ desc     description  d           ],
           _addProp: %i[ additional_properties add_prop values_type ],
       }.each do |key, aliases|
-        define_method key do
-          return self[key] unless self[key].nil?
-          aliases.each { |alias_name| self[key] = self[alias_name] if self[key].nil? }
-          self[key]
-        end
+        define_method(key) { self[key] || aliases.each { |aname| self[key] ||= self[aname] } and self[key] }
         define_method("#{key}=") { |value| self[key] = value }
       end
     end
   end
 end
-
 
 __END__
 
