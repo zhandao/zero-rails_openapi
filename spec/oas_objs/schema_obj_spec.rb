@@ -88,11 +88,11 @@ RSpec.describe OpenApi::DSL::SchemaObj do
         expect_its :properties, has_keys: %i[ first last ]
       end
 
-      context 'with key :type' do
+      context 'with key :type' do # ???
         # OR: query :info, type: { type: String, desc: 'info' }
-        api -> { query :info, { type: String, desc: 'info' }, desc: 'api desc' }, 'has description within schema',
-            has_key!: :description
-        it { expect(description).to eq 'info' } # not_to eq 'api desc'
+        # api -> { query :info, { type: String, desc: 'info' }, desc: 'api desc' }, 'has description within schema',
+        #     has_key!: :description
+        # it { expect(description).to eq 'info' } # not_to eq 'api desc'
       end
 
       context 'when having keys in [ one_of any_of all_of not ]' do
@@ -125,13 +125,8 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       it { expect(max_items).to eq 20 }
     end
 
-    context 'when enum is or not an array' do
+    context 'when enum is an array' do
       api -> { query :info, String, enum: ['a'] }, include: { enum: ['a'] }
-      api -> { query :info, String, enum: 'a' }, include: { enum: ['a'] }
-    end
-
-    context 'when using must_be (value)' do
-      api -> { query :info, String, must_be: 'a' }, 'is also enum', include: { enum: ['a'] }
     end
 
     context 'when passing Range to lth' do
@@ -144,23 +139,18 @@ RSpec.describe OpenApi::DSL::SchemaObj do
       api -> { query :info, String, enum: (1.2..3.4) }, has_key!: :enum
       it { expect(enum).to have_size ('1.2'..'3.4').to_a.size }
     end
-    #
-    # let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro].deep_symbolize_keys, &:[])[0][:description] }
-    #
-    # context 'when passing Array to enum!' do
-    #   api -> { query :info, String, enum!: %w[ a b ], desc!: 'info: ' }, has_key!: :enum
-    #   it { expect(description).to eq 'info: <br/>1/ a<br/>2/ b' }
-    #
-    #   context 'when not passing desc!' do
-    #     api -> { query :info, String, enum!: %w[ a b ] }, has_key!: :enum
-    #     it('parameter has not desc') { expect(description).to eq nil }
-    #   end
-    # end
-    #
-    # context 'when passing Hash to enum!' do
-    #   api -> { query :info, String, enum!: { 'desc1': :a, 'desc2': :b }, desc!: 'info: ' }, has_key!: :enum
-    #   it { expect(description).to eq 'info: <br/>1/ desc1: a<br/>2/ desc2: b' }
-    # end
+
+    let(:description) { %i[ paths goods/action get parameters ].reduce(OpenApi.docs[:zro].deep_symbolize_keys, &:[])[0][:description] }
+
+    context 'when passing Array to enum!' do
+      api -> { query :info, String, enum!: %w[ a b ], desc: 'info: ' }, has_key!: :enum
+      it { expect(description).to eq 'info: <br/>1/ a<br/>2/ b' }
+    end
+
+    context 'when passing Hash to enum!' do
+      api -> { query :info, String, enum!: { 'desc1': :a, 'desc2': :b }, desc: 'info: ' }, has_key!: :enum
+      it { expect(description).to eq 'info: <br/>1/ desc1: a<br/>2/ desc2: b' }
+    end
   end
 
 
@@ -173,7 +163,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
 
   desc :is_and_format do
     correct do
-      api -> { query :email, Integer, is: :email }, include: { is: :email, format: :email }
+      api -> { query :email, Integer, is_a: :email }, include: { is_a: :email, format: :email }
     end
   end
 
@@ -190,7 +180,7 @@ RSpec.describe OpenApi::DSL::SchemaObj do
     end
 
     describe ':default' do
-      api -> { query :info, String, dft: 'default' }, include: { default: 'default' }
+      api -> { query :info, String, default: 'default' }, include: { default: 'default' }
     end
 
     describe ':example' do

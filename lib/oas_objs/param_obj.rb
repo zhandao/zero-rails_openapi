@@ -21,14 +21,9 @@ module OpenApi
       end
 
       def process
-        assign(desc).to_processed :description
         assign(schema.process).to_processed :schema
+        assign(schema.processed[:description]).to_processed :description
         processed
-      end
-
-      def desc
-        return self[:desc] || self[:description] if (self[:desc!] || self[:description!]).blank?
-        schema.__desc # not a copy of __desc, means desc() will change if schema.__desc changes.
       end
 
       def name

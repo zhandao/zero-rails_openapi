@@ -40,9 +40,6 @@ module OpenApi
       def process_range_enum_and_lth
         self[:_enum] = str_range_to_a(_enum) if _enum.is_a?(Range)
         self[:_length] = str_range_to_a(_length) if _length.is_a?(Range)
-
-        values = _enum || _value
-        self._enum = Array(values) if truly_present?(values)
       end
 
       def str_range_to_a(val)
@@ -57,26 +54,22 @@ module OpenApi
         #     'all_desc': :all,
         #     'one_desc': :one
         # }
-        self._enum ||= (e = self[:enum!])
-        return unless e.is_a? Hash
-        @enum_info = e
-        self._enum = e.values
+        return unless (@bang_enum = self[:enum!])
+        self._enum ||= @bang_enum.is_a?(Hash) ? @bang_enum.values : @bang_enum
       end
 
       # TODO: more info and desc configure
       def auto_generate_desc
-        return __desc if _enum.blank?
-
-        if @enum_info.present?
-          @enum_info.each_with_index do |(info, value), index|
-            self.__desc = __desc + "<br/>#{index + 1}/ #{info}: #{value}" # FIXME
+        if @bang_enum.is_a?(Hash)
+          @bang_enum.each_with_index do |(info, value), index|
+            self._desc = _desc + "<br/>#{index + 1}/ #{info}: #{value}" # FIXME
           end
         else
-          _enum.each_with_index do |value, index|
-            self.__desc = __desc + "<br/>#{index + 1}/ #{value}"
+          @bang_enum.each_with_index do |value, index|
+            self._desc = _desc + "<br/>#{index + 1}/ #{value}"
           end
         end
-        __desc
+        _desc
       end
     end
   end

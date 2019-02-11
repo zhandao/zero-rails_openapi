@@ -12,28 +12,28 @@ module OpenApi
       include SchemaObjHelpers
       include Helpers
 
-      attr_accessor :processed, :type, :preprocessed
+      attr_accessor :processed, :type
 
       def initialize(type = nil, schema)
         merge!(schema)
-        self.preprocessed = false
-        self.processed = { }
+        self.processed = { type: nil, format: nil, **schema.except(:type, :range, :enum!, *SELF_MAPPING.values.flatten) }
         self.type = type || self[:type]
       end
 
       def process(options = { inside_desc: false })
         processed.merge!(processed_type)
-        reducx(additional_properties, enum_and_length, range, format, pattern_default_and_other, desc(options)).then_merge!
+        reducx(additional_properties, enum_and_length, range, format, other, desc(options)).then_merge!
+        processed.keep_if &value_present
       end
 
       def desc(inside_desc:)
-        result = __desc ? auto_generate_desc : _desc
-        return unless inside_desc
+        result = @bang_enum.present? ? auto_generate_desc : _desc
+        # return unless inside_desc
         { description: result }
       end
 
-      def processed_type(type = self.type)
-        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
+      def processed_type(t = self.type)
+        t = t.class.in?([Hash, Array, Symbol]) ? t : t.to_s.downcase
         if t.is_a? Hash
           hash_type(t)
         elsif t.is_a? Array
@@ -84,53 +84,35 @@ module OpenApi
       end
 
       def range
-        range = _range || { }
+        range = self[:range] || { }
         {
                      minimum: range[:gt] || range[:ge],
             exclusiveMinimum: range[:gt].present? ? true : nil,
                      maximum: range[:lt] || range[:le],
             exclusiveMaximum: range[:lt].present? ? true : nil
-        }.keep_if &value_present
+        }
       end
 
       def format
-        result = { is: _is }
         # `format` that generated in process_type() may be overwrote here.
-        result[:format] = _format || _is if processed[:format].blank? || _format.present?
-        result
+        processed[:format].blank? ? { format: self[:format] || self[:is_a] } : { }
       end
 
-      def pattern_default_and_other
+      def other
         {
             pattern:  _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
-            default:  _default,
-            example:  _exp.present? ? ExampleObj.new(_exp).process : nil,
-            examples: _exps.present? ? ExampleObj.new(_exps, self[:exp_by], multiple: true).process : nil,
-            as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank
+            example:  ExampleObj.new(self[:example]).process,
+            examples: ExampleObj.new(self[:examples], self[:exp_by], multiple: true).process
         }
       end
 
 
-      { # SELF_MAPPING
+      SELF_MAPPING = {
           _enum:    %i[ enum in  values  allowable_values ],
-          _value:   %i[ must_be  value   allowable_value  ],
-          _range:   %i[ range    number_range             ],
           _length:  %i[ length   lth     size             ],
-          _format:  %i[ format   fmt                      ],
-          _pattern: %i[ pattern  regexp  pt   reg         ],
-          _default: %i[ default  dft     default_value    ],
+          _pattern: %i[ pattern  regexp                   ],
           _desc:    %i[ desc     description  d           ],
-          __desc:   %i[ desc!    description! d!          ],
-          _exp:     %i[ example                           ],
-          _exps:    %i[ examples                          ],
           _addProp: %i[ additional_properties add_prop values_type ],
-          _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
-          _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
-          _permit:  %i[ permit   pmt                      ], # ditto
-          _npermit: %i[ npmt     not_permit   unpermit    ], # ditto
-          _req_if:  %i[ req_if   req_when                 ], # ditto
-          _opt_if:  %i[ opt_if   opt_when                 ], # ditto
-          _blank:   %i[ blank    blankable                ], # ditto
       }.each do |key, aliases|
         define_method key do
           return self[key] unless self[key].nil?

@@ -34,6 +34,7 @@ module OpenApi
 
     def then_merge! # to_processed
       processed.tap { |it| it.merge! @assign if truly_present?(@assign) }
+      # processed
     end
   end
 end

@@ -17,7 +17,7 @@ module OpenApi
 
         self.examples   = ExampleObj.new(examples_hash, exp_by, multiple: true) if examples_hash.present?
         self.media_type = media_type_mapping media_type
-        self.schema     = SchemaObj.new(schema_type, hash)
+        self.schema     = SchemaObj.new(schema_type, hash.except(:type, :data))
       end
 
       def process

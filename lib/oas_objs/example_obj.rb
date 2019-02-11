@@ -17,6 +17,7 @@ module OpenApi
       end
 
       def process
+        return unless examples_hash || example_value
         return self.processed = example_value if example_value
 
         self.processed =
