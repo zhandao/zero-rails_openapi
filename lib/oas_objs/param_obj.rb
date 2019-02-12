@@ -12,23 +12,18 @@ module OpenApi
 
       def initialize(name, param_type, type, required, schema)
         self.processed = {
-            name: name,
-            in: param_type,
+            name: name.to_s.delete('!').to_sym,
+            in: param_type.to_s.delete('!'),
             required: required.to_s[/req/].present?
         }
-        self.schema = schema.is_a?(CombinedSchema) ? schema : SchemaObj.new(type, schema)
-        merge! schema
+        merge!(self.schema = schema)
       end
 
       def process
-        assign(desc).to_processed :description
-        assign(schema.process).to_processed :schema
+        processed[:schema] = schema.process
+        desc = schema.processed[:description]
+        processed[:description] = desc if desc
         processed
-      end
-
-      def desc
-        return self[:desc] || self[:description] if (self[:desc!] || self[:description!]).blank?
-        schema.__desc # not a copy of __desc, means desc() will change if schema.__desc changes.
       end
 
       def name

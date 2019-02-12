@@ -19,28 +19,21 @@ module OpenApi
 
       def process
         {
-            self.event_name => {
+            event_name => {
                 processed_url => {
-                    self.http_method.downcase.to_sym => processed_block
+                    http_method.downcase.to_sym => Api.new.run_dsl(&(self.block || -> { }))
                 }
             }
         }
       end
 
       def processed_url
-        self.callback_url.gsub(/{[^{}]*}/) do |exp|
+        callback_url.gsub(/{[^{}]*}/) do |exp|
           key_location, key_name = exp[1..-2].split
           connector = key_location == 'body' ? '#/' : '.'
           key_location = '$request.' + key_location
           ['{', key_location, connector, key_name, '}'].join
         end
-      end
-
-      def processed_block
-        api = Api.new.merge! parameters: [ ], requestBody: '', responses: { }
-        api.instance_exec(&(self.block || -> { }))
-        api.process_objs
-        api.delete_if { |_, v| v.blank? }
       end
     end
   end

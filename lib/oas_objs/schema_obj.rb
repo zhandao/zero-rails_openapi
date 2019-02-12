@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'oas_objs/helpers'
-require 'open_api/config'
 require 'oas_objs/ref_obj'
 require 'oas_objs/example_obj'
 require 'oas_objs/schema_obj_helpers'
@@ -13,28 +12,26 @@ module OpenApi
       include SchemaObjHelpers
       include Helpers
 
-      attr_accessor :processed, :type, :preprocessed
+      attr_accessor :processed, :type
 
-      def initialize(type, schema_info)
-        self.preprocessed = false
-        self.processed = { }
-        self.type = type
-        merge! schema_info
+      def initialize(type = nil, schema)
+        self.merge!(schema)
+        self.processed = { type: nil, format: nil, **schema.except(:type, :range, :enum!, *SELF_MAPPING.values.flatten) }
+        self.type = type || self[:type]
       end
 
-      def process(options = { inside_desc: false })
-        processed.merge!(processed_type)
-        reducx(additional_properties, enum_and_length, range, format, pattern_default_and_other, desc(options)).then_merge!
+      def process
+        processed.merge!(recg_schema_type)
+        reducing(additional_properties, enum, length, range, format, other, desc)
       end
 
-      def desc(inside_desc:)
-        result = __desc ? auto_generate_desc : _desc
-        return unless inside_desc
+      def desc
+        return unless (result = @bang_enum.present? ? auto_generate_desc : _desc)
         { description: result }
       end
 
-      def processed_type(type = self.type)
-        t = type.class.in?([Hash, Array, Symbol]) ? type : type.to_s.downcase
+      def recg_schema_type(t = self.type)
+        t = t.class.in?([Hash, Array, Symbol]) ? t : t.to_s.downcase
         if t.is_a? Hash
           hash_type(t)
         elsif t.is_a? Array
@@ -58,92 +55,74 @@ module OpenApi
       end
 
       def additional_properties
-        return { } if processed[:type] != 'object' || _addProp.nil?
+        return if processed[:type] != 'object' || _addProp.nil?
         {
-            additionalProperties: SchemaObj.new(_addProp, { }).process(inside_desc: true)
+            additionalProperties: SchemaObj.new(_addProp, { }).process
         }
       end
 
-      def enum_and_length
-        process_enum_info
-        process_range_enum_and_lth
+      def enum
+        self._enum = str_range_to_a(_enum) if _enum.is_a?(Range)
+        # Support this writing for auto generating desc from enum.
+        #   enum!: {
+        #     'all_desc': :all,
+        #     'one_desc': :one
+        # }
+        if (@bang_enum = self[:enum!])
+          self._enum ||= @bang_enum.is_a?(Hash) ? @bang_enum.values : @bang_enum
+        end
+        { enum: _enum }
+      end
 
-        # generate length range fields by _lth array
-        if (lth = _length || '').is_a?(Array)
-          min, max = [lth.first&.to_i, lth.last&.to_i]
-        elsif lth['ge']
-          min = lth.to_s.split('_').last.to_i
-        elsif lth['le']
-          max = lth.to_s.split('_').last.to_i
+      def length
+        return unless _length
+        self._length = str_range_to_a(_length) if _length.is_a?(Range)
+
+        if _length.is_a?(Array)
+          min, max = [ _length.first&.to_i, _length.last&.to_i ]
+        else
+          min, max = _length[/ge_(.*)/, 1]&.to_i, _length[/le_(.*)/, 1]&.to_i
         end
 
-        if processed[:type] == 'array'
-          { minItems: min, maxItems: max }
-        else
-          { minLength: min, maxLength: max }
-        end.merge!(enum: _enum).keep_if &value_present
+        processed[:type] == 'array' ? { minItems: min, maxItems: max } : { minLength: min, maxLength: max }
       end
 
       def range
-        range = _range || { }
+        (range = self[:range]) or return
         {
                      minimum: range[:gt] || range[:ge],
-            exclusiveMinimum: range[:gt].present? ? true : nil,
+            exclusiveMinimum: range[:gt].present? || nil,
                      maximum: range[:lt] || range[:le],
-            exclusiveMaximum: range[:lt].present? ? true : nil
-        }.keep_if &value_present
+            exclusiveMaximum: range[:lt].present? || nil
+        }
       end
 
       def format
-        result = { is: _is }
-        # `format` that generated in process_type() may be overwrote here.
-        result[:format] = _format || _is if processed[:format].blank? || _format.present?
-        result
+        { format: self[:format] || self[:is_a] } unless processed[:format]
       end
 
-      def pattern_default_and_other
+      def other
         {
             pattern:  _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
-            default:  _default,
-            example:  _exp.present? ? ExampleObj.new(_exp).process : nil,
-            examples: _exps.present? ? ExampleObj.new(_exps, self[:exp_by], multiple: true).process : nil,
-            as: _as, permit: _permit, not_permit: _npermit, req_if: _req_if, opt_if: _opt_if, blankable: _blank
+            example:  ExampleObj.new(self[:example]).process,
+            examples: ExampleObj.new(self[:examples], self[:exp_params], multiple: true).process
         }
       end
 
 
-      { # SELF_MAPPING
+      SELF_MAPPING = {
           _enum:    %i[ enum in  values  allowable_values ],
-          _value:   %i[ must_be  value   allowable_value  ],
-          _range:   %i[ range    number_range             ],
           _length:  %i[ length   lth     size             ],
-          _format:  %i[ format   fmt                      ],
-          _pattern: %i[ pattern  regexp  pt   reg         ],
-          _default: %i[ default  dft     default_value    ],
+          _pattern: %i[ pattern  regexp                   ],
           _desc:    %i[ desc     description  d           ],
-          __desc:   %i[ desc!    description! d!          ],
-          _exp:     %i[ example                           ],
-          _exps:    %i[ examples                          ],
           _addProp: %i[ additional_properties add_prop values_type ],
-          _is:      %i[ is_a     is                       ], # NOT OAS Spec, see documentation/parameter.md
-          _as:      %i[ as   to  for     map  mapping     ], # NOT OAS Spec, it's for zero-params_processor
-          _permit:  %i[ permit   pmt                      ], # ditto
-          _npermit: %i[ npmt     not_permit   unpermit    ], # ditto
-          _req_if:  %i[ req_if   req_when                 ], # ditto
-          _opt_if:  %i[ opt_if   opt_when                 ], # ditto
-          _blank:   %i[ blank    blankable                ], # ditto
       }.each do |key, aliases|
-        define_method key do
-          return self[key] unless self[key].nil?
-          aliases.each { |alias_name| self[key] = self[alias_name] if self[key].nil? }
-          self[key]
-        end
+        define_method(key)       { self[key] ||= self.values_at(*aliases).compact.first }
         define_method("#{key}=") { |value| self[key] = value }
       end
     end
   end
 end
-
 
 __END__
 

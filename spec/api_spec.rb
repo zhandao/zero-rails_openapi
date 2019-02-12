@@ -21,20 +21,6 @@ RSpec.describe OpenApi::DSL::Api do
 
   desc :desc do
     api -> { desc 'description for api #action.' }, has_key: :description
-
-    context "when uniting parameters' description" do
-      let(:params) { subject[:parameters] }
-
-      before_dsl! do
-        desc '#action', name: 'name', age!: 'age', id: 'id'
-        query :name, String
-        query :age, Integer
-        query :id, Integer, desc: 'override'
-      end
-      it { expect(params[0]).to include name: :name, description: 'name' }
-      it { expect(params[1]).to include name: :age, description: 'age' }
-      it { expect(params[2]).to include name: :id, description: 'override' }
-    end
   end
 
 
@@ -52,15 +38,15 @@ RSpec.describe OpenApi::DSL::Api do
         end
       }
 
-      make -> { api :action, use: [ ]      }, 'uses all', has_size: 2
-      make -> { api :action, use: [:none]  }, then_it('only uses :none') { be_nil }
-      make -> { api :action, use: [:page]  }, has_size: 1
-      make -> { api :action, skip: [ ]     }, 'skips nothing', has_size: 2
-      make -> { api :action, skip: [:page] }, has_size: 1
+      make -> { api(:action) { dry }               }, 'uses all', has_size: 2
+      make -> { api(:action) { dry none: true }    }, then_it('only uses :none') { be_nil }
+      make -> { api(:action) { dry only: [:page] } }, has_size: 1
+      make -> { api(:action) { dry }               }, 'skips nothing', has_size: 2
+      make -> { api(:action) { dry skip: [:page] } }, has_size: 1
 
-      make -> { api(:action, use: [:nothing]) { param :query, :page, Integer, :req } },
+      make -> { api(:action) { dry none: true; param :query, :page, Integer, :req } },
            'not skip the params inside block', has_size: 1
-      make -> { api(:action, skip: [:per]) { param :query, :per, Integer, :req } },
+      make -> { api(:action) { dry skip: [:per]; param :query, :per, Integer, :req } },
            'not skip the params inside block', has_size: 2
 
       after_do { undo_dry }
@@ -94,23 +80,15 @@ RSpec.describe OpenApi::DSL::Api do
           expect_it eq: 'integer'
         end
 
-        describe '#do_*:' do
-          api -> { do_query by: { } }, then_it { be_nil }
-
-          api -> { do_header by: { key: Integer, token!: String } }, has_size!: 2
+        describe '#in_*:' do
+          api -> { in_header(key: Integer, token!: String) }, has_size!: 2
           it { expect(item_0).to include name: :key, required: false }
           it { expect(item_1).to include name: :token, required: true }
 
           context 'when calling bang method' do
-            api -> { do_path! by: { id: Integer, name: String } }, '---> has 2 required items:', has_size!: 2
+            api -> { in_path!(id: Integer, name: { type: String }) }, '---> has 2 required items:', has_size!: 2
             it { expect(item_0).to include name: :id, required: true}
-            it { expect(item_1).to include name: :name, required: true}
-          end
-
-          context 'when passing common schema' do
-            api -> { do_query by: { id: Integer, name: String }, pmt: true }, '---> has 2 required items:', has_size!: 2
-            it { expect(item_0[:schema]).to include permit: true }
-            it { expect(item_1[:schema]).to include permit: true }
+            it { expect(item_1).to include name: :name, required: true, schema: { type: 'string' }}
           end
         end
 
@@ -184,19 +162,6 @@ RSpec.describe OpenApi::DSL::Api do
               focus_on :content, :'multipart/form-data', :schema, :properties, desc: 'fusion in form-data:'
               expect_it has_keys: %i[ uid name ]
             end
-          end
-        end
-
-        describe '#file and #file!' do
-          api -> { file :ppt }, has_its_structure!
-          focus_on :content
-          expect_it has_key: :'application/vnd.ms-powerpoint'
-
-          step_into :'application/vnd.ms-powerpoint', :schema, :format
-          expect_it eq: OpenApi::Config.file_format
-
-          context 'when calling the bang method' do
-            api -> { file! :doc }, include: { required: true }
           end
         end
       end
@@ -289,40 +254,40 @@ RSpec.describe OpenApi::DSL::Api do
     end
 
 
-    desc :order, subject: :parameters do
-      context 'when using in .api' do
-        api -> do
-          query :page, String
-          path  :id, Integer
-          order :id, :page
-        end, has_size!: 2
-        it { expect(item_0).to include name: :id }
-        it { expect(item_1).to include name: :page }
-      end
-
-      context 'when using in .api_dry' do
-        before_do! do
-          api_dry do
-            header :token, String
-            path   :id, Integer
-            order :id, :name, :age, :token, :remarks
-          end
-
-          api :action do
-            query :remarks, String
-            query :name, String
-            query :age, String
-          end
-
-          undo_dry
-        end
-
-        focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
-        expect_it { have_size 5 }
-        expect_its(0) { include name: :id }
-        expect_its(4) { include name: :remarks }
-      end
-    end
+    # desc :order, subject: :parameters do
+    #   context 'when using in .api' do
+    #     api -> do
+    #       query :page, String
+    #       path  :id, Integer
+    #       order :id, :page
+    #     end, has_size!: 2
+    #     it { expect(item_0).to include name: :id }
+    #     it { expect(item_1).to include name: :page }
+    #   end
+    #
+    #   context 'when using in .api_dry' do
+    #     before_do! do
+    #       api_dry do
+    #         header :token, String
+    #         path   :id, Integer
+    #         order :id, :name, :age, :token, :remarks
+    #       end
+    #
+    #       api :action do
+    #         query :remarks, String
+    #         query :name, String
+    #         query :age, String
+    #       end
+    #
+    #       undo_dry
+    #     end
+    #
+    #     focus_on :subject, desc: '`order` will auto generate `use` and `skip`, so:'
+    #     expect_it { have_size 5 }
+    #     expect_its(0) { include name: :id }
+    #     expect_its(4) { include name: :remarks }
+    #   end
+    # end
 
 
     desc :param_examples, subject: :examples do

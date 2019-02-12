@@ -1,23 +1,22 @@
 # frozen_string_literal: true
 
-require 'open_api/dsl/common_dsl'
+require 'open_api/dsl/helpers'
 
 module OpenApi
   module DSL
     class Api < Hash
-      include DSL::CommonDSL
       include DSL::Helpers
 
-      attr_accessor :action_path, :param_skip, :param_use, :param_descs, :param_order
+      attr_accessor :action_path, :dry_skip, :dry_only, :dry_blocks, :dryed, :param_order
 
-      def initialize(action_path = '', skip: [ ], use: [ ])
+      def initialize(action_path = '', summary: nil, tags: [ ], id: nil)
         self.action_path = action_path
-        self.param_skip  = skip
-        self.param_use   = use
-        self.param_descs = { }
+        self.dry_blocks  = [ ]
+        self.merge!(summary: summary, operationId: id, tags: tags, description: '', parameters: [ ],
+                    requestBody: nil, responses: { }, callbacks: { }, links: { }, security: [ ], servers: [ ])
       end
 
-      def this_api_is_invalid! explain = ''
+      def this_api_is_invalid!(*)
         self[:deprecated] = true
       end
 
@@ -25,41 +24,41 @@ module OpenApi
       alias this_api_is_unused!       this_api_is_invalid!
       alias this_api_is_under_repair! this_api_is_invalid!
 
-      def desc desc, param_descs = { }
-        self.param_descs = param_descs
+      def desc desc
         self[:description] = desc
       end
 
-      def param param_type, name, type, required, schema_info = { }
-        return if param_skip.include?(name)
-        return if param_use.present? && param_use.exclude?(name)
+      alias description desc
 
-        schema_info[:desc]  ||= param_descs[name]
-        schema_info[:desc!] ||= param_descs[:"#{name}!"]
-        param_obj = ParamObj.new(name, param_type, type, required, schema_info)
+      def dry only: nil, skip: nil, none: false
+        return if dry_blocks.blank? || dryed
+        self.dry_skip = skip && Array(skip)
+        self.dry_only = none ? [:none] : only && Array(only)
+        dry_blocks.each { |blk| instance_eval(&blk) }
+        self.dry_skip = self.dry_only = nil
+        self.dryed = true
+      end
+
+      def param param_type, name, type, required, schema = { }
+        return if dry_skip&.include?(name) || dry_only&.exclude?(name)
+
+        return unless schema = process_schema_input(type, schema, name)
+        param_obj = ParamObj.new(name, param_type, type, required, schema)
         # The definition of the same name parameter will be overwritten
-        fill_in_parameters(param_obj)
+        index = self[:parameters].map(&:name).index(param_obj.name)
+        index ? self[:parameters][index] = param_obj : self[:parameters] << param_obj
       end
 
-      # [ header header! path path! query query! cookie cookie! ]
-      def _param_agent name, type = nil, **schema_info
-        schema = process_schema_info(type, schema_info)
-        return puts '    ZRO'.red + " Syntax Error: param `#{name}` has no schema type!" if schema[:illegal?]
-        param @param_type, name, schema[:type], @necessity, schema[:combined] || schema[:info]
-      end
+      alias parameter param
 
-      # For supporting this: (just like `form '', data: { }` usage)
-      #   do_query by: {
-      #     :search_type => { type: String  },
-      #         :export! => { type: Boolean }
-      #   }
       %i[ header header! path path! query query! cookie cookie! ].each do |param_type|
-        define_method "do_#{param_type}" do |by:, **common_schema|
-          by.each do |param_name, schema|
-            action = "#{param_type}#{param_name['!']}".sub('!!', '!')
-            type, schema = schema.is_a?(Hash) ? [schema[:type], schema] : [schema, { }]
-            args = [ param_name.to_s.delete('!').to_sym, type, schema.reverse_merge!(common_schema) ]
-            send(action, *args)
+        define_method param_type do |name, type = nil, **schema|
+          param param_type, name, type, (param_type['!'] ? :req : :opt), schema
+        end
+
+        define_method "in_#{param_type}" do |params|
+          params.each_pair do |param_name, schema|
+            param param_type, param_name, nil, (param_type['!'] || param_name['!'] ? :req : :opt), schema
           end
         end
       end
@@ -68,20 +67,19 @@ module OpenApi
         self[:parameters] += [component_key, *keys].map { |key| RefObj.new(:parameter, key) }
       end
 
-      # options: `exp_by` and `examples`
-      def request_body required, media_type, data: { }, **options
-        desc = options.delete(:desc) || ''
-        self[:requestBody] = RequestBodyObj.new(required, desc) unless self[:requestBody].is_a?(RequestBodyObj)
-        self[:requestBody].add_or_fusion(media_type, { data: data , **options })
-      end
-
-      # [ body body! ]
-      def _request_body_agent media_type, data: { }, **options
-        request_body @necessity, media_type, data: data, **options
+      # options: `exp_params` and `examples`
+      def request_body required, media_type, data: { }, desc: '', **options
+        (self[:requestBody] ||= RequestBodyObj.new(required, desc)).absorb(media_type, { data: data , **options })
       end
 
       def body_ref component_key
         self[:requestBody] = RefObj.new(:requestBody, component_key)
+      end
+
+      %i[ body body! ].each do |method|
+        define_method method do |media_type, data: { }, **options|
+          request_body (method['!'] ? :req : :opt), media_type, data: data, **options
+        end
       end
 
       def form data:, **options
@@ -92,21 +90,20 @@ module OpenApi
         body! :form, data: data, **options
       end
 
-      def data name, type = nil, schema_info = { }
-        schema_info[:type] = type if type.present?
-        form data: { name => schema_info }
+      def data name, type = nil, schema = { }
+        schema[:type] = type if type.present?
+        form data: { name => schema }
       end
 
-      def file media_type, data: { type: File }, **options
-        body media_type, data: data, **options
+      def response code, desc, media_type = nil, data: { }
+        (self[:responses][code] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: data })
       end
 
-      def file! media_type, data: { type: File }, **options
-        body! media_type, data: data, **options
-      end
+      alias_method :resp,  :response
+      alias_method :error, :response
 
-      def response_ref code_compkey_hash
-        code_compkey_hash.each { |code, component_key| self[:responses][code] = RefObj.new(:response, component_key) }
+      def response_ref code_and_compkey # = { }
+        code_and_compkey.each { |code, component_key| self[:responses][code] = RefObj.new(:response, component_key) }
       end
 
       def security_require scheme_name, scopes: [ ]
@@ -115,7 +112,7 @@ module OpenApi
 
       alias security  security_require
       alias auth      security_require
-      alias need_auth security_require
+      alias auth_with security_require
 
       def callback event_name, http_method, callback_url, &block
         self[:callbacks].deep_merge! CallbackObj.new(event_name, http_method, callback_url, &block).process
@@ -125,26 +122,22 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
-      def order *param_names
-        self.param_order = param_names
-        # be used when `api_dry`
-        self.param_use = param_order if param_use.blank?
-        self.param_skip = param_use - param_order
-      end
-
-      def param_examples exp_by = :all, examples_hash
-        exp_by = self[:parameters].map(&:name) if exp_by == :all
-        self[:examples] = ExampleObj.new(examples_hash, exp_by, multiple: true).process
+      def param_examples exp_params = :all, examples_hash
+        exp_params = self[:parameters].map(&:name) if exp_params == :all
+        self[:examples] = ExampleObj.new(examples_hash, exp_params, multiple: true).process
       end
 
       alias examples param_examples
 
-      def process_objs
-        self[:parameters].map!(&:process)
-        self[:parameters].sort_by! { |param| param_order.index(param[:name]) || Float::INFINITY } if param_order.present?
+      def run_dsl(dry: false, &block)
+        instance_exec(&block) if block_given?
+        dry() if dry
 
+        self[:parameters].map!(&:process)
         self[:requestBody] = self[:requestBody].try(:process)
         self[:responses].each { |code, response| self[:responses][code] = response.process }
+        self[:responses] = self[:responses].sort.to_h
+        self.delete_if { |_, v| v.blank? }
       end
     end
   end

@@ -3,7 +3,7 @@ class ApiDoc < Object
 
   class << self
     def undo_dry
-      @zro_dry_blocks = nil
+      oas[:dry_blocks] = { }
     end
 
     def inherited(subclass)

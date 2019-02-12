@@ -2,73 +2,58 @@
 
 require 'open_api/dsl/api'
 require 'open_api/dsl/components'
-require 'colorize'
 
 module OpenApi
   module DSL
-    def self.included(base)
-      base.extend ClassMethods
-    end
-
-    # TODO: Doc-Block Comments
-    module ClassMethods
-      def route_base path
-        @route_base = path
-        @doc_tag    = path.split('/').last.camelize
+    extend ActiveSupport::Concern
+    
+    class_methods do
+      def oas
+        @oas ||= { doc: { }, dry_blocks: { }, apis: { }, route_base: try(:controller_path),
+                   tag_name: try(:controller_name)&.camelize }
       end
 
-      def doc_tag name: nil, desc: '', external_doc_url: nil
-        # apis will group by the tags.
-        @doc_tag = name if name.present?
-        @doc_tag ||= controller_name.camelize
-        tag = (@doc_info = { })[:tag] = { name: @doc_tag }
-        tag[:description]  = desc if desc.present?
-        tag[:externalDocs] = { description: 'ref', url: external_doc_url } if external_doc_url
+      def route_base path
+        oas[:route_base] = path
+        oas[:tag_name] = path.split('/').last.camelize
+      end
+
+      # APIs will be grouped by tags.
+      def doc_tag name: nil, **tag_info #  description: ..., externalDocs: ...
+        oas[:doc][:tag] = { name: name || oas[:tag_name], **tag_info }
       end
 
       def components &block
-        doc_tag if @doc_info.nil?
-        structure = %i[ schemas responses	parameters examples requestBodies securitySchemes ].map { |k| [k, { }] }.to_h
-        current_doc = Components.new.merge!(structure)
-        current_doc.instance_exec(&block)
-        current_doc.process_objs
-
-        (@doc_info[:components] ||= { }).deep_merge!(current_doc)
+        doc_tag if oas[:doc].blank?
+        (components = Components.new).instance_exec(&block)
+        components.process_objs
+        (oas[:doc][:components] ||= { }).deep_merge!(components)
       end
 
-      def api action, summary = '', id: nil, tag: nil, http: http_method = nil, skip: [ ], use: [ ], &block
-        doc_tag if @doc_info.nil?
-        # select the routing info (corresponding to the current method) from routing list.
-        action_path = "#{@route_base ||= controller_path}##{action}"
-        routes = ctrl_routes_list&.select { |api| api[:action_path][/^#{action_path}$/].present? }
-        return puts '    ZRO'.red + " Route mapping failed: #{action_path}" if routes.blank?
+      def api action, summary = '', id: nil, tag: nil, http: nil, dry: Config.default_run_dry, &block
+        doc_tag if oas[:doc].blank?
+        action_path = "#{oas[:route_base]}##{action}"
+        routes = Router.routes_list[oas[:route_base]]
+                     &.select { |api| api[:action_path][/^#{action_path}$/].present? }
+        return Tip.no_route(action_path) if routes.blank?
 
-        api = Api.new(action_path, skip: Array(skip), use: Array(use))
-                 .merge! description: '', summary: summary, operationId: id || "#{@doc_info[:tag][:name]}_#{action.to_s.camelize}",
-                         tags: [tag || @doc_tag], parameters: [ ], requestBody: '',  responses: { },  callbacks: { },
-                         links: { }, security: [ ], servers: [ ]
-        [action, :all].each { |blk_key| @zro_dry_blocks&.[](blk_key)&.each { |blk| api.instance_eval(&blk) } }
-        api.param_use = api.param_skip = [ ] # `skip` and `use` only affect `api_dry`'s blocks
-        api.instance_exec(&block) if block_given?
-        api.process_objs
-        api.delete_if { |_, v| v.blank? }
+        tag = tag || oas[:doc][:tag][:name]
+        api = Api.new(action_path, summary: summary, tags: [tag], id: id || "#{tag}_#{action.to_s.camelize}")
+        [action, tag, :all].each { |key| api.dry_blocks.concat(oas[:dry_blocks][key] || [ ]) }
+        api.run_dsl(dry: dry, &block)
+        _set_apis(api, routes, http)
+      end
 
+      def api_dry action_or_tags = :all, &block
+        Array(action_or_tags).each { |a| (oas[:dry_blocks][a.to_sym] ||= [ ]) << block }
+      end
+
+      def _set_apis(api, routes, http)
         routes.each do |route|
-          path = (@api_info ||= { })[route[:path]] ||= { }
+          path = oas[:apis][route[:path]] ||= { }
           (http || route[:http_verb]).split('|').each { |verb| path[verb] = api }
         end
-
         api
-      end
-
-      # method could be symbol array, like: %i[ .. ]
-      def api_dry action = :all, desc = '', &block
-        @zro_dry_blocks ||= { }
-        Array(action).each { |a| (@zro_dry_blocks[a.to_sym] ||= [ ]) << block }
-      end
-
-      def ctrl_routes_list
-        Generator.routes_list[@route_base]
       end
     end
   end
