@@ -56,11 +56,6 @@ module OpenApi
           param param_type, name, type, (param_type['!'] ? :req : :opt), schema
         end
 
-        # For supporting: (just like `form '', data: { }`)
-        #   in_query(
-        #     :search_type => String,
-        #         :export! => { type: Boolean }
-        #   )
         define_method "in_#{param_type}" do |params|
           params.each_pair do |param_name, schema|
             param param_type, param_name, nil, (param_type['!'] || param_name['!'] ? :req : :opt), schema
@@ -127,9 +122,9 @@ module OpenApi
         self[:servers] << { url: url, description: desc }
       end
 
-      def param_examples exp_by = :all, examples_hash
-        exp_by = self[:parameters].map(&:name) if exp_by == :all
-        self[:examples] = ExampleObj.new(examples_hash, exp_by, multiple: true).process
+      def param_examples exp_params = :all, examples_hash
+        exp_params = self[:parameters].map(&:name) if exp_params == :all
+        self[:examples] = ExampleObj.new(examples_hash, exp_params, multiple: true).process
       end
 
       alias examples param_examples

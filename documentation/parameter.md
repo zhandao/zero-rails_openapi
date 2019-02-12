@@ -1,17 +1,6 @@
 ### More Explanation for `param` and `schema_info`
 
-#### param_type (param_location)
-OpenAPI 3.0 distinguishes between the following parameter types based on the parameter location: 
-**header, path, query, cookie**. [more](https://swagger.io/docs/specification/describing-parameters/)
-
-#### name (param_name)
-The name of parameter. It can be Symbol or String.
-
-If param_type is :path, it must correspond to the associated path segment form 
-the routing path, for example: if the API path is `/good/:id`, you have to declare a path parameter with name `id` to it.
-
 #### type (schema_type)
-Parameter's (schema) type. We call it `schema_type` because it is inside SchemaObj.
 
 Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) defined in OAS.   
 
@@ -34,9 +23,6 @@ All the types you can use as following:
   
   You can use `Object.const_set()` to define a constant that does not exist, but note that 
   the value you set could not be a Symbol (it will be explained as a Ref Object), should be a String.
-
-#### required
- :opt or :req
 
 #### Schema Hash
 
