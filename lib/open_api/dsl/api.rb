@@ -67,7 +67,7 @@ module OpenApi
         self[:parameters] += [component_key, *keys].map { |key| RefObj.new(:parameter, key) }
       end
 
-      # options: `exp_by` and `examples`
+      # options: `exp_params` and `examples`
       def request_body required, media_type, data: { }, desc: '', **options
         (self[:requestBody] ||= RequestBodyObj.new(required, desc)).absorb(media_type, { data: data , **options })
       end
@@ -90,13 +90,13 @@ module OpenApi
         body! :form, data: data, **options
       end
 
-      def data name, type = nil, schema_info = { }
-        schema_info[:type] = type if type.present?
-        form data: { name => schema_info }
+      def data name, type = nil, schema = { }
+        schema[:type] = type if type.present?
+        form data: { name => schema }
       end
 
-      def response code, desc, media_type = nil, data: { }, type: nil
-        (self[:responses][code] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: type || data })
+      def response code, desc, media_type = nil, data: { }
+        (self[:responses][code] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: data })
       end
 
       alias_method :resp,  :response

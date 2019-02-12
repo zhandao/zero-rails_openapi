@@ -11,8 +11,8 @@ module OpenApi
         merge!(%i[ schemas responses	parameters examples requestBodies securitySchemes ].map { |k| [ k, { } ] }.to_h)
       end
 
-      def schema component_key, type = nil, **schema_info
-        return unless schema = process_schema_input(type, schema_info, component_key, model: component_key)
+      def schema component_key, type = nil, **schema
+        return unless schema = process_schema_input(type, schema, component_key, model: component_key)
         self[:schemas][component_key.to_s.to_sym] = schema.process
       end
 
@@ -49,8 +49,8 @@ module OpenApi
       arrow_enable :body
       arrow_enable :body!
 
-      def response component_key, desc, media_type = nil, data: { }, type: nil
-        (self[:responses][component_key] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: type || data })
+      def response component_key, desc, media_type = nil, data: { }
+        (self[:responses][component_key] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: data })
       end
 
       alias_method :resp,  :response

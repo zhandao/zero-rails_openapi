@@ -11,8 +11,8 @@ module OpenApi
 
       def initialize(media_type, hash)
         examples_hash   = hash.delete(:examples)
-        exp_by          = schema_type.keys if (exp_by = hash.delete(:exp_by)) == :all
-        self.examples   = ExampleObj.new(examples_hash, exp_by, multiple: true) if examples_hash.present?
+        exp_params      = schema_type.keys if (exp_params = hash.delete(:exp_params)) == :all
+        self.examples   = ExampleObj.new(examples_hash, exp_params, multiple: true) if examples_hash.present?
         self.media_type = media_type_mapping(media_type)
         self.schema     = SchemaObj.new(hash.values_at(:type, :data).compact.first,
                                         hash.except(:type, :data))

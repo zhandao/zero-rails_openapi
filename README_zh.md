@@ -359,11 +359,11 @@
 
 
   # method signature
-  # `exp_by` (select_example_by): choose the example fields.
-  examples(exp_by = :all, examples_hash)
+  # `exp_params` (select_example_by): choose the example fields.
+  examples(exp_params = :all, examples_hash)
   # usage
   # it defines 2 examples by using parameter :id and :name
-  # if pass :all to `exp_by`, keys will be all the parameter's names.
+  # if pass :all to `exp_params`, keys will be all the parameter's names.
   examples [:id, :name], {
       :right_input => [ 1, 'user'], # == { id: 1, name: 'user' }
       :wrong_input => [ -1, ''   ]
@@ -425,7 +425,7 @@
       :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
       # optional
         :remarks => { type: String, desc: 'remarks' },
-  }, exp_by:            %i[ name password ],
+  }, exp_params:            %i[ name password ],
      examples: {         #    ↓        ↓
          :right_input => [ 'user1', '123456' ],
          :wrong_input => [ 'user2', 'abc'    ]
@@ -448,7 +448,7 @@
 
   1. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.
   2. `schema_info`: as above (see param).
-  3. `exp_by` and `examples`: for the above example, the following has the same effect:
+  3. `exp_params` and `examples`: for the above example, the following has the same effect:
      ```
      examples: {
          :right_input => { name: 'user1', password: '123456' },

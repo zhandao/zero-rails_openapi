@@ -30,33 +30,36 @@
 - [About OAS](#about-oas) (OpenAPI Specification)
 - [Installation](#installation)
 - [Configure](#configure)
-- [Usage - DSL](#usage---dsl)
-  - [Basic DSL](#basic-dsl)
-    - [route_base](#1-route_base-required-if-youre-not-writing-dsl-in-controller)
-    - [doc_tag](#2-doc_tag-optional)
-    - [components](#3-components-optional)
-    - [api](#4-api-required)
-    - [api_dry](#5-api_dry-optional)
-  - [DSLs written inside `api` and `api_dry`'s block](#dsl-methods-inside-api-and-api_drys-block)
-    - [this_api_is_invalid!](#1-this_api_is_invalid-and-its-aliases)
-    - [desc](#2-desc-description-for-the-current-api)
-    - [param family methods](#3-param-family-methods-oas---parameter-object)
-    - [request_body family methods](#4-request_body-family-methods-oas---request-body-object)
-    - [response family methods](#5-response-family-methods-oas---response-object)
-    - [callback](#6-callback-oas---callback-object)
-    - [Authentication and Authorization](#7-authentication-and-authorization)
-    - [server](#8-overriding-global-servers-by-server)
-  - [DSLs written inside `components`'s block](#dsl-methods-inside-componentss-block-code-source)
-  - [Schema and Type](#schema-and-type)
+- [DSL Usage](#dsl-usage)
+  - [a.Basic DSL](#basic-dsl)
+    - [a.1. route_base](#1-route_base-required-if-youre-not-writing-dsl-in-controller)
+    - [a.2. doc_tag](#2-doc_tag-optional)
+    - [a.3. components](#3-components-optional)
+    - [a.4. api](#4-api-required)
+    - [a.5. api_dry](#5-api_dry-optional)
+  - [b. DSLs written inside `api` and `api_dry`'s block](#dsls-written-inside-api-and-api_drys-block)
+    - [b.1. this_api_is_invalid!](#1-this_api_is_invalid-and-its-aliases)
+    - [b.2. desc](#2-desc-description-for-the-current-api)
+    - [b.3. param family methods](#3-param-family-methods-oas---parameter-object)
+    - [b.4. request_body family methods](#4-request_body-family-methods-oas---request-body-object)
+    - [b.5. response family methods](#5-response-family-methods-oas---response-object)
+    - [b.6. callback](#6-callback-oas---callback-object)
+    - [b.7. Authentication and Authorization](#7-authentication-and-authorization)
+    - [b.8. server](#8-overriding-global-servers-by-server)
+    - [b.9. dry](#9-dry)
+  - [c. DSLs written inside `components`'s block](#dsls-written-inside-componentss-block)
+  - [d. Schema and Type](#schema-and-type)
+    - [d.1. (Schema) Type](#schema-type)
+    - [d.2. Schema](#schema)
+    - [d.3. Combined Schema](#combined-schema)
 - [Run! - Generate JSON documentation file](#run---generate-json-documentation-file)
 - [Use Swagger UI(very beautiful web page) to show your Documentation](#use-swagger-uivery-beautiful-web-page-to-show-your-documentation)
 - [Tricks](#tricks)
     - [Write DSL somewhere else](#trick1---write-the-dsl-somewhere-else)
     - [Global DRYing](#trick2---global-drying)
-    - [Auto generate description](#trick3---auto-generate-description)
+    - [Auto generate description form enum](#trick3---auto-generate-description-form-enum)
     - [Skip or Use parameters define in `api_dry`](#trick4---skip-or-use-parameters-define-in-api_dry)
     - [Atuo Generate index/show Actions's Responses Based on DB Schema](#trick5---auto-generate-indexshow-actionss-response-types-based-on-db-schema)
-    - [Combined Schema (one_of / all_of / any_of / not)](#trick6---combined-schema-one_of--all_of--any_of--not)
 - [Troubleshooting](#troubleshooting)
 - [About `OpenApi.docs` and `OpenApi.routes_index`](#about-openapidocs-and-openapiroutes_index)
 
@@ -356,131 +359,110 @@
 #### (4) `request_body` family methods (OAS - [Request Body Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#requestBodyObject))
 
   OpenAPI 3.0 uses the requestBody keyword to distinguish the payload from parameters.
+  
+  Notice: Each API has only ONE request body object. Each request body object can has multiple media types.
+  It means: call `request_body` multiple times, (schemas) will be deeply merged (let's call it [fusion](#fusion)) into a request body object.
   ```
-  request_body
-  body_ref      # for reuse component,
-                #   it links sepcified RefObjs (by component keys) to current body.
-  body, body!   # alias of request_body
-  form, form!   # define a multipart/form-data body
-  data          # define [a] property in the form-data body
-  file, file!   # define a File media-type body
+  request_body  # 1. normal usage
+  body_ref      # 2. it links sepcified RefObjs (by component keys) to the body.
+  body, body!   # 3. alias of request_body
+  form, form!   # 4. to define a multipart/form-data request_body
+  data          # 5. to define [a] property in the form-data request_body
   ```
   Bang methods(!) means the specified media-type body is required.
 
   ```ruby
+  # Part 1
   # ** Method Signature
-  request_body(required, media_type, data: { }, **options)
+  # a. `data` contains the attributes (params, or properties) and their schemas required by the request body
+  # b. `attr_name!` means it is required, without '!' means optional
+  # c. options: desc / exp_params and examples
+  # d. available `media_type` see: 
+  #   https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/media_type_obj.rb#L29
+  request_body required, media_type, data: { }, desc: '', **options
   # ** Usage
-  # (1) `data` contains all the attributes required by this request body.
-  # (2) `param_name!` means it is required, otherwise without '!' means optional.
-  request_body :opt, :form, data: { id!: Integer, name: { type: String, desc: 'name' } }, desc: 'form-data'
+  request_body :opt, :form, data: {
+    id!: Integer,
+    name: { type: String, desc: 'name' }
+  }, desc: 'a form-data'
 
-
+  # Part 2
   # ** Method Signature
-  body_ref(component_key)
+  body_ref component_key
   # ** Usage
-  body_ref :UpdateDogeBody
+  body_ref :UpdateUserBody
 
-
+  # Part 3
   # ** Method Signature
-  body!(media_type, data: { }, **options)
+  body! media_type, data: { }, **options
   # ** Usage
   body :json
 
-
-  # method implement
-  def form data:, **options
+  # Part 4
+  # ** method Implement
+  def form data:, **options # or `form!`
     body :form, data: data, **options
   end
   # ** Usage
   form! data: {
-      name: String,
-      password: String,
-      password_confirmation: String
+         name!: String,
+      password: { type: String, pattern: /[0-9]{6,10}/ },
   }
-  # advance usage
-  form data: {
-          :name! => { type: String, desc: 'user name' },
-      :password! => { type: String, pattern: /[0-9]{6,10}/, desc: 'password' },
-      # optional
-        :remarks => { type: String, desc: 'remarks' },
-  }, exp_by:            %i[ name password ],
-     examples: {         #    ↓        ↓
-         :right_input => [ 'user1', '123456' ],
-         :wrong_input => [ 'user2', 'abc'    ]
-     },
-  desc: 'for creating a user'
 
-
-  # method implement
-  def data name, type = nil, schema_info = { }
-    schema_info[:type] = type if type.present?
-    form data: { name => schema_info }
-  end
-  # ** Usage: please look at the 4th point below
-
-  # about `file`
-  def file! media_type, data: { type: File }, **options
-    body! media_type, data: data, **options
-  end
+  # Part 5
+  # ** Method Signature
+  data name, type = nil, schema = { }
+  # ** Usage
+  data :password!, String, pattern: /[0-9]{6,10}/
   ```
 
-  1. `media_type`: we provide some [mapping](lib/oas_objs/media_type_obj.rb) from symbols to real media-types.
-  2. `schema_info`: as above (see param).
-  3. `exp_by` and `examples`: for the above example, the following has the same effect:
-     ```
-     examples: {
-         :right_input => { name: 'user1', password: '123456' },
-         :wrong_input => { name: 'user2', password: 'abc' }
-     }
-     ```
-  4. *[IMPORTANT]* Each request bodies you declared will **FUSION** together. <a name="fusion"></a>  
-     (1) Media-Types will be merged to `requestBody["content"]`
-     ```ruby
-     form data: { }, desc: 'desc'
-     body :json, data: { }, desc: 'desc'
-     # will generate: "content": { "multipart/form-data": { }, "application/json": { } }
-     ```
-     (2) The same media-types will fusion, but not merge:  
-         (So that you can write `form` separately, and make `data` method possible.)
-     ```ruby
-     data :param_a!, String
-     data :param_b,  Integer
-     # or same as:
-     form data: { :param_a! => String }
-     form data: { :param_b  => Integer }
-     # will generate: { "param_a": { "type": "string" }, "param_b": { "type": "integer" } } (call it X)
-     # therefore:
-     #   "content": { "multipart/form-data":
-     #     { "schema": { "type": "object", "properties": { X }, "required": [ "param_a" ] }
-     #   }
-     ```
+  <a name="fusion"></a> 
+  How **fusion** works:
+  1. Difference media types will be merged into `requestBody["content"]`
+
+  ```ruby
+  form data: { }
+  body :json, data: { }
+  # will generate: "content": { "multipart/form-data": { }, "application/json": { } }
+  ```
+
+  2. The same media-types will be deeply merged together, including their `required` array:  
+     (So that you can call `form` multiple times)
+
+  ```ruby
+  data :param_a!, String
+  data :param_b,  Integer
+  # or same as:
+  form data: { :param_a! => String }
+  form data: { :param_b  => Integer }
+  # will generate: { "param_a": { "type": "string" }, "param_b": { "type": "integer" } } (call it X)
+  # therefore:
+  #   "content": { "multipart/form-data":
+  #     { "schema": { "type": "object", "properties": { X }, "required": [ "param_a" ] }
+  #   }
+  ```
 
 #### (5) `response` family methods (OAS - [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#response-object))
 
-  Define the responses for the API (action).
+  To define the response for APIs.
   ```
-  response      # aliases: `resp` and `error`
-  response_ref
+  response      # 1. aliases: `resp` and `error`
+  response_ref  # 2. it links sepcified RefObjs (by component keys) to the response.
   ```
 
   ```ruby
   # ** Method Signature
-  response(code, desc, media_type = nil, data: { }, type: nil)
+  response code, desc, media_type = nil, data: { }
   # ** Usage
-  resp 200, 'json response', :json, data: { name: 'test' }
-  response 200, 'query result', :pdf, type: File
-  # same as:
+  resp 200, 'success', :json, data: { name: 'test' }
   response 200, 'query result', :pdf, data: File
 
   # ** Method Signature
-  response_ref(code_compkey_hash)
+  response_ref code_and_compkey_hash
   # ** Usage
   response_ref 700 => :AResp, 800 => :BResp
   ```
 
-  **practice:** Automatically generate responses based on the agreed error class. [AutoGenDoc](examples/auto_gen_doc.rb#L63)
-  
 ### (6) Callback (OAS - [Callback Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#callback-object))
 
   [About Callbacks](https://swagger.io/docs/specification/callbacks/)
@@ -501,10 +483,10 @@
       ...
   ```
   
-  To define callbacks, you can use `callback` method:
+  `callback` method is for defining callbacks.
   ```ruby
   # ** Method Signature
-  callback(event_name, http_method, callback_url, &block)
+  callback event_name, http_method, callback_url, &block
   # ** Usage
   callback :myEvent, :post, 'localhost:3000/api/goods' do
     query :name, String
@@ -528,7 +510,7 @@
 
   ##### Define Security Scheme
 
-  Use these DSL in your initializer or `components` block:
+  Use these DSL **in your initializer config or `components` block**:
   ```
   security_scheme # alias `auth_scheme`
   base_auth       # will call `security_scheme`
@@ -538,16 +520,16 @@
   It's very simple to use (if you understand the above document)
   ```ruby
   # ** Method Signature
-  security_scheme(scheme_name, other_info)
+  security_scheme scheme_name, other_info
   # ** Usage
   security_scheme :BasicAuth, { type: 'http', scheme: 'basic', desc: 'basic auth' }
 
   # ** Method Signature
-  base_auth(scheme_name, other_info = { })
-  bearer_auth(scheme_name, format = 'JWT', other_info = { })
-  api_key(scheme_name, field:, in:, **other_info)
+  base_auth scheme_name, other_info = { }
+  bearer_auth scheme_name, format = 'JWT', other_info = { }
+  api_key scheme_name, field:, in:, **other_info
   # ** Usage
-  base_auth :BasicAuth, desc: 'basic auth' # the same effect as ↑↑↑
+  base_auth :BasicAuth, desc: 'basic auth' # the same effect as above
   bearer_auth :Token
   api_key :ApiKeyAuth, field: 'X-API-Key', in: 'header', desc: 'pass api key to header'
   ```
@@ -555,112 +537,166 @@
   ##### Apply Security
 
   ```
-  # In initializer
-  # Global effectiveness
-  global_security_require
-  global_security # alias
-  global_auth     # alias
+  # Use in initializer (Global effectiveness)
+  global_security_require # alias: global_security & global_auth
 
-  # In `api`'s block
-  # Only valid for the current controller
-  security_require
-  security  # alias
-  auth      # alias
-  need_auth # alias
+  # Use in `api`'s block (Only valid for the current controller)
+  security_require # alias security & auth_with
   ```
-  Name is different, signature and usage is similar.
   ```ruby
   # ** Method Signature
-  security_require(scheme_name, scopes: [ ])
+  security_require scheme_name, scopes: [ ]
   # ** Usage
   global_auth :Token
-  need_auth   :Token
-  auth :OAuth, scopes: %w[ read_example admin ]
+  auth_with   :OAuth, scopes: %w[ read_example admin ]
   ```
 
 #### (8) Overriding Global Servers by `server`
 
   ```ruby
   # ** Method Signature
-  server(url, desc: '')
+  server url, desc: ''
   # ** Usage
   server 'http://localhost:3000', desc: 'local'
   ```
+  
+#### (9) `dry`
 
-### DSLs written inside [components]()'s block ([code source](lib/open_api/dsl/components.rb))
+  You have to call `dry` method inside `api` block, or pass `dry: true` as parameter of `api`,
+  for executing the dry blocks you declared before. Otherwise nothing will happen.
+  
+  ```ruby
+  # ** Method Signature
+  dry only: nil, skip: nil, none: false
+  
+  # ** Usage
+  # In general, just:
+  dry
+  # To skip some params declared in dry blocks:
+  dry skip: [:id, :name]
+  # `only` is used to specify which parameters will be taken from dry blocks
+  dry only: [:id]
+  ```
 
-  (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
+### DSLs written inside [components](#3-components-optional)'s block
+  [code source](lib/open_api/dsl/components.rb) (Here corresponds to OAS [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#componentsObject))
 
   Inside `components`'s block,
-  you can use the same DSL as [[DSL methods inside `api` and `api_dry`'s block]](#dsl-methods-inside-api-and-api_drys-block).
-  But there are two differences:
+  you can use the same DSLs as [DSLs written inside `api` and `api_dry`'s block](#dsls-written-inside-api-and-api_drys-block).  
+  But notice there are two differences:
 
-  (1) Each method needs to pass one more parameter `component_key`
-    (in the first parameter position),
-    this will be used as the reference name for the component.
-
-  ```ruby
-  query! :UidQuery, :uid, String
-  ```
-  This writing is feasible but not recommended,
-  because component's key and parameter's name seem easy to confuse.
-  The recommended writing is:
+  (1) Each method needs to pass one more parameter `component_key` (as the first parameter),
+      it will be used as the reference name for the component.
 
   ```ruby
-  query! :UidQuery => [:uid, String]
+  query! :UidQuery, :uid, String， desc: 'it is a component'
+  #         ↑         ↑
+  # component_key  param_name
+  
+  # You can also use "arrow writing", it may be easier to understand
+  query! :UidQuery => [:uid, String, desc: '']
   ```
 
   (2) You can use `schema` to define a Schema Component.
 
   ```ruby
   # ** Method Signature
-  schema(component_key, type = nil, **schema_info)
+  schema component_key, type = nil, **schema
   # ** Usage
-  schema :Dog  => [ String, desc: 'dogee' ] # <= schema_type is `String`
+  schema :Dog  => [ String, desc: 'doge' ]
   # advance usage
   schema :Dog => [
       {
-          id!: Integer,
-          name: { type: String, must_be: 'name', desc: 'name' }
-      }, # <= this hash is schema type[1]
-      dft: { id: 1, name: 'pet' },
-      desc: 'dogee'
+           id!: Integer,
+          name: { type: String, desc: 'doge name' }
+      }, default: { id: 1, name: 'pet' }
   ]
-  # or (unrecommended)
-  schema :Dog, { id!: Integer, name: String }, dft: { id: 1, name: 'pet' }, desc: 'dogee'
+  # or flatten writing
+  schema :Dog, { id!: Integer, name: String }, default: { id: 1, name: 'pet' }
   #
   # pass a ActiveRecord class constant as `component_key`,
-  #   it will automatically read the db schema to generate the component.
+  #   it will automatically load schema from database and then generate the component.
   schema User # easy! And the component_key will be :User
   ```
-  [1] see: [Type](#schema-and-type)
+  To enable load schema from database, you must set [model base](#part-1-configs-of-this-gem) correctly.
   
 ### Schema and Type
 
-```ruby
-# When schema_type is a Object
-  #   (describe by hash, key means prop's name, value means prop's schema_type)
-  query :good, { name: String, price: Float, spec: { size: String, weight: Integer } }, desc: 'good info'
-  # Or you can use `type:` to sign the schema_type, maybe this is clearer for describing object
-  query :good, type: { name: String, price: Float, spec: { size: String, weight: Integer } }, desc: 'good info'
-  #
-  query :good_name, type: String # It's also OK, but some superfluous
-  query :good_name, String       # recommended
-  # About Combined Schema (`one_of` ..), see the link below.
-```
+  schema and type -- contain each other
+
+#### (Schema) Type
+
+  Support all [data types](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#dataTypes) in OAS.   
+
+  1. String / 'binary' / 'base64' / 'uri'
+  2. Integer / Long / 'int32' / 'int64' / Float / Double
+  3. File (it will be converted to `{ type: 'string', format: Config.file_format }`)
+  4. Date / DateTime
+  5. 'boolean'
+  6. Array / Array[\<Type\>] (like: `Array[String]`, `[String]`)
+  7. Nested Array (like: `[[[Integer]]]`)
+  8. Object / Hash (Object with properties)  
+     Example: `{ id!: Integer, name: String }`
+  9. Nested Hash: `{ id!: Integer, name: { first: String, last: String } }`
+  10. Nested Array[Nested Hash]: `[[{ id!: Integer, name: { first: String, last: String } }]]`
+  11. Symbol Value: it will generate a Schema Reference Object link to the component correspond to ComponentKey, like: :IdPath, :NameQuery
+  
+  **Notice** that Symbol is not allowed in all cases except 11.
+  
+#### Schema
+
+  [OAS Schema Object](https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#schemaObject)
+  and [source code](https://github.com/zhandao/zero-rails_openapi/blob/master/lib/oas_objs/schema_obj.rb)
+  
+  Schema (Hash) is for defining properties of parameters, responses and request bodies.
+  
+  The following property keys will be process slightly:
+  1. desc / description / d
+  2. enum / in / values / allowable_values  
+     should be Array or Range
+  3. range: allow value in this continuous range  
+     should be Range or like `{ gt: 0, le: 5 }`
+  4. length / size / lth  
+     should be an Integer, Integer Array, Integer Range, 
+     or the following format Symbol: `:gt_`, `:ge_`, `:lt_`, `:le_` (:ge_5 means "greater than or equal 5"; :lt_9 means "lower than 9")
+  5. pattern / regxp
+  6. additional_properties / add_prop / values_type
+  7. example
+  8. examples
+  9. format
+  10. default: default value
+  11. type
+
+  The other keys will be directly merged. Such as:
+  1. `title: 'Property Title'`
+  2. `myCustomKey: 'Value'`
+
+#### Combined Schema
+
+  Very easy to use:
+  ```ruby
+  query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input' } ]
+
+  form data: {
+      :combination_in_form => { any_of: [ Integer, String ] }
+  }
+
+  schema :PetSchema => [ not: [ Integer, Boolean ] ]
+  ```
+
+  OAS: [link1](https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/),
+  [link2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schemaObject)
 
 ## Run! - Generate JSON Documentation File
 
   Use `OpenApi.write_docs`:
 
   ```ruby
-  # initializer
-  OpenApi.write_docs generate_files: !Rails.env.production?
-
-  # or run directly in console
-  OpenApi.write_docs # will generate json doc files
+  OpenApi.write_docs# if: !Rails.env.production?
   ```
 
+  `if` option is used to control whether a JSON document is generated or not.
+  
   Then the JSON files will be written to the directories you set. (Each API a file.)
 
 ## Use Swagger UI(very beautiful web page) to show your Documentation
@@ -718,26 +754,15 @@
 
   You can use `sort` to specify the order of parameters.
 
-### Trick3 - Auto Generate Description
+### Trick3 - Auto Generate Description from Enum
 
+  Just use `enum!`:
   ```ruby
-  desc 'api desc',
-       search_type!: 'search field, allows：<br/>'
-  query :search_type, String, enum: %w[name creator category price]
-
-  # or
-
-  query :search_type, String, desc!: 'search field, allows：<br/>',
-        enum: %w[name creator category price]
+  query :search_type, String, desc: 'search field, allows：<br/>', enum!: %w[name creator category price]
+  # it will generate: 
+  "search field, allows：<br/>1/ name<br/>2/ creator,<br/>3/ category<br/>4/ price<br/>"
   ```
-
-  Notice `!` use (`search_type!`, `desc!`), it tells ZRO to append
-  information that analyzed from definitions (enum, must_be ..) to description automatically.
-
-  Any one of above will generate:
-  > search field, allows：<br/>1/ name<br/>2/ creator,<br/>3/ category<br/>4/ price<br/>
-
-  You can also use Hash to define `enum`:
+  Or Hash `enum!`:
   ```ruby
   query :view, String, desc: 'allows values<br/>', enum!: {
           'all goods (default)': :all,
@@ -747,37 +772,6 @@
                   'cheap goods': :borrow,
   }
   ```
-  Read this [file](examples/auto_gen_desc.rb) to learn more.
-
-### Trick4 - Skip or Use parameters define in api_dry
-
-  Pass `skip: []` and `use: []` to `api` like following code:
-  ```ruby
-  api :index, 'desc', skip: [ :Token ]
-  ```
-
-  Look at this [file](examples/goods_doc.rb) to learn more.
-
-### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
-
-  Use method `load_schema` in `api_dry`.
-
-  See this [file](examples/auto_gen_doc.rb#L51) for uasge information.
-
-### Trick6 - Combined Schema (one_of / all_of / any_of / not)
-
-  ```ruby
-  query :combination, one_of: [ :GoodSchema, String, { type: Integer, desc: 'integer input' } ]
-
-  form data: {
-      :combination_in_form => { any_of: [ Integer, String ] }
-  }
-
-  schema :PetSchema => [ not: [ Integer, Boolean ] ]
-  ```
-
-  OAS: [link1](https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/),
-  [link2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schemaObject)
 
 ## Troubleshooting
 

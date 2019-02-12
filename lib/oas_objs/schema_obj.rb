@@ -105,7 +105,7 @@ module OpenApi
         {
             pattern:  _pattern.is_a?(String) ? _pattern : _pattern&.inspect&.delete('/'),
             example:  ExampleObj.new(self[:example]).process,
-            examples: ExampleObj.new(self[:examples], self[:exp_by], multiple: true).process
+            examples: ExampleObj.new(self[:examples], self[:exp_params], multiple: true).process
         }
       end
 
