@@ -179,12 +179,12 @@ RSpec.describe OpenApi::DSL::Api do
 
     desc :response, subject: :responses do
       api -> do
-        response :unauthorized, 'invalid token', :json
+        response :unauthorized, 'invalid token', :json, title: 'title'
         response :bad_request, 'parameter validation failed'
       end, has_keys!: %i[ unauthorized bad_request ]
       focus_on :unauthorized
       expect_its :description, eq: 'invalid token'
-      expect_its :content, has_keys: :'application/json'
+      expect_its :content, has_keys: { 'application/json': [ schema: [:title] ] }
 
       context 'when re-calling through the same code and media-type' do
         api -> do

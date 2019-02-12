@@ -452,7 +452,7 @@
 
   ```ruby
   # ** Method Signature
-  response code, desc, media_type = nil, data: { }
+  response code, desc, media_type = nil, data: { }, **options
   # ** Usage
   resp 200, 'success', :json, data: { name: 'test' }
   response 200, 'query result', :pdf, data: File

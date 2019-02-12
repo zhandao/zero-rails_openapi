@@ -49,8 +49,8 @@ module OpenApi
       arrow_enable :body
       arrow_enable :body!
 
-      def response component_key, desc, media_type = nil, data: { }
-        (self[:responses][component_key] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: data })
+      def response component_key, desc, media_type = nil, data: { }, **options
+        (self[:responses][component_key] ||= ResponseObj.new(desc)).absorb(desc, media_type, { data: data, **options })
       end
 
       alias_method :resp,  :response
