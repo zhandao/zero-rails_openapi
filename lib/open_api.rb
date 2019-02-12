@@ -10,8 +10,8 @@ require 'open_api/dsl'
 
 module OpenApi
   module_function
-  cattr_accessor :routes_index, default: { }
-  cattr_accessor :docs, default: { }
+  cattr_accessor(:routes_index) { Hash.new }
+  cattr_accessor(:docs){ Hash.new }
 
   def write_docs(if: true, read_on_controller: true)
     (docs = generate_docs(read_on_controller)) and Tip.loaded
