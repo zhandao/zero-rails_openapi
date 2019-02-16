@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2019/2/16 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.0.3...v2.1.0)
+
+See: [PR #43](https://github.com/zhandao/zero-rails_openapi/pull/43)
+
+### Added
+
+Headers in Response Object ([issued by @drjonnicholson](https://github.com/zhandao/zero-rails_openapi/issues/42))
+
+## [2.0.0 - 2.0.3] - 2019/2/12 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.7.0...v2.0.3)
+
+See: [PR #35](https://github.com/zhandao/zero-rails_openapi/pull/35)
+
+1. Totally refactoring
+2. README rewritten
+3. Removed Or Changed uncommonly used features
+
 ## [1.7.0] - 2018/12/17 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v1.6.1...v1.7.0)
 
 ### Added
