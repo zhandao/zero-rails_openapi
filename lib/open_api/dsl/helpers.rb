@@ -8,6 +8,7 @@ require 'oas_objs/request_body_obj'
 require 'oas_objs/ref_obj'
 require 'oas_objs/example_obj'
 require 'oas_objs/callback_obj'
+require 'oas_objs/header_obj'
 
 module OpenApi
   module DSL
