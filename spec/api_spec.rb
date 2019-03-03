@@ -194,6 +194,14 @@ RSpec.describe OpenApi::DSL::Api do
         expect_its :headers, has_key: :'X-Request-Start'
       end
 
+      context 'when passing a example' do
+        api -> do
+          response :success, 'succ', :json, data: { name: String }, example: { name: 'Tom' }
+        end, has_key!: :success
+        focus_on :success
+        expect_its :content, has_keys: { 'application/json': [ example: [:name] ] }
+      end
+
       context 'when re-calling through the same code and media-type' do
         api -> do
           response :success, 'success desc1', :json, data: { name: String }

@@ -7,21 +7,22 @@ module OpenApi
   module DSL
     # https://github.com/OAI/OpenAPI-Specification/blob/OpenAPI.next/versions/3.0.0.md#media-type-object
     class MediaTypeObj < Hash
-      attr_accessor :media_type, :schema, :examples
+      attr_accessor :media_type, :schema, :examples, :example
 
-      def initialize(media_type, hash)
-        examples_hash   = hash.delete(:examples)
-        exp_params      = schema_type.keys if (exp_params = hash.delete(:exp_params)) == :all
-        self.examples   = ExampleObj.new(examples_hash, exp_params, multiple: true) if examples_hash.present?
+      def initialize(media_type, example: nil, examples: nil, exp_params: nil, **media_hash)
+        schema_type     = media_hash.values_at(:type, :data).compact.first
+        exp_params      = schema_type.keys if exp_params == :all
+        self.examples   = ExampleObj.new(examples, exp_params, multiple: true) if examples.present?
+        self.example    = ExampleObj.new(example) if example.present?
         self.media_type = media_type_mapping(media_type)
-        self.schema     = SchemaObj.new(hash.values_at(:type, :data).compact.first,
-                                        hash.except(:type, :data))
+        self.schema     = SchemaObj.new(schema_type, media_hash.except(:type, :data))
       end
 
       def process
         return { } if media_type.nil?
         schema_processed = schema.process
         result = schema_processed.values.join.blank? ? { } : { schema: schema_processed }
+        result[:example] = example.process unless example.nil?
         result[:examples] = examples.process unless examples.nil?
         { media_type => result }
       end

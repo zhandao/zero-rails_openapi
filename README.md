@@ -132,12 +132,12 @@
 ### First of all, `include OpenApi::DSL` in your base class (which is for writing spec):
 
   For example:
-    ```ruby
-    # in app/controllers/api/api_controller.rb
-    class ApiController < ActionController::API
-      include OpenApi::DSL
-    end
-    ```
+  ```ruby
+  # in app/controllers/api/api_controller.rb
+  class ApiController < ActionController::API
+    include OpenApi::DSL
+  end
+  ```
 
 ### DSL Usage Example
 
@@ -452,10 +452,11 @@
 
   ```ruby
   # ** Method Signature
-  response code, desc, media_type = nil, data: { }, **options
+  response code, desc, media_type = nil, headers: { }, data: { }, **options
   # ** Usage
   resp 200, 'success', :json, data: { name: 'test' }
   response 200, 'query result', :pdf, data: File
+  response :success, 'succ', :json, headers: { 'X-Request-Start': String }, data: { }
 
   # ** Method Signature
   response_ref code_and_compkey_hash
