@@ -121,6 +121,20 @@
 
 ### Part 2: config (DSL) for generating OpenApi info
 
+  ```ruby
+  # 1. open_api
+  #   base_doc_classes should be an array of base classes of the classes you write the OpenApi spec in, 
+  #   like [ActionController::Base] (if you write spec in controllers).
+  open_api doc_name, base_doc_classes: []
+  
+  # 2. info
+  info version:, title:, desc: '', **addition
+  
+  # 3. server
+  # 4. security_scheme / base_auth / bearer_auth / api_key
+  # 5. global_security_require
+  ```
+
   See all the DSLs: [config_dsl.rb](lib/open_api/config_dsl.rb)
 
 ## DSL Usage
@@ -238,7 +252,7 @@
   end
   ```
   
-  And then you should call `dry` method ([detailed info]()) for executing the declared dry blocks:
+  And then you should call `dry` method ([detailed info](#9-dry)) for executing the declared dry blocks:
   ```ruby
   api :index do
     dry
