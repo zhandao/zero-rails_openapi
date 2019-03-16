@@ -16,8 +16,7 @@ module OpenApi
       end
 
       def process
-        schema.process
-        processed.merge!(schema: schema)
+        processed.merge!(schema: schema.process)
       end
     end
   end
