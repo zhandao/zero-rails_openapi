@@ -15,7 +15,11 @@ module OpenApi
             all_routes = Rails.application.routes.routes
             require 'action_dispatch/routing/inspector'
             inspector = ActionDispatch::Routing::RoutesInspector.new(all_routes)
-            inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil)
+            if Rails::VERSION::MAJOR < 6
+              inspector.format(ActionDispatch::Routing::ConsoleFormatter.new, nil)
+            else
+              inspector.format(ActionDispatch::Routing::ConsoleFormatter::Sheet.new)
+            end
             # :nocov:
           end
     end
