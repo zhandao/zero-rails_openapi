@@ -50,7 +50,7 @@ module OpenApi
   def init_hash(doc_name)
     settings = Config.docs[doc_name]
     doc = { openapi: '3.0.0', **settings.slice(:info, :servers) }.merge!(
-        security: settings[:global_security], tags: [ ], paths: { },
+        security: settings[:global_security] || [], tags: [ ], paths: { },
         components: {
             securitySchemes: settings[:securitySchemes] || { },
             schemas: { }, parameters: { }, requestBodies: { }
