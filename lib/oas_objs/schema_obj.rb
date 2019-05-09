@@ -46,7 +46,7 @@ module OpenApi
           { type: 'string', format: Config.file_format }
         elsif t == 'datetime'
           { type: 'string', format: 'date-time' }
-        elsif t[/\{=>.*\}/]
+        elsif t[/{=>.*}/]
           self[:values_type] = t[3..-2]
           { type: 'object' }
         else # other string
@@ -56,9 +56,8 @@ module OpenApi
 
       def additional_properties
         return if processed[:type] != 'object' || _addProp.nil?
-        {
-            additionalProperties: SchemaObj.new(_addProp, { }).process
-        }
+        value = _addProp.in?([true, false]) ? _addProp : SchemaObj.new(_addProp, { }).process
+        { additionalProperties: value }
       end
 
       def enum

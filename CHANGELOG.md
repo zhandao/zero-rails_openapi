@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.1.1 - 2.1.2] - 2019/2/12 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.0...v2.1.2)
+
+### Fixed
+
+1. Fix response header schema output [PR #49 by @drjonnicholson](https://github.com/zhandao/zero-rails_openapi/pull/49)
+2. Fix router formatter in Rails 6 [PR #53 by @rjayroach](https://github.com/zhandao/zero-rails_openapi/pull/53)
+3. Support for generating `additional_properties: true` [issued by @bopm](https://github.com/zhandao/zero-rails_openapi/issues/55)
+
 ## [2.1.0] - 2019/2/16 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.0.3...v2.1.0)
 
 See: [PR #43](https://github.com/zhandao/zero-rails_openapi/pull/43)
