@@ -55,7 +55,10 @@ module OpenApi
       end
 
       def additional_properties
-        return if processed[:type] != 'object' || _addProp.nil?
+        return if processed[:type] != 'object'
+        default = Config.additional_properties_default_value_of_type_object
+        return { additionalProperties: default } if _addProp.nil? && !default.nil?
+
         value = _addProp.in?([true, false]) ? _addProp : SchemaObj.new(_addProp, { }).process
         { additionalProperties: value }
       end

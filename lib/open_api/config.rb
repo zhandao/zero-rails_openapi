@@ -24,6 +24,8 @@ module OpenApi
 
     cattr_accessor(:file_format) { 'binary' }
 
+    cattr_accessor(:additional_properties_default_value_of_type_object) { nil }
+
     def self.docs
       open_api_docs
     end
