@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [2.1.3] - 2020/2/8 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.2...v2.1.3)
+
+### Fixed
+
+1. Fix response HTTP Status Code's type, restrict to String [issued by @am17torres](https://github.com/zhandao/zero-rails_openapi/issues/60)
+
+### Added
+
+1. Configurable additionalProperties's default value of Object type [issued by @remuspoienar](https://github.com/zhandao/zero-rails_openapi/issues/61)
+
 ## [2.1.1 - 2.1.2] - 2019/2/12 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.0...v2.1.2)
 
 ### Fixed
