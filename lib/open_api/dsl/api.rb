@@ -103,7 +103,7 @@ module OpenApi
       alias_method :error, :response
 
       def response_ref code_and_compkey # = { }
-        code_and_compkey.each { |code, component_key| self[:responses][code] = RefObj.new(:response, component_key) }
+        code_and_compkey.each { |code, component_key| self[:responses][code.to_s] = RefObj.new(:response, component_key) }
       end
 
       def security_require scheme_name, scopes: [ ]
