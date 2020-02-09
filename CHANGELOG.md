@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [2.1.3] - 2020/2/8 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.2...v2.1.3)
+## [2.1.3 - 2.1.4] - 2020/2/10 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.2...v2.1.4)
 
 ### Fixed
 
