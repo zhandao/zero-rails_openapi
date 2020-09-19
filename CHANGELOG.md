@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.1.5] - 2020/9/20 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.4...v2.1.5)
+
+### Fixed
+
+1. Keyword arguments in Ruby 2.7 [issued by @dandunckelman](https://github.com/zhandao/zero-rails_openapi/issues/66)
+
 ## [2.1.3 - 2.1.4] - 2020/2/10 - [view diff](https://github.com/zhandao/zero-rails_openapi/compare/v2.1.2...v2.1.4)
 
 ### Fixed
