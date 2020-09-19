@@ -20,7 +20,7 @@ module OpenApi
       def absorb(desc, media_type, headers: { }, **media_hash)
         self.processed[:description] = desc if desc.present?
         self.headers.merge!(headers)
-        media_types << MediaTypeObj.new(media_type, media_hash)
+        media_types << MediaTypeObj.new(media_type, **media_hash)
         self
       end
 

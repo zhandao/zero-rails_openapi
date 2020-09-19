@@ -18,7 +18,7 @@ module OpenApi
       end
 
       def absorb(media_type, hash)
-        media_types << MediaTypeObj.new(media_type, hash)
+        media_types << MediaTypeObj.new(media_type, **hash)
         self
       end
 
