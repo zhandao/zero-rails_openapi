@@ -31,7 +31,7 @@ module OpenApi
 
       def process_schema_input(schema_type, schema, name, model: nil)
         schema = { type: schema } unless schema.is_a?(Hash)
-        combined_schema = _combined_schema(schema)
+        combined_schema = _combined_schema(**schema)
         type = schema[:type] ||= schema_type
         return Tip.param_no_type(name) if type.nil? && combined_schema.nil?
         combined_schema || SchemaObj.new(type, load_schema(model) || schema)
@@ -46,7 +46,12 @@ module OpenApi
       def arrow_writing_support
         proc do |args, executor|
           args = (args.size == 1 && args.first.is_a?(Hash)) ? args[0].to_a.flatten : args
-          send(executor, *args)
+
+          if !executor.in?(%w[ _example _security_scheme _base_auth _bearer_auth ]) && args.last.is_a?(Hash)
+            send(executor, *args[0..-2], **args[-1])
+          else
+            send(executor, *args)
+          end
         end
       end
 
