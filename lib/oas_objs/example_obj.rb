@@ -26,7 +26,7 @@ module OpenApi
               { value: Hash[keys_of_value.zip(value)] }
             elsif value.is_a?(Symbol) && value['$']
               RefObj.new(value.to_s.delete('$'), :example).process
-            elsif value.key?(:value)
+            elsif value.is_a?(Hash) && value.key?(:value)
               value
             else
               { value: value }
