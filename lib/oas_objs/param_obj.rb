@@ -21,8 +21,8 @@ module OpenApi
 
       def process
         processed[:schema] = schema.process
-        desc = schema.processed[:description]
-        processed[:description] = desc if desc
+        processed[:description] = processed[:schema].delete(:description) if processed[:schema].key?(:description)
+        processed[:examples] = processed[:schema].delete(:examples) if processed[:schema].key?(:examples)
         processed
       end
 

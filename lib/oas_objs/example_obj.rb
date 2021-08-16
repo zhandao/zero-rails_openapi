@@ -22,16 +22,18 @@ module OpenApi
 
         examples_hash.map do |(name, value)|
           value =
-              if keys_of_value.present? && value.is_a?(Array)
-                { value: Hash[keys_of_value.zip(value)] }
-              elsif value.is_a?(Symbol) && value['$']
-                RefObj.new(value.to_s.delete('$'), :example).process
-              else
-                { value: value }
-              end
+            if keys_of_value.present? && value.is_a?(Array)
+              { value: Hash[keys_of_value.zip(value)] }
+            elsif value.is_a?(Symbol) && value['$']
+              RefObj.new(value.to_s.delete('$'), :example).process
+            elsif value.key?(:value)
+              value
+            else
+              { value: value }
+            end
 
-          { name => value }
-        end
+          [ name, value ]
+        end.to_h
       end
     end
   end
