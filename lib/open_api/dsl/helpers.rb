@@ -15,26 +15,20 @@ module OpenApi
     module Helpers
       extend ActiveSupport::Concern
 
-      def load_schema(model) # TODO: test
-        return unless Config.model_base && model.try(:superclass) == Config.model_base
-        model.columns.map do |column|
-            type = column.sql_type_metadata.type.to_s.camelize
-            type = 'DateTime' if type == 'Datetime'
-            [ column.name.to_sym, Object.const_get(type) ]
-          end.to_h rescue ''
-      end
-
       def _combined_schema(one_of: nil, all_of: nil, any_of: nil, not: nil, **other)
         input = (_not = binding.local_variable_get(:not)) || one_of || all_of || any_of
         CombinedSchema.new(one_of: one_of, all_of: all_of, any_of: any_of, not: _not) if input
       end
 
-      def process_schema_input(schema_type, schema, name, model: nil)
-        schema = { type: schema } unless schema.is_a?(Hash)
+      def process_schema_input(schema_type, schema, name)
+        if schema.is_a?(Hash)
+          schema[:type] ||= schema_type
+        else
+          schema = { type: schema }
+        end
         combined_schema = _combined_schema(**schema)
-        type = schema[:type] ||= schema_type
-        return Tip.param_no_type(name) if type.nil? && combined_schema.nil?
-        combined_schema || SchemaObj.new(type, load_schema(model) || schema)
+        return Tip.param_no_type(name) if schema[:type].nil? && combined_schema.nil?
+        combined_schema || SchemaObj.new(schema[:type], schema)
       end
 
       # Arrow Writing:

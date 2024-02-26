@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'oas_objs/schema_obj'
-require 'oas_objs/example_obj'
+require "oas_objs/schema_obj"
+require "oas_objs/example_obj"
 
 module OpenApi
   module DSL
@@ -35,30 +35,30 @@ module OpenApi
       def media_type_mapping(media_type)
         return media_type if media_type.is_a? String
         case media_type
-        when :app then   'application/*'
-        when :json then  'application/json'
-        when :xml then   'application/xml'
-        when :xwww then  'application/x-www-form-urlencoded'
-        when :pdf then   'application/pdf'
-        when :zip then   'application/zip'
-        when :gzip then  'application/gzip'
-        when :doc then   'application/msword'
-        when :docx then  'application/application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        when :xls then   'application/vnd.ms-excel'
-        when :xlsx then  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        when :ppt then   'application/vnd.ms-powerpoint'
-        when :pptx then  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        when :form then  'multipart/form-data'; when :form_data then 'multipart/form-data'
-        when :text then  'text/*'
-        when :plain then 'text/plain then charset=utf-8'
-        when :html then  'text/html'
-        when :csv then   'text/csv'
-        when :image then 'image/*'
-        when :png then   'image/png'
-        when :jpeg then  'image/jpeg'
-        when :gif then   'image/gif'
-        when :audio then 'audio/*'
-        when :video then 'video/*'
+        when :app then   "application/*"
+        when :json then  "application/json"
+        when :xml then   "application/xml"
+        when :xwww then  "application/x-www-form-urlencoded"
+        when :pdf then   "application/pdf"
+        when :zip then   "application/zip"
+        when :gzip then  "application/gzip"
+        when :doc then   "application/msword"
+        when :docx then  "application/application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        when :xls then   "application/vnd.ms-excel"
+        when :xlsx then  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        when :ppt then   "application/vnd.ms-powerpoint"
+        when :pptx then  "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        when :form then  "multipart/form-data"; when :form_data then "multipart/form-data"
+        when :text then  "text/*"
+        when :plain then "text/plain then charset=utf-8"
+        when :html then  "text/html"
+        when :csv then   "text/csv"
+        when :image then "image/*"
+        when :png then   "image/png"
+        when :jpeg then  "image/jpeg"
+        when :gif then   "image/gif"
+        when :audio then "audio/*"
+        when :video then "video/*"
         else             nil
         end
       end

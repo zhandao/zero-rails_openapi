@@ -14,7 +14,7 @@ module OpenApi
 
       def initialize(required, desc)
         self.media_types = [ ]
-        self.processed   = { required: required['req'].present?, description: desc }
+        self.processed   = { required: required.to_s[/req/].present?, description: desc }
       end
 
       def absorb(media_type, hash)
