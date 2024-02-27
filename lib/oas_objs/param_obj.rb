@@ -10,6 +10,10 @@ module OpenApi
 
       attr_accessor :processed, :schema
 
+      EXTRACTABLE_KEYS = %i[
+        description examples style explode uniqueItems
+      ].freeze
+
       def initialize(name, param_type, type, required, schema)
         self.processed = {
             name: name.to_s.delete('!').to_sym,
@@ -21,18 +25,20 @@ module OpenApi
 
       def process
         processed[:schema] = schema.process
-        desc = schema.processed[:description]
-        processed[:description] = desc if desc
+        EXTRACTABLE_KEYS.each { |key| extract_from_schema(key) }
         processed
       end
 
       def name
         processed[:name]
       end
+
+      def extract_from_schema(key)
+        processed[key] = processed[:schema].delete(key) if processed[:schema].key?(key)
+      end
     end
   end
 end
-
 
 __END__
 
