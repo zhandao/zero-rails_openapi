@@ -381,6 +381,7 @@
   body_ref      # 2. it links sepcified RefObjs (by component keys) to the body.
   body, body!   # 3. alias of request_body
   form, form!   # 4. to define a multipart/form-data request_body
+  json, json!   # 5. to define a application/json request_body
   data          # 5. to define [a] property in the form-data request_body
   ```
   Bang methods(!) means the specified media-type body is required.
@@ -422,6 +423,7 @@
          name!: String,
       password: { type: String, pattern: /[0-9]{6,10}/ },
   }
+  json data: { name!: String }
 
   # Part 5
   # ** Method Signature

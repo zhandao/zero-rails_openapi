@@ -32,21 +32,19 @@ module OpenApi
 
       def recg_schema_type(t = self.type)
         t = t.class.in?([Hash, Array, Symbol]) ? t : t.to_s.downcase
-        if t.is_a? Hash
-          hash_type(t)
-        elsif t.is_a? Array
-          array_type(t)
-        elsif t.is_a? Symbol
-          RefObj.new(:schema, t).process
-        elsif t.in? %w[ float double int32 int64 ]
+        case t
+        when Hash then hash_type(t)
+        when Array then array_type(t)
+        when Symbol then RefObj.new(:schema, t).process
+        when *%w[ float double int32 int64 ]
           { type: t['int'] ? 'integer' : 'number', format: t }
-        elsif t.in? %w[ binary base64 uri ]
+        when *%w[ date binary base64 uri ]
           { type: 'string', format: t }
-        elsif t == 'file' # TODO
-          { type: 'string', format: Config.file_format }
-        elsif t == 'datetime'
+        when 'datetime'
           { type: 'string', format: 'date-time' }
-        elsif t[/{=>.*}/]
+        when 'file' # TODO
+          { type: 'string', format: Config.file_format }
+        when /{=>.*}/
           self[:values_type] = t[3..-2]
           { type: 'object' }
         else # other string

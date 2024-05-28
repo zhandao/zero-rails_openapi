@@ -722,9 +722,9 @@
 
 ### Trick5 - Auto Generate index/show Actions's Response-Types Based on DB Schema
 
-  Use method `load_schema` in `api_dry`.
+  ~~Use method `load_schema` in `api_dry`.~~
 
-  See this [file](documentation/examples/auto_gen_doc.rb#L51) for uasge information.
+  ~~See this [file](documentation/examples/auto_gen_doc.rb#L51) for uasge information.~~
 
 ### Trick6 - Combined Schema (one_of / all_of / any_of / not)
 

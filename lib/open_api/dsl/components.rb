@@ -12,7 +12,7 @@ module OpenApi
       end
 
       def schema component_key, type = nil, **schema
-        return unless schema = process_schema_input(type, schema, component_key, model: component_key)
+        return unless (schema = process_schema_input(type, schema, component_key))
         self[:schemas][component_key.to_s.to_sym] = schema.process
       end
 
@@ -25,7 +25,7 @@ module OpenApi
       arrow_enable :example
 
       def param component_key, param_type, name, type, required, schema = { }
-        return unless schema = process_schema_input(type, schema, name)
+        return unless (schema = process_schema_input(type, schema, name))
         self[:parameters][component_key] = ParamObj.new(name, param_type, type, required, schema).process
       end
 
