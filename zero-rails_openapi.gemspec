@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'colorize'
   spec.add_dependency 'activesupport', '>= 4.1'
-  spec.add_dependency 'rails', '>= 4.1'
+  spec.add_dependency 'railties', '>= 4.1'
 
   # spec.post_install_message = ""
 end
