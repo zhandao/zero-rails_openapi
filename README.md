@@ -6,6 +6,10 @@
   [![Test Coverage](https://api.codeclimate.com/v1/badges/471fd60f6eb7b019ceed/test_coverage)](https://codeclimate.com/github/zhandao/zero-rails_openapi/test_coverage)
 
   Concise DSL for generating OpenAPI Specification 3 (**OAS3**, formerly Swagger3) JSON documentation for Rails application.
+
+  **NOTE: use `[action_spec](https://github.com/action-spec/action_spec)` instead**
+
+  **NOTE: use `[action_spec](https://github.com/action-spec/action_spec)` instead**
   
   ```ruby
   class Api::ExamplesController < ApiController

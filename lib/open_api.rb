@@ -60,7 +60,7 @@ module OpenApi
   end
 
   def traverse_controllers
-    Dir['./app/controllers/**/*_controller.rb'].each do |file|
+    Dir['./app/controllers/**/*_controller.rb'].map do |file|
       file.sub('./app/controllers/', '').sub('.rb', '').camelize.constantize
     end
   end
