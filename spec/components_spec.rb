@@ -31,7 +31,7 @@ RSpec.describe OpenApi::DSL::Components do
 
   desc :example, subject: :examples do
     mk -> { example :ExampleA, { }; example :ExampleZ, { } }, doc_will_has_keys: { examples: %i[ ExampleA ExampleZ ] }; clear
-    mk -> { example :ExampleA, { name: 'BeiGou' } }, get: { ExampleA: [{ name: { value: 'BeiGou' } }] }
+    mk -> { example :ExampleA, { name: 'BeiGou' } }, get: { ExampleA: { name: { value: 'BeiGou' } } }
   end
 
 
